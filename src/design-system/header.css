@@ -1,0 +1,125 @@
+:host {
+  display: block;
+  font-family: var(--ba-font-sans);
+  font-synthesis: none;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.ba-header {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ba-space-6);
+  padding: var(--ba-space-3) var(--ba-space-8);
+  border-top: 4px solid var(--ba-color-nyu-violet);
+  border-bottom: 1px solid var(--ba-color-rule);
+  background: var(--ba-color-surface);
+  color: var(--ba-color-ink);
+  font: 400 var(--ba-font-size-md) / var(--ba-line-height-normal)
+    var(--ba-font-sans);
+}
+
+.ba-brand-lockup {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--ba-space-3);
+}
+
+.ba-nyu {
+  color: var(--ba-color-nyu-violet);
+  font-size: var(--ba-font-size-lg);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.ba-brand-rule {
+  width: 1px;
+  height: 24px;
+  background: var(--ba-color-rule);
+}
+
+.ba-product-name {
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.ba-product-status {
+  color: var(--ba-color-muted-ink);
+  font-size: var(--ba-font-size-sm);
+  white-space: nowrap;
+}
+
+.ba-disable-button {
+  min-height: 44px;
+  flex: 0 0 auto;
+  padding: var(--ba-space-3) var(--ba-space-4);
+  border: 1px solid var(--ba-color-nyu-violet);
+  border-radius: var(--ba-radius-control);
+  background: var(--ba-color-white);
+  color: var(--ba-color-nyu-violet);
+  cursor: pointer;
+  font: 700 var(--ba-font-size-sm) / var(--ba-line-height-normal)
+    var(--ba-font-sans);
+  transition:
+    background-color var(--ba-motion-fast),
+    color var(--ba-motion-fast),
+    border-color var(--ba-motion-fast);
+}
+
+.ba-disable-button:hover:not(:disabled) {
+  border-color: var(--ba-color-nyu-violet-hover);
+  background: var(--ba-color-pale-violet);
+  color: var(--ba-color-nyu-violet-hover);
+}
+
+.ba-disable-button:focus-visible {
+  outline: 2px solid var(--ba-color-white);
+  box-shadow: var(--ba-focus-ring);
+}
+
+.ba-disable-button:active:not(:disabled) {
+  border-color: var(--ba-color-nyu-violet-active);
+  color: var(--ba-color-nyu-violet-active);
+}
+
+.ba-disable-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 599px) {
+  .ba-header {
+    min-height: 58px;
+    gap: var(--ba-space-3);
+    padding: var(--ba-space-2) var(--ba-space-5);
+  }
+
+  .ba-product-status {
+    display: none;
+  }
+
+  .ba-disable-button {
+    padding-inline: var(--ba-space-3);
+  }
+}
+
+@media (max-width: 420px) {
+  .ba-brand-rule,
+  .ba-nyu {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ba-disable-button {
+    transition: none;
+  }
+}
