@@ -10,9 +10,10 @@ describe("toolbar preference toggle", () => {
     const getEnabled = vi.fn().mockResolvedValue(current);
     const setEnabled = vi.fn().mockResolvedValue(undefined);
 
-    await toggleEnabledPreference({ getEnabled, setEnabled });
+    const result = await toggleEnabledPreference({ getEnabled, setEnabled });
 
     expect(getEnabled).toHaveBeenCalledOnce();
     expect(setEnabled).toHaveBeenCalledWith(expected);
+    expect(result).toBe(expected);
   });
 });

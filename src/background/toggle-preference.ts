@@ -7,7 +7,9 @@ export type TogglePreferenceStore = Pick<
 
 export async function toggleEnabledPreference(
   preferenceStore: TogglePreferenceStore,
-): Promise<void> {
+): Promise<boolean> {
   const enabled = await preferenceStore.getEnabled();
-  await preferenceStore.setEnabled(!enabled);
+  const nextEnabled = !enabled;
+  await preferenceStore.setEnabled(nextEnabled);
+  return nextEnabled;
 }
