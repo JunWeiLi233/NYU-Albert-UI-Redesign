@@ -13,6 +13,7 @@
   --ba-color-page: #f7f7f7;
   --ba-color-surface: #ffffff;
   --ba-color-rule: #e4e4e4;
+  --ba-color-rule-strong: #c9c5cc;
 
   --ba-color-success: #18794e;
   --ba-color-success-surface: #edf8f2;
@@ -29,6 +30,7 @@
   --ba-font-size-sm: 0.875rem;
   --ba-font-size-md: 1rem;
   --ba-font-size-lg: 1.125rem;
+  --ba-font-size-xl: 1.375rem;
   --ba-line-height-tight: 1.2;
   --ba-line-height-normal: 1.5;
 

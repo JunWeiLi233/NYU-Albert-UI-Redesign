@@ -3,50 +3,85 @@
 Inspection date: July 16, 2026
 
 This document records only non-sensitive browser structure needed to constrain
-the extension lifecycle. No names, identifiers, schedules, grades, holds,
-financial values, page text, cookies, credentials, or screenshots were retained.
+the extension lifecycle and information architecture. No names, identifiers,
+schedules, grades, holds, financial values, page values, cookies, credentials,
+or screenshots were retained.
 
-## Observed boundary
+## Observed host and lifecycle boundary
 
 - `https://albert.nyu.edu/albert_index.html` is a public launcher titled
   “Albert Login.” It links to authentication and must not receive extension UI.
-- The launcher’s Albert target is under
+- The authenticated application loads under
   `https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/`.
-- After following the target in the existing browser session, the top-level
-  application host was `sis.portal.nyu.edu` and the window title was “Albert.”
-- The browser accessibility tree exposed one top-level HTML document and no
-  iframe role on the inspected landing shell.
+- The authenticated top-level window title was “Albert.”
+- The installed v0.1.0 shell was present in the accessibility tree, proving that
+  packaging and exact-host injection worked. Native pages looked unchanged
+  because that release implemented only a compact header.
+- PeopleSoft commonly uses `/psp/` shell and `/psc/` content documents. The
+  extension therefore injects into exact-host frames, while enforcing a single
+  top-frame shell in code.
+- Class Search/cart was observed in a cross-origin child frame on the exact
+  `sis.nyu.edu` host at component `NYU_SR_FL.NYU_SSENRL_CART_FL.GBL`. No other
+  component on that host is accepted by the detector or content-script match,
+  and this host is not granted as an explicit host permission.
 
-## Detection contract for this slice
+## Observed primary information architecture
 
-The extension may mount only when all of these signals agree:
+The authenticated top navigation exposed these stable, non-sensitive labels:
 
-1. HTTPS is in use.
-2. The exact hostname is `sis.portal.nyu.edu`.
-3. The document is the top-level browsing context.
-4. The normalized document title is exactly “Albert.” Titles such as “Albert
-   Login” are excluded so expired or redirected authentication surfaces remain
-   untouched.
-5. A document body exists.
+1. Home
+2. Academics
+3. Grades & Transcripts
+4. Finances
+5. Personal Info
+6. Other Resources
 
-The public `albert.nyu.edu` launcher, SSO pages, NYU marketing pages, child
-frames, and documents with unrelated titles fail closed from the extension’s
-perspective, leaving the native page untouched.
+Generic sub-area labels observed during the privacy-preserving walkthrough
+included classes, enrollment, schedule, grades, transcript, degree progress,
+graduation, planner, transfer credit, test scores, registrar, financial aid,
+housing, and academic calendar. No associated values were retained.
 
-## Limitations
+## Current detection contract
 
-- Accessibility-tree inspection is evidence for the top-level shell, not proof
-  of every internal PeopleSoft route or DOM selector.
-- No page-specific selector is approved yet.
-- Additional hosts, frames, or URL patterns require a new sanitized observation
-  and tests before manifest permissions or detection are expanded.
+The extension requires all of the following:
+
+1. HTTPS.
+2. Exact hostname `sis.portal.nyu.edu`, or exact hostname `sis.nyu.edu` with the
+   allowlisted Class Search/cart component path.
+3. A `/psp/` or `/psc/` path.
+4. No authentication evidence in the title, password controls, login-form
+   actions, or explicit sanitized-test marker.
+5. Positive Albert evidence: the exact application title, at least two known
+   primary-navigation labels, an allowlisted self-service route with related
+   portal context, or the exact Class Search/cart component.
+
+Bare SIS PeopleSoft paths remain untouched. The page family is inferred only
+from selected native navigation labels or
+allowlisted heading labels. Unknown deep screens receive the generic Albert
+context and universal theme. No arbitrary page text or student values are
+copied into extension UI.
 
 ## Packaged-browser verification
 
-The production `dist/` extension is loaded into an isolated Chrome-for-Testing
-profile during Playwright tests. Host URLs are fulfilled locally with the
-sanitized fixture, so the suite does not contact Albert or reuse session state.
-It verifies Shadow DOM mounting under a strict `default-src 'none'` page CSP,
-keyboard focus, 200% page scaling, 400px layout without horizontal overflow,
-preference persistence and remounting, native usability after host removal, and
-exclusion of both public and portal-hosted authentication surfaces.
+The production `dist/` extension is loaded into an isolated
+Chrome-for-Testing profile while Albert-host URLs are fulfilled locally with
+the sanitized fixture. Tests verify:
+
+- Shadow DOM mounting and keyboard focus under strict `default-src 'none'` CSP;
+- computed native-theme styles from extension-packaged CSS;
+- primary page context and native navigation delegation;
+- 200% page scaling and a 400px layout without horizontal overflow;
+- preference persistence and full presentation rollback;
+- shell remount after host removal with native controls still usable;
+- cross-origin Class Search/cart theming with Add to Cart and Enroll controls
+  preserved; and
+- exclusion of public and portal-hosted authentication surfaces.
+
+## Remaining evidence risks
+
+- The live walkthrough establishes the six primary families, not every
+  PeopleSoft route or version-specific selector.
+- Deep transactional pages intentionally use the reversible universal theme
+  until stable, sanitized selector evidence exists.
+- Popups, cross-origin frames, and PeopleSoft version changes remain browser
+  compatibility risks and must fail open.

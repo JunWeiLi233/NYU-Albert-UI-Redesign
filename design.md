@@ -4,8 +4,8 @@
 
 - Status: Active
 - Last refreshed: July 16, 2026
-- Primary product surfaces: the first-slice extension header and native Albert content; dashboard and class-search surfaces remain future work.
-- Evidence reviewed: this file's NYU website evidence appendix, `nyu-albert-extension-plan.md`, and the implemented first-slice source and sanitized fixture.
+- Primary product surfaces: the authenticated Albert shell and its Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other Resources page families.
+- Evidence reviewed: this file's NYU website evidence appendix, `nyu-albert-extension-plan.md`, the extension source and sanitized fixtures, and a privacy-preserving authenticated walkthrough of Albert's primary and deep hub navigation on July 16, 2026.
 
 ## Brand
 
@@ -15,28 +15,29 @@
 
 ## Product goals
 
-- Goals: give Albert an NYU-aligned presentation, establish safe extension lifecycle behavior, and preserve immediate access to the native interface.
-- Non-goals: redesigning dashboard or class search in this slice; changing authentication; automating login or transactions; replacing Albert data or controls.
-- Success signals: the isolated header mounts only on the supported host, can be disabled, fails open, passes automated checks, and stores no student data.
+- Goals: make the full authenticated Albert experience feel coherent and NYU-aligned, improve visual hierarchy across every recognized page family, survive PeopleSoft partial navigation and frame rendering, and preserve immediate access to the native interface.
+- Non-goals: changing authentication; automating login, MFA, enrollment, payment, drop, or swap actions; replacing official data or controls; calling undocumented APIs; reconstructing student records inside extension UI.
+- Success signals: one isolated application shell appears in the top frame, reversible native theming reaches recognized Albert content frames, page context follows navigation, disablement removes all extension presentation, failures leave native Albert usable, and only interface preferences are stored.
 
 ## Personas and jobs
 
 - Primary personas: NYU students using Albert in a Chromium browser.
-- User jobs: recognize the enhancement, keep using native Albert, and disable the enhancement instantly when desired.
+- User jobs: understand where they are, move among Albert's primary areas, scan dense native pages more comfortably, keep using official Albert controls, and disable the enhancement instantly when desired.
 - Key contexts of use: authenticated, data-sensitive academic workflows where clarity and native-system trust matter more than decoration.
 
 ## Information architecture
 
-- Primary navigation: none added in the first slice.
-- Core routes/screens: the observed `https://sis.portal.nyu.edu/*` top-frame Albert surface only; the `albert.nyu.edu` login launcher is excluded.
-- Content hierarchy: a compact extension identity/disable header precedes untouched native Albert navigation and page content.
+- Primary navigation: Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other Resources. Extension navigation delegates to matching native Albert links and never synthesizes destinations.
+- Secondary tools: show only allowlisted, currently present native destinations for the active family. Home may expose Course Search and Weekly Schedule; Academics may expose Academic Planner, Degree Progress Report, What If Report, and graduation status; Records may expose Enrollment Verification, Test Scores, unofficial transcripts, and transfer credit; Finances may expose balance, statement, and financial-aid status; Personal Info may expose read-only section entry points; Resources may expose calendars and NYU offices.
+- Core routes/screens: recognized authenticated `/psp/` and `/psc/` documents on `https://sis.portal.nyu.edu/*`, plus the proven cross-origin Class Search/cart component at `https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL`; launcher, authentication, and unrelated SIS components are excluded.
+- Content hierarchy: compact NYU-violet identity band, page-aware primary navigation, an optional current-family native-tool strip, current-area context, then visible and fully operable native Albert content arranged as flat section boards.
 
 ## Design principles
 
 - Progressive enhancement: extension UI must be additive, isolated, removable, and non-blocking.
 - Institutional restraint: use violet for identity, focus, and selected actions rather than as a universal surface color.
-- Trust native Albert: do not hide or replace native content before a future adapter has reliable extraction evidence.
-- Tradeoffs: choose a small, flat header and system-font fallback over unofficial assets, remote fonts, or public-site layout imitation.
+- Trust native Albert: theme and frame native content without copying sensitive values or replacing official transaction controls.
+- Tradeoffs: choose a flat, compact application shell and conservative CSS adapter over a data-reconstructed dashboard, unofficial assets, remote fonts, or public-site layout imitation.
 
 ## Visual language
 
@@ -45,36 +46,36 @@
 - Spacing/layout rhythm: use the documented 4px-based scale and compact application density.
 - Shape/radius/elevation: flat surfaces, 1px rules, 3px interactive-control radius, and no decorative shadow.
 - Motion: 100–180ms functional feedback only, removed under reduced motion.
-- Imagery/iconography: none in the first slice; do not redraw the torch or substitute emoji.
+- Imagery/iconography: text-first interface with small geometric CSS indicators only; do not redraw the torch or substitute emoji.
 
 ## Components
 
-- Existing components to reuse: native Albert content and controls remain untouched.
-- New/changed components: one `AppHeader` with extension identity, unofficial status, and disable action.
-- Variants and states: default, hover, focus, active, and disabling.
-- Token/component ownership: `src/design-system/tokens.css` owns extension tokens; `AppHeader` consumes them inside its Shadow DOM.
+- Existing components to reuse: native Albert links, tables, forms, buttons, alerts, and transaction flows remain the source of truth.
+- New/changed components: `AppShell` with extension identity, primary navigation, current-area eyebrow/title, allowlisted native-tool shortcuts, native-view trust notice, and disable action; a reversible `NativeTheme` adapter styles recognized documents; a hub-board adapter presents `.is_bb_LinkContainer`, `.is_bb_LinkColumn`, and `.is_bb_LinkItem` as responsive, flat sections without changing link behavior; a modal adapter presents `#pt_modals.PSMODAL`, `.ptpopuptitlebar`, `.PTPOPUP_HEADER`, and `.PTPOPUP_INNER` as a clear focused workspace.
+- Variants and states: Home, Academics, Grades & Transcripts, Finances, Personal Info, Other Resources, generic Albert, tool-present/tool-unavailable, loading/reconciling, disabled, and failure rollback.
+- Token/component ownership: `src/design-system/tokens.css` owns Shadow-DOM tokens; `src/design-system/native-theme.css` duplicates only the required prefixed values under the extension-owned root attribute because Shadow DOM custom properties do not cross into native documents.
 
 ## Accessibility
 
 - Target standard: WCAG 2.1 AA.
-- Keyboard/focus behavior: the disable action is a native button with a visible focus ring and a 44px minimum target.
+- Keyboard/focus behavior: shell navigation and disablement are native buttons with visible focus rings and 44px minimum targets; native document order and controls are not intercepted.
 - Contrast/readability: violet, ink, white, and neutral combinations must meet AA for their text role.
-- Screen-reader semantics: use a labelled semantic header and explicit button text.
+- Screen-reader semantics: use a labelled banner, labelled navigation, `aria-current` for the current area, explicit status text, and explicit button text.
 - Reduced motion and sensory considerations: remove nonessential transitions under `prefers-reduced-motion`; never rely on color alone.
 
 ## Responsive behavior
 
-- Supported breakpoints/devices: the first slice adapts at 599px and 420px; broader navigation tiers remain future work.
-- Layout adaptations: reduce gutters and secondary status copy on narrow screens while retaining the product name and disable action.
+- Supported breakpoints/devices: compact mobile below 600px, wrapped application navigation from 600–899px, and one-line desktop navigation at 900px and above.
+- Layout adaptations: keep the identity/action row visible, allow area navigation to scroll horizontally on narrow screens, and reduce secondary status copy before reducing control size.
 - Touch/hover differences: keep the disable target at least 44px high and never make hover the only feedback state.
 
 ## Interaction states
 
-- Loading: do not show a blocking loader; mount at `document_idle`.
-- Empty: not applicable to the first-slice header.
-- Error: remove partial extension UI and leave native Albert unchanged.
-- Success: show the compact header without hiding native content.
-- Disabled: remove the header immediately and retain only the storage-change listener needed for re-enablement.
+- Loading: do not show a blocking loader; start a lightweight lifecycle at `document_idle` and reconcile when PeopleSoft markers arrive.
+- Empty/unknown: retain the generic “Albert” context and native page; do not invent an empty-state interpretation.
+- Error: remove partial extension UI, root attributes, and injected styles; leave native Albert unchanged.
+- Success: show the page-aware shell and scoped native theme without hiding native content.
+- Disabled: remove the shell, native theme, and extension-owned attributes immediately while retaining only lifecycle listeners needed for re-enablement.
 - Offline/slow network: no extension network requests or remote assets are allowed.
 
 ## Content voice
@@ -85,16 +86,24 @@
 
 ## Implementation constraints
 
-- Framework/styling system: React and TypeScript built by Vite/CRXJS; Shadow DOM with inline-bundled, component-scoped CSS.
-- Design-token constraints: tokens are prefixed `--ba-` and never written to the page root.
-- Performance constraints: no polling, observers, remote assets, or page-data extraction in the first slice.
-- Compatibility constraints: Manifest V3 Chromium baseline; exact host and top frame only until real navigation evidence exists.
-- Test/screenshot expectations: fixture integration tests must prove mounting, idempotency, disablement, and fail-open cleanup; live screenshot fidelity waits for an approved sanitized browser surface.
+- Framework/styling system: React and TypeScript built by Vite/CRXJS; Shadow DOM for extension UI; one extension-owned, root-prefixed stylesheet for native Albert presentation.
+- Design-token constraints: tokens are prefixed `--ba-`; native-page values exist only inside selectors beginning with `html[data-better-albert-enabled]`.
+- Performance constraints: one debounced document observer plus a related-context observer only for same-origin child/popup documents; no polling, remote assets, bulk text extraction, or background network activity.
+- Compatibility constraints: Manifest V3 Chromium baseline; one explicit `sis.portal.nyu.edu` host permission plus a declarative `sis.nyu.edu` content-script match constrained to the proven Class Search/cart component path; `all_frames` is required for PeopleSoft child-document rendering, while top-level shell ownership remains unique.
+- Safety constraints: authentication exclusions win; adapter actions may only delegate to already-present, allowlisted links inside verified primary-navigation or hub-tool containers; transaction-changing labels are excluded; styles never hide native content, overwrite semantic control/status colors, or disable pointer/keyboard input.
+- Test/screenshot expectations: sanitized fixtures cover every primary page family plus auth/unknown/failure behavior; browser tests prove computed styles, replacement recovery, disablement, and native control usability.
 
 ## Open questions
 
 - [x] Confirm the public launcher and authenticated application host boundary from sanitized browser evidence: `albert.nyu.edu` launches authentication, while the Albert application loads at `sis.portal.nyu.edu`.
-- [ ] Confirm durable DOM markers and internal navigation/frame behavior before adding adapters or expanding detection.
+- [x] Confirm primary authenticated navigation labels: Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other Resources.
+- [x] Confirm that the v0.1.0 Shadow-DOM header mounts on the authenticated `/psp/` shell and that a header-only release is visually insufficient.
+- [x] Confirm shared hub-board markers from the authenticated shell: `.is_bb_LinkContainer`, `.is_bb_LinkColumn`, and `.is_bb_LinkItem`.
+- [x] Confirm allowlisted read-only tool labels for all six primary families without retaining page values.
+- [x] Confirm PeopleSoft lightbox markers on a read-only degree-progress route: `body.iLightboxOpen`, `.ps_modalmask_cover`, `#pt_modals.PSMODAL`, `.ptpopuptitlebar`, `.PTPOPUP_HEADER`, and `.PTPOPUP_INNER`.
+- [x] Confirm that Class Search/cart renders in a cross-origin iframe at the exact `sis.nyu.edu` component `NYU_SR_FL.NYU_SSENRL_CART_FL.GBL` and requires a second narrow manifest match.
+- [ ] Capture version-stable PeopleSoft selectors for each deep transactional form; until proven, transaction forms retain native layout and semantic colors.
+- [ ] Confirm which live routes render in same-origin `/psc/` child documents across Albert versions.
 - [ ] Confirm the supported Chromium/browser version matrix.
 - [ ] Determine whether authorized NYU font and wordmark assets can be distributed; continue using text and local fallbacks until then.
 

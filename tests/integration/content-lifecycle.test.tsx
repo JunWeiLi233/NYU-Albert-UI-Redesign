@@ -4,16 +4,21 @@ import { resolve } from "node:path";
 import { act } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { HEADER_HOST_ID } from "../../src/app/mount-header";
 import {
   startContentScript,
   type HeaderMount,
 } from "../../src/content/lifecycle";
-import { HEADER_HOST_ID } from "../../src/app/mount-header";
+import { THEME_ENABLED_ATTRIBUTE } from "../../src/content/native-theme";
 import type { PreferenceStore } from "../../src/storage/preferences";
 
 const fixture = readFileSync(
   resolve(process.cwd(), "tests/fixtures/albert-shell.html"),
   "utf8",
+);
+
+const portalUrl = new URL(
+  "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/?cmd=start",
 );
 
 class FakePreferenceStore implements PreferenceStore {
@@ -63,115 +68,374 @@ function nativeMarkup(): string {
   return nativeContent.outerHTML;
 }
 
+async function settleLifecycle(): Promise<void> {
+  await act(async () => {
+    await new Promise((resolve) => window.setTimeout(resolve, 75));
+  });
+}
+
 describe("content-script lifecycle", () => {
   beforeEach(() => {
     loadFixture();
   });
 
-  it("mounts one isolated header and leaves native Albert content unchanged", async () => {
+  it("mounts one page-aware shell, themes the document, and preserves native content", async () => {
     const store = new FakePreferenceStore(true);
     const before = nativeMarkup();
 
     const lifecycle = await startContentScript({
       document,
-      location: new URL(
-        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/?cmd=start",
-      ),
+      location: portalUrl,
       preferenceStore: store,
       topLevel: true,
     });
 
-    const host = document.getElementById(HEADER_HOST_ID);
-    expect(host?.shadowRoot?.querySelector("header")?.textContent).toContain(
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    expect(shadowRoot?.querySelector("header")?.textContent).toContain(
       "Better Albert",
+    );
+    expect(
+      shadowRoot?.querySelector('[aria-current="page"]')?.textContent,
+    ).toBe("Home");
+    expect(
+      Array.from(
+        shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
+      ).map((button) => button.textContent),
+    ).toEqual(["Course Search", "Weekly Schedule"]);
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      true,
     );
     expect(nativeMarkup()).toBe(before);
 
     store.emit(true);
+    await settleLifecycle();
     expect(document.querySelectorAll(`#${HEADER_HOST_ID}`)).toHaveLength(1);
 
     lifecycle.stop();
   });
 
-  it("does not mount when disabled and removes the header when disabled later", async () => {
-    const disabledStore = new FakePreferenceStore(false);
+  it("delegates primary navigation to the matching native Albert link", async () => {
+    const nativeFinances = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-finances"]',
+    );
+    const nativeClick = vi.fn((event: Event) => event.preventDefault());
+    nativeFinances?.addEventListener("click", nativeClick);
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const financesButton = Array.from(
+      document
+        .getElementById(HEADER_HOST_ID)
+        ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-nav-item") ?? [],
+    ).find((button) => button.textContent === "Finances");
+
+    financesButton?.click();
+    expect(nativeClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
+  it("delegates an allowlisted page tool to the matching native Albert link", async () => {
+    const nativeCourseSearch = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-course-search"]',
+    );
+    const nativeClick = vi.fn((event: Event) => event.preventDefault());
+    nativeCourseSearch?.addEventListener("click", nativeClick);
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const courseSearchButton = Array.from(
+      document
+        .getElementById(HEADER_HOST_ID)
+        ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
+    ).find((button) => button.textContent === "Course Search");
+
+    courseSearchButton?.click();
+    expect(nativeClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
+  it("does not mount when disabled and removes all presentation when disabled later", async () => {
     const disabledLifecycle = await startContentScript({
       document,
-      location: new URL(
-        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/?cmd=start",
-      ),
-      preferenceStore: disabledStore,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(false),
       topLevel: true,
     });
 
     expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
     disabledLifecycle.stop();
 
     const enabledStore = new FakePreferenceStore(true);
     const enabledLifecycle = await startContentScript({
       document,
-      location: new URL(
-        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/?cmd=start",
-      ),
+      location: portalUrl,
       preferenceStore: enabledStore,
       topLevel: true,
     });
     const disableButton = document
       .getElementById(HEADER_HOST_ID)
-      ?.shadowRoot?.querySelector<HTMLButtonElement>("button");
+      ?.shadowRoot?.querySelector<HTMLButtonElement>(".ba-disable-button");
 
     await act(async () => {
       disableButton?.click();
     });
 
     expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
     expect(await enabledStore.getEnabled()).toBe(false);
     enabledLifecycle.stop();
   });
 
-  it("does not mount on the login launcher, an Albert login title, or in a child frame", async () => {
+  it("removes presentation immediately when preference persistence stalls", async () => {
+    const preferenceStore: PreferenceStore = {
+      getEnabled: async () => true,
+      setEnabled: () => new Promise<void>(() => undefined),
+      subscribe: () => () => undefined,
+    };
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore,
+      topLevel: true,
+    });
+    const disableButton = document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLButtonElement>(".ba-disable-button");
+
+    act(() => disableButton?.click());
+
+    expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
+    lifecycle.stop();
+  });
+
+  it("themes a recognized child frame without mounting a duplicate shell", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      relatedAlbertContext: true,
+      location: new URL(
+        "https://sis.portal.nyu.edu/psc/ihprod/EMPLOYEE/SA/c/SSR_STUDENT_FL.SSR_MD_SP_FL.GBL",
+      ),
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: false,
+    });
+
+    expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      true,
+    );
+    lifecycle.stop();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
+  });
+
+  it("re-evaluates delayed same-origin parent evidence and authentication", async () => {
+    document.title = "Academic Planner";
+    document.body.innerHTML = `
+      <main class="ps_box-page">
+        <h1 class="ps_box-pagetitle">Academic Planner</h1>
+      </main>
+    `;
+    const relatedDocument = document.implementation.createHTMLDocument("Loading");
+    const lifecycle = await startContentScript({
+      document,
+      getRelatedAlbertContext: () => relatedDocument.title === "Albert",
+      location: new URL(
+        "https://sis.portal.nyu.edu/psc/ihprod/EMPLOYEE/SA/c/SSR_STUDENT_FL.SSR_MD_SP_FL.GBL",
+      ),
+      preferenceStore: new FakePreferenceStore(true),
+      relatedContextDocument: relatedDocument,
+      topLevel: false,
+    });
+
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
+    relatedDocument.title = "Albert";
+    await settleLifecycle();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      true,
+    );
+
+    relatedDocument.title = "Albert Login";
+    await settleLifecycle();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
+    lifecycle.stop();
+  });
+
+  it("leaves launcher, authentication, and unknown portal documents untouched", async () => {
     const store = new FakePreferenceStore(true);
-    const unsupportedHostLifecycle = await startContentScript({
+    const launcherLifecycle = await startContentScript({
       document,
       location: new URL("https://albert.nyu.edu/albert_index.html"),
       preferenceStore: store,
       topLevel: true,
     });
-
-    expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
     expect(store.listeners.size).toBe(0);
-    unsupportedHostLifecycle.stop();
+    launcherLifecycle.stop();
 
     document.title = "Albert Login";
-    const unsupportedTitleLifecycle = await startContentScript({
+    const authenticationLifecycle = await startContentScript({
       document,
-      location: new URL(
-        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/?cmd=start",
-      ),
+      location: portalUrl,
       preferenceStore: store,
       topLevel: true,
     });
-
-    expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
     expect(store.listeners.size).toBe(0);
-    unsupportedTitleLifecycle.stop();
-    document.title = "Albert";
+    authenticationLifecycle.stop();
 
-    const childFrameLifecycle = await startContentScript({
+    document.title = "Portal";
+    const unknownLifecycle = await startContentScript({
       document,
-      location: new URL(
-        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/?cmd=start",
-      ),
+      location: new URL("https://sis.portal.nyu.edu/public/help"),
       preferenceStore: store,
-      topLevel: false,
+      topLevel: true,
     });
-
     expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
-    expect(store.listeners.size).toBe(0);
-    childFrameLifecycle.stop();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
+    unknownLifecycle.stop();
   });
 
-  it("fails open and removes a partial host when header mounting throws", async () => {
+  it("mounts on a supported PeopleSoft path even when the title arrives late", async () => {
+    document.title = "Loading";
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+
+    expect(document.getElementById(HEADER_HOST_ID)).not.toBeNull();
+    lifecycle.stop();
+  });
+
+  it("updates page context after native selection changes", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    document
+      .querySelector('[aria-current="page"]')
+      ?.removeAttribute("aria-current");
+    document
+      .querySelector('a[href="/fixture-finances"]')
+      ?.setAttribute("aria-current", "page");
+    await settleLifecycle();
+
+    expect(
+      document
+        .getElementById(HEADER_HOST_ID)
+        ?.shadowRoot?.querySelector('[aria-current="page"]')?.textContent,
+    ).toBe("Finances");
+    expect(document.documentElement.dataset.betterAlbertPage).toBe("finances");
+    expect(
+      Array.from(
+        document
+          .getElementById(HEADER_HOST_ID)
+          ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ??
+          [],
+      ).map((button) => button.textContent),
+    ).toEqual(["Bursar Balance", "Account Statement", "Financial Aid Status"]);
+    lifecycle.stop();
+  });
+
+  it("adapts the native-tool strip for all six primary page families", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const expectations = [
+      ["/fixture-home", "Course Search"],
+      ["/fixture-academics", "Academic Planner"],
+      ["/fixture-grades", "Enrollment Verification"],
+      ["/fixture-finances", "Bursar Balance"],
+      ["/fixture-personal", "Demographic Information"],
+      ["/fixture-resources", "Academic Calendar"],
+    ] as const;
+
+    for (const [href, expectedTool] of expectations) {
+      document
+        .querySelector('[aria-current="page"]')
+        ?.removeAttribute("aria-current");
+      document.querySelector(`a[href="${href}"]`)?.setAttribute(
+        "aria-current",
+        "page",
+      );
+      await settleLifecycle();
+
+      const toolLabels = Array.from(
+        document
+          .getElementById(HEADER_HOST_ID)
+          ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ??
+          [],
+      ).map((button) => button.textContent);
+      expect(toolLabels).toContain(expectedTool);
+    }
+
+    lifecycle.stop();
+  });
+
+  it("remounts once when Albert removes the extension host", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const originalHost = document.getElementById(HEADER_HOST_ID);
+    originalHost?.remove();
+    await settleLifecycle();
+
+    const replacementHost = document.getElementById(HEADER_HOST_ID);
+    expect(replacementHost).not.toBeNull();
+    expect(replacementHost).not.toBe(originalHost);
+    expect(document.querySelectorAll(`#${HEADER_HOST_ID}`)).toHaveLength(1);
+    lifecycle.stop();
+  });
+
+  it("rolls back when navigation reaches an authentication document", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    document.title = "Sign in to Albert";
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    await settleLifecycle();
+
+    expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
+    lifecycle.stop();
+  });
+
+  it("fails open and removes theme plus a partial host when mounting throws", async () => {
     const before = nativeMarkup();
     const failingMount = vi.fn<HeaderMount>(({ document: targetDocument }) => {
       const partialHost = targetDocument.createElement("div");
@@ -182,17 +446,50 @@ describe("content-script lifecycle", () => {
 
     const lifecycle = await startContentScript({
       document,
-      location: new URL(
-        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/?cmd=start",
-      ),
+      location: portalUrl,
       mountHeader: failingMount,
       preferenceStore: new FakePreferenceStore(true),
       topLevel: true,
     });
 
     expect(failingMount).toHaveBeenCalledOnce();
+    await settleLifecycle();
+    expect(failingMount).toHaveBeenCalledOnce();
     expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
     expect(nativeMarkup()).toBe(before);
+    lifecycle.stop();
+  });
+
+  it("keeps a newer preference event when the initial storage read resolves later", async () => {
+    let resolveInitialRead: ((enabled: boolean) => void) | undefined;
+    let listener: ((enabled: boolean) => void) | undefined;
+    const preferenceStore: PreferenceStore = {
+      getEnabled: () =>
+        new Promise<boolean>((resolve) => {
+          resolveInitialRead = resolve;
+        }),
+      setEnabled: vi.fn().mockResolvedValue(undefined),
+      subscribe: (nextListener) => {
+        listener = nextListener;
+        return () => undefined;
+      },
+    };
+
+    const lifecyclePromise = startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore,
+      topLevel: true,
+    });
+    listener?.(true);
+    resolveInitialRead?.(false);
+    const lifecycle = await lifecyclePromise;
+    await settleLifecycle();
+
+    expect(document.getElementById(HEADER_HOST_ID)).not.toBeNull();
     lifecycle.stop();
   });
 
@@ -200,9 +497,7 @@ describe("content-script lifecycle", () => {
     const before = nativeMarkup();
     const lifecycle = await startContentScript({
       document,
-      location: new URL(
-        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/?cmd=start",
-      ),
+      location: portalUrl,
       preferenceStore: new FakePreferenceStore(
         true,
         new Error("Synthetic storage failure"),
@@ -211,6 +506,9 @@ describe("content-script lifecycle", () => {
     });
 
     expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
     expect(nativeMarkup()).toBe(before);
     lifecycle.stop();
   });

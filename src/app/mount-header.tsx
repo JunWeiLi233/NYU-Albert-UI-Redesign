@@ -1,20 +1,37 @@
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 
+import type {
+  PageFamily,
+  PrimaryPageFamily,
+} from "../content/page-families";
+import type {
+  PageToolDefinition,
+  PageToolId,
+} from "../content/page-tools";
 import headerCss from "../design-system/header.css?inline";
 import tokensCss from "../design-system/tokens.css?inline";
-import { AppHeader } from "./AppHeader";
+import { AppShell } from "./AppShell";
 
 export const HEADER_HOST_ID = "better-albert-header-host";
 
-export interface MountHeaderOptions {
+export interface ShellViewModel {
+  availablePageFamilies: readonly PrimaryPageFamily[];
+  availablePageTools: readonly PageToolDefinition[];
+  currentPageFamily: PageFamily;
+}
+
+export interface MountHeaderOptions extends ShellViewModel {
   document: Document;
   onDisable: () => Promise<void>;
+  onNavigate: (pageFamily: PrimaryPageFamily) => void;
+  onOpenTool: (toolId: PageToolId) => void;
 }
 
 export interface MountedHeader {
   host: HTMLElement;
   unmount(): void;
+  update(viewModel: ShellViewModel): void;
 }
 
 function createStyle(document: Document, css: string): HTMLStyleElement {
@@ -28,15 +45,18 @@ export function removeMountedHeader(document: Document): void {
 }
 
 export function mountHeader({
+  availablePageFamilies,
+  availablePageTools,
+  currentPageFamily,
   document,
   onDisable,
+  onNavigate,
+  onOpenTool,
 }: MountHeaderOptions): MountedHeader {
-  const existingHost = document.getElementById(HEADER_HOST_ID);
-  if (existingHost) {
-    return {
-      host: existingHost,
-      unmount: () => existingHost.remove(),
-    };
+  removeMountedHeader(document);
+
+  if (!document.body) {
+    throw new Error("Albert document body is not available.");
   }
 
   const host = document.createElement("div");
@@ -45,6 +65,7 @@ export function mountHeader({
   host.style.display = "block";
   host.style.position = "relative";
   host.style.width = "100%";
+  host.style.zIndex = "2147483000";
 
   let root: Root | undefined;
 
@@ -61,12 +82,27 @@ export function mountHeader({
     document.body.prepend(host);
 
     root = createRoot(mountRoot);
-    flushSync(() => {
-      root?.render(<AppHeader onDisable={onDisable} />);
-    });
+
+    const render = (viewModel: ShellViewModel): void => {
+      flushSync(() => {
+        root?.render(
+          <AppShell
+            availablePageFamilies={viewModel.availablePageFamilies}
+            availablePageTools={viewModel.availablePageTools}
+            currentPageFamily={viewModel.currentPageFamily}
+            onDisable={onDisable}
+            onNavigate={onNavigate}
+            onOpenTool={onOpenTool}
+          />,
+        );
+      });
+    };
+
+    render({ availablePageFamilies, availablePageTools, currentPageFamily });
 
     return {
       host,
+      update: render,
       unmount() {
         root?.unmount();
         host.remove();

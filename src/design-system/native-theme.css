@@ -1,0 +1,301 @@
+html[data-better-albert-enabled] {
+  color-scheme: light;
+  --ba-native-violet: #57068c;
+  --ba-native-pale-violet: #eee6f3;
+  --ba-native-ink: #171219;
+  --ba-native-page: #f5f3f6;
+  --ba-native-surface: #ffffff;
+  --ba-native-rule: #d8d3db;
+  --ba-native-font: "NYU Perstare", NYUPerstare, "Helvetica Neue", Helvetica,
+    Cantarell, Ubuntu, Roboto, Noto, Arial, sans-serif;
+}
+
+html[data-better-albert-enabled] body {
+  background-color: var(--ba-native-page);
+  color: var(--ba-native-ink);
+  font-family: var(--ba-native-font);
+}
+
+html[data-better-albert-enabled] body :where(
+    button,
+    input,
+    select,
+    textarea,
+    table,
+    th,
+    td
+  ) {
+  font-family: var(--ba-native-font);
+}
+
+html[data-better-albert-enabled] body .ps_box-page {
+  box-sizing: border-box;
+  max-width: 100%;
+  background-color: var(--ba-native-page);
+  color: var(--ba-native-ink);
+  font-family: var(--ba-native-font);
+}
+
+html[data-better-albert-enabled] body :where(
+    .ps_box-pagetitle,
+    .PAPAGETITLE
+  ) {
+  margin-block: 0 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 4px solid var(--ba-native-violet);
+  background-color: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+html[data-better-albert-enabled] body :where(
+    .PSGROUPBOX,
+    .ps_box-group,
+    .ps_box-grid
+  ) {
+  border: 1px solid var(--ba-native-rule);
+  background-color: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled] body :where(
+    .PAGROUPBOXLABELLEVEL1,
+    .PAGROUPDIVIDER,
+    .ps_box-group-header
+  ) {
+  padding: 0.65rem 0.85rem;
+  border-left: 4px solid var(--ba-native-violet);
+  background-color: var(--ba-native-pale-violet);
+  color: var(--ba-native-ink);
+  font-weight: 800;
+}
+
+html[data-better-albert-enabled] body :where(
+    .ps_box-search,
+    .ps_box-filter,
+    .psc_search-filter
+  ) {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--ba-native-rule);
+  background-color: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled] body :where(
+    .ps_grid-flex,
+    .ps_box-grid
+  ) {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--ba-native-rule);
+  background-color: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled] body :where(
+    .ps_grid-header,
+    .ps_grid-head,
+    .ps_grid-flex [role="columnheader"]
+  ) {
+  background-color: var(--ba-native-pale-violet);
+  color: var(--ba-native-ink);
+  font-weight: 800;
+}
+
+html[data-better-albert-enabled] body :where(
+    .ps_box-search,
+    .ps_box-filter,
+    .psc_search-filter
+  ) :where(label, .ps_box-label) {
+  color: var(--ba-native-ink);
+  font-weight: 700;
+}
+
+html[data-better-albert-enabled] body :where(h1, h2, h3, h4, [role="heading"]) {
+  font-family: var(--ba-native-font);
+  letter-spacing: -0.015em;
+}
+
+html[data-better-albert-enabled] body :where(a, [role="link"]) {
+  text-decoration-color: currentColor;
+  text-underline-offset: 0.16em;
+}
+
+html[data-better-albert-enabled] body :where(a, [role="link"]):hover {
+  text-decoration-color: currentColor;
+}
+
+html[data-better-albert-enabled] body :where(
+    button,
+    input,
+    select,
+    textarea,
+    a
+  ):focus-visible {
+  outline: 2px solid var(--ba-native-violet);
+  outline-offset: 2px;
+}
+
+html[data-better-albert-enabled] body > :where(nav, [role="navigation"]) {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 2rem;
+  border-bottom: 1px solid var(--ba-native-rule);
+  background-color: var(--ba-native-surface);
+  flex-wrap: wrap;
+}
+
+html[data-better-albert-enabled] body
+  > :where(nav, [role="navigation"])
+  :where(a, button) {
+  min-height: 36px;
+  padding: 0.4rem 0.65rem;
+  border-radius: 3px;
+  color: var(--ba-native-violet);
+  font-weight: 700;
+}
+
+html[data-better-albert-enabled] body
+  > :where(nav, [role="navigation"])
+  :where([aria-current="page"], [aria-selected="true"]) {
+  background-color: var(--ba-native-pale-violet);
+}
+
+html[data-better-albert-enabled] body > :where(main, [role="main"]) {
+  box-sizing: border-box;
+  max-width: calc(100% - 4rem);
+  margin: 1.5rem 2rem;
+  padding: 1.5rem;
+  border-top: 4px solid var(--ba-native-violet);
+  background-color: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled] body :where(
+    .PSPAGECONTAINER,
+    .ps_box-page,
+    .ps_grid-flex,
+    .PSLEVEL1GRID,
+    [role="main"]
+  ) {
+  background-color: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled] body :where(
+    [aria-current="page"],
+    [aria-selected="true"]
+  ) {
+  text-decoration-color: var(--ba-native-violet);
+}
+
+html[data-better-albert-enabled] body .is_bb_LinkContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1px;
+  margin-block: 1rem 1.5rem;
+  border: 1px solid var(--ba-native-rule);
+  background-color: var(--ba-native-rule);
+}
+
+html[data-better-albert-enabled] body .is_bb_LinkColumn {
+  min-width: 0;
+  background-color: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled] body .is_bb_LinkItem {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--ba-native-rule);
+  background-color: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled] body .is_bb_LinkItem:last-child {
+  border-bottom: 0;
+}
+
+html[data-better-albert-enabled] body .is_bb_LinkItem :where(a, button) {
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+html[data-better-albert-enabled] body .is_bb_LinkItem:hover {
+  background-color: var(--ba-native-pale-violet);
+}
+
+html[data-better-albert-enabled] body .ps_modalmask_cover,
+html[data-better-albert-enabled] body .ps_modalmask {
+  background-color: rgb(11 11 11 / 58%);
+}
+
+html[data-better-albert-enabled]
+  body
+  #pt_modals.PSMODAL[data-better-albert-readonly-modal] {
+  border: 1px solid var(--ba-native-violet);
+  border-radius: 3px;
+  background-color: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+  font-family: var(--ba-native-font);
+}
+
+html[data-better-albert-enabled]
+  body
+  #pt_modals.PSMODAL[data-better-albert-readonly-modal]
+  :where(
+    .ptpopuptitlebar,
+    .PTPOPUP_HEADER,
+    .HelppopupTitleBar
+  ) {
+  border-bottom: 1px solid var(--ba-native-violet);
+  background-color: var(--ba-native-violet);
+  color: #ffffff;
+  font-family: var(--ba-native-font);
+}
+
+html[data-better-albert-enabled]
+  body
+  #pt_modals.PSMODAL[data-better-albert-readonly-modal]
+  :where(
+    .PTPOPUP_TITLE,
+    .HelppopupTitleBarMiddle
+  ) {
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+html[data-better-albert-enabled]
+  body
+  #pt_modals.PSMODAL[data-better-albert-readonly-modal]
+  :where(
+    .PTPOPUP_INNER,
+    .HelppopupInner,
+    .popupText
+  ) {
+  background-color: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+  font-family: var(--ba-native-font);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-better-albert-enabled] *,
+  html[data-better-albert-enabled] *::before,
+  html[data-better-albert-enabled] *::after {
+    scroll-behavior: auto;
+  }
+}
+
+@media (max-width: 599px) {
+  html[data-better-albert-enabled] body > :where(nav, [role="navigation"]) {
+    padding-inline: 1.25rem;
+  }
+
+  html[data-better-albert-enabled] body > :where(main, [role="main"]) {
+    max-width: calc(100% - 2.5rem);
+    margin: 1rem 1.25rem;
+    padding: 1.25rem;
+  }
+}
