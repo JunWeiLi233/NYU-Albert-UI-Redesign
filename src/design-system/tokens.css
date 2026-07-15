@@ -1,0 +1,46 @@
+:host {
+  color-scheme: light;
+
+  --ba-color-nyu-violet: #57068c;
+  --ba-color-nyu-violet-hover: #400066;
+  --ba-color-nyu-violet-active: #330052;
+  --ba-color-ultraviolet: #8900e1;
+  --ba-color-pale-violet: #eee6f3;
+
+  --ba-color-ink: #0b0b0b;
+  --ba-color-muted-ink: #5c5c5c;
+  --ba-color-white: #ffffff;
+  --ba-color-page: #f7f7f7;
+  --ba-color-surface: #ffffff;
+  --ba-color-rule: #e4e4e4;
+
+  --ba-color-success: #18794e;
+  --ba-color-success-surface: #edf8f2;
+  --ba-color-warning: #8a6100;
+  --ba-color-warning-surface: #fff7db;
+  --ba-color-danger: #b42318;
+  --ba-color-danger-surface: #fff1f0;
+  --ba-color-info: #175cd3;
+  --ba-color-info-surface: #eff6ff;
+
+  --ba-font-sans: "NYU Perstare", NYUPerstare, "Helvetica Neue", Helvetica,
+    Cantarell, Ubuntu, Roboto, Noto, Arial, sans-serif;
+  --ba-font-size-xs: 0.75rem;
+  --ba-font-size-sm: 0.875rem;
+  --ba-font-size-md: 1rem;
+  --ba-font-size-lg: 1.125rem;
+  --ba-line-height-tight: 1.2;
+  --ba-line-height-normal: 1.5;
+
+  --ba-space-1: 0.25rem;
+  --ba-space-2: 0.5rem;
+  --ba-space-3: 0.75rem;
+  --ba-space-4: 1rem;
+  --ba-space-5: 1.25rem;
+  --ba-space-6: 1.5rem;
+  --ba-space-8: 2rem;
+
+  --ba-radius-control: 3px;
+  --ba-focus-ring: 0 0 0 3px rgb(87 6 140 / 35%);
+  --ba-motion-fast: 150ms ease-in-out;
+}
