@@ -94,9 +94,15 @@ describe("structural adapter manager", () => {
       )) {
         expect(metadata.hasAttribute("data-better-albert-region")).toBe(false);
       }
-      expect(
-        document.querySelectorAll('[data-better-albert-region="directory"]'),
-      ).not.toHaveLength(0);
+      if (pageFamily === "finances") {
+        expect(
+          document.querySelectorAll('[data-better-albert-region="directory"]'),
+        ).toHaveLength(0);
+      } else {
+        expect(
+          document.querySelectorAll('[data-better-albert-region="directory"]'),
+        ).not.toHaveLength(0);
+      }
       if (nativeForm && formSnapshot) {
         expect(document.querySelector("form")).toBe(nativeForm);
         expect(nativeForm.getAttribute("action")).toBe(formSnapshot.action);
@@ -355,6 +361,30 @@ describe("structural adapter manager", () => {
     expect(
       inactiveRoot?.querySelector("[data-better-albert-region]"),
     ).toBeNull();
+  });
+
+  it("adapts the verified live Finances structure without a directory container", () => {
+    const document = fixture("tests/fixtures/families/finances.html");
+    document.querySelector(".is_bb_LinkContainer")?.remove();
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "finances",
+        topLevel: true,
+      }),
+    ).toBe("family-finances");
+    expect(
+      document.querySelector('[data-better-albert-region="account-section"]'),
+    ).not.toBeNull();
+    expect(
+      document.querySelector('[data-better-albert-region="aid-section"]'),
+    ).not.toBeNull();
+    expect(
+      document.querySelectorAll('[data-better-albert-region="directory"]'),
+    ).toHaveLength(0);
   });
 
   it("restores pre-existing attribute values in reverse order", () => {

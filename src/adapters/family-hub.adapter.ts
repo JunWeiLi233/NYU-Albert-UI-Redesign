@@ -135,6 +135,23 @@ function getFamilyRegion(
   return undefined;
 }
 
+function hasVerifiedFamilyAnchor(
+  family: PrimaryPageFamily,
+  sections: readonly Element[],
+): boolean {
+  const selector = {
+    home:
+      "#IS_SSS_SUMMARY_NEWS, #ToDoHoldsEnrlDates, .isSSS_ShopCart, #nyuSSSHomeLinksStatic",
+    academics: ".nyuGradTools, .isSSS_Planning, .isSSS_Degree",
+    grades: "#nyuGradesLinks, .isSSS_GradesTop, .isSSS_GradesTwrp",
+    finances: "#NYUBursarDisplay, #NYUFinancialAidDisplay",
+    personal: ".isSSS_PersInfTop, .isSSS_CitizenWrap, .isSSS_NationalIDWrap",
+    resources: "",
+  }[family];
+
+  return Boolean(selector) && sections.some((section) => section.matches(selector));
+}
+
 export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
   readonly id;
   readonly priority = 300;
@@ -169,9 +186,6 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
     const directories = Array.from(
       contentRoot.querySelectorAll(":scope .is_bb_LinkContainer"),
     );
-    if (directories.length === 0) {
-      return undefined;
-    }
     const contentContainers: Element[] = [];
     let container = contentRoot.parentElement;
     while (container && container !== workspace) {
@@ -200,6 +214,23 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
       "TITLE",
     ]);
 
+    const sections = Array.from(contentRoot.children).filter(
+      (child) =>
+        !directories.some(
+          (directory) => child === directory || child.contains(directory),
+        ) &&
+        !excludedTags.has(child.tagName) &&
+        !child.matches(
+          "[hidden], .hide, .clearfloat, [aria-hidden='true'], #NYUBlockerMessage, #NYUBlueMessage_medsmall",
+        ),
+    );
+    if (
+      directories.length === 0 &&
+      !hasVerifiedFamilyAnchor(this.family, sections)
+    ) {
+      return undefined;
+    }
+
     return {
       contentContainers,
       contentRoot,
@@ -212,16 +243,7 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
       ),
       directories,
       menu: wrapper.querySelector(":scope > .isSSS_Menu") ?? undefined,
-      sections: Array.from(contentRoot.children).filter(
-        (child) =>
-          !directories.some(
-            (directory) => child === directory || child.contains(directory),
-          ) &&
-          !excludedTags.has(child.tagName) &&
-          !child.matches(
-            "[hidden], .hide, .clearfloat, [aria-hidden='true'], #NYUBlockerMessage, #NYUBlueMessage_medsmall",
-          ),
-      ),
+      sections,
       tables: Array.from(contentRoot.querySelectorAll("table")),
       workspace,
       wrapper,
