@@ -428,7 +428,6 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
   } as const;
 
   for (const [family, html] of families) {
-    await page.setViewportSize({ height: 800, width: 1280 });
     await page.evaluate((fixtureSource) => {
       const parsed = new DOMParser().parseFromString(fixtureSource, "text/html");
       document.title = parsed.title;
@@ -459,118 +458,93 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
     const currentArea = page.locator(HEADER_HOST_SELECTOR).locator('[aria-current="page"]');
     await expect(currentArea).toHaveCount(1);
 
-    const desktopAlignment = await page.evaluate(() => {
-      const bodyBounds = document.body.getBoundingClientRect();
-      const workspace = document.querySelector<HTMLElement>(
-        '[data-better-albert-region="workspace"]',
-      );
-      const workspaceBounds = workspace?.getBoundingClientRect();
-      const content = document.querySelector<HTMLElement>(
-        '[data-better-albert-layout="family-content"]',
-      );
-      const contentBounds = content?.getBoundingClientRect();
-      const visibleRegions = Array.from(
-        document.querySelectorAll<HTMLElement>('[data-better-albert-region]'),
-      )
-        .map((element) => element.getBoundingClientRect())
-        .filter((bounds) => bounds.width > 0 && bounds.height > 0);
-
-      return {
-        bodyLeft: Math.round(bodyBounds.left),
-        bodyRight: Math.round(bodyBounds.right),
-        columns: content
-          ? getComputedStyle(content).gridTemplateColumns.trim().split(/\s+/)
-              .length
-          : 0,
-        contentLeft: Math.round(contentBounds?.left ?? -1),
-        contentRight: Math.round(contentBounds?.right ?? -1),
-        documentOverflow:
-          document.documentElement.scrollWidth - window.innerWidth,
-        overflowRegions: visibleRegions.filter(
-          (bounds) => bounds.left < -1 || bounds.right > window.innerWidth + 1,
-        ).length,
-        workspaceLeft: Math.round(workspaceBounds?.left ?? -1),
-        workspaceRight: Math.round(workspaceBounds?.right ?? -1),
-      };
-    });
-    expect(desktopAlignment).toEqual({
-      bodyLeft: 0,
-      bodyRight: 1280,
-      columns: family === "grades" ? 1 : family === "personal" ? 3 : 2,
-      contentLeft: expect.any(Number),
-      contentRight: expect.any(Number),
-      documentOverflow: 0,
-      overflowRegions: 0,
-      workspaceLeft: expect.any(Number),
-      workspaceRight: expect.any(Number),
-    });
-    expect(desktopAlignment.workspaceLeft).toBeGreaterThanOrEqual(264);
-    expect(desktopAlignment.workspaceRight).toBeLessThanOrEqual(1280);
-    expect(desktopAlignment.contentLeft).toBeGreaterThanOrEqual(
-      desktopAlignment.workspaceLeft,
-    );
-    expect(desktopAlignment.contentRight).toBeLessThanOrEqual(
-      desktopAlignment.workspaceRight,
-    );
-    expect(
-      desktopAlignment.contentRight - desktopAlignment.contentLeft,
-    ).toBeGreaterThan(700);
-
-    for (const [width, expectedColumns, minimumWorkspaceLeft] of [
-      [900, family === "grades" ? 1 : 2, 264],
-      [899, 1, 0],
-    ] as const) {
-      await page.setViewportSize({ height: 800, width });
-      const boundaryAlignment = await page.evaluate(() => {
+    for (const width of [400, 600, 768, 899, 900, 1200, 1440] as const) {
+      await page.setViewportSize({ height: 900, width });
+      const alignment = await page.evaluate(() => {
+        const bodyBounds = document.body.getBoundingClientRect();
         const workspace = document.querySelector<HTMLElement>(
           '[data-better-albert-region="workspace"]',
         );
-        const bounds = workspace?.getBoundingClientRect();
+        const workspaceBounds = workspace?.getBoundingClientRect();
         const content = document.querySelector<HTMLElement>(
           '[data-better-albert-layout="family-content"]',
         );
+        const contentBounds = content?.getBoundingClientRect();
+        const directRegions = content
+          ? Array.from(content.children)
+              .filter((element): element is HTMLElement =>
+                element instanceof HTMLElement &&
+                element.hasAttribute("data-better-albert-region"),
+              )
+              .map((element) => element.getBoundingClientRect())
+              .filter((bounds) => bounds.width > 0 && bounds.height > 0)
+          : [];
+        const overlappingRegionPairs: number[][] = [];
+        directRegions.forEach((first, firstIndex) => {
+          directRegions.slice(firstIndex + 1).forEach((second, offset) => {
+            const overlapWidth =
+              Math.min(first.right, second.right) -
+              Math.max(first.left, second.left);
+            const overlapHeight =
+              Math.min(first.bottom, second.bottom) -
+              Math.max(first.top, second.top);
+            if (overlapWidth > 1 && overlapHeight > 1) {
+              overlappingRegionPairs.push([firstIndex, firstIndex + offset + 1]);
+            }
+          });
+        });
+
         return {
+          bodyLeft: Math.round(bodyBounds.left),
+          bodyRight: Math.round(bodyBounds.right),
           columns: content
             ? getComputedStyle(content).gridTemplateColumns.trim().split(/\s+/)
                 .length
             : 0,
+          contentLeft: Math.round(contentBounds?.left ?? -1),
+          contentRight: Math.round(contentBounds?.right ?? -1),
           documentOverflow:
             document.documentElement.scrollWidth - window.innerWidth,
-          workspaceLeft: Math.round(bounds?.left ?? -1),
-          workspaceRight: Math.round(bounds?.right ?? -1),
+          overflowRegions: directRegions.filter(
+            (bounds) =>
+              bounds.left < (contentBounds?.left ?? 0) - 1 ||
+              bounds.right > (contentBounds?.right ?? window.innerWidth) + 1 ||
+              bounds.left < -1 ||
+              bounds.right > window.innerWidth + 1,
+          ).length,
+          overlappingRegionPairs,
+          workspaceLeft: Math.round(workspaceBounds?.left ?? -1),
+          workspaceRight: Math.round(workspaceBounds?.right ?? -1),
         };
       });
-      expect(boundaryAlignment.columns).toBe(expectedColumns);
-      expect(boundaryAlignment.documentOverflow).toBe(0);
-      expect(boundaryAlignment.workspaceLeft).toBeGreaterThanOrEqual(
-        minimumWorkspaceLeft,
+      const expectedColumns =
+        width < 900 || family === "grades"
+          ? 1
+          : family === "personal" && width >= 1200
+            ? 3
+            : 2;
+      expect(alignment.bodyLeft).toBe(0);
+      expect(alignment.bodyRight).toBe(width);
+      expect(alignment.columns).toBe(expectedColumns);
+      expect(alignment.documentOverflow).toBe(0);
+      expect(alignment.overflowRegions).toBe(0);
+      expect(alignment.overlappingRegionPairs).toEqual([]);
+      expect(alignment.workspaceLeft).toBeGreaterThanOrEqual(
+        width >= 900 ? 264 : 0,
       );
-      expect(boundaryAlignment.workspaceRight).toBeLessThanOrEqual(width);
+      expect(alignment.workspaceRight).toBeLessThanOrEqual(width);
+      expect(alignment.contentLeft).toBeGreaterThanOrEqual(
+        alignment.workspaceLeft,
+      );
+      expect(alignment.contentRight).toBeLessThanOrEqual(
+        alignment.workspaceRight,
+      );
+      if (width >= 1200) {
+        expect(alignment.contentRight - alignment.contentLeft).toBeGreaterThan(
+          700,
+        );
+      }
     }
-
-    await page.setViewportSize({ height: 800, width: 768 });
-    const mobileAlignment = await page.evaluate(() => {
-      const bodyBounds = document.body.getBoundingClientRect();
-      const content = document.querySelector<HTMLElement>(
-        '[data-better-albert-layout="family-content"]',
-      );
-      return {
-        bodyLeft: Math.round(bodyBounds.left),
-        bodyRight: Math.round(bodyBounds.right),
-        columns: content
-          ? getComputedStyle(content).gridTemplateColumns.trim().split(/\s+/)
-              .length
-          : 0,
-        documentOverflow:
-          document.documentElement.scrollWidth - window.innerWidth,
-      };
-    });
-    expect(mobileAlignment).toEqual({
-      bodyLeft: 0,
-      bodyRight: 768,
-      columns: 1,
-      documentOverflow: 0,
-    });
   }
 });
 
