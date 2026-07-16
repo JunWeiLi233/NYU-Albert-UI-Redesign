@@ -82,6 +82,7 @@ describe("content-script lifecycle", () => {
   it("mounts one page-aware shell, themes the document, and preserves native content", async () => {
     const store = new FakePreferenceStore(true);
     const before = nativeMarkup();
+    const nativeContent = document.querySelector("#albert-native-content");
 
     const lifecycle = await startContentScript({
       document,
@@ -105,13 +106,20 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       true,
     );
-    expect(nativeMarkup()).toBe(before);
+    expect(document.querySelector("#albert-native-content")).toBe(nativeContent);
+    expect(document.documentElement.dataset.betterAlbertAdapter).toBe(
+      "family-home",
+    );
+    expect(nativeContent?.getAttribute("data-better-albert-region")).toBe(
+      "workspace",
+    );
 
     store.emit(true);
     await settleLifecycle();
     expect(document.querySelectorAll(`#${HEADER_HOST_ID}`)).toHaveLength(1);
 
     lifecycle.stop();
+    expect(nativeMarkup()).toBe(before);
   });
 
   it("delegates primary navigation to the matching native Albert link", async () => {
@@ -174,6 +182,10 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       false,
     );
+    expect(document.documentElement.hasAttribute("data-better-albert-adapter")).toBe(
+      false,
+    );
+    expect(document.querySelector("[data-better-albert-region]")).toBeNull();
     disabledLifecycle.stop();
 
     const enabledStore = new FakePreferenceStore(true);
@@ -195,6 +207,10 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       false,
     );
+    expect(document.documentElement.hasAttribute("data-better-albert-adapter")).toBe(
+      false,
+    );
+    expect(document.querySelector("[data-better-albert-region]")).toBeNull();
     expect(await enabledStore.getEnabled()).toBe(false);
     enabledLifecycle.stop();
   });
@@ -221,6 +237,7 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       false,
     );
+    expect(document.querySelector("[data-better-albert-region]")).toBeNull();
     lifecycle.stop();
   });
 
@@ -316,6 +333,31 @@ describe("content-script lifecycle", () => {
     unknownLifecycle.stop();
   });
 
+  it.each([
+    "<div>Native Albert loading content</div>",
+    "<main>First native workspace</main><main>Second native workspace</main>",
+  ])("fails open when a recognized document has no unique adapter root", async (markup) => {
+    document.title = "Albert";
+    document.body.innerHTML = markup;
+    const before = document.body.innerHTML;
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+
+    expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
+    expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      false,
+    );
+    expect(document.documentElement.hasAttribute("data-better-albert-adapter")).toBe(
+      false,
+    );
+    expect(document.body.innerHTML).toBe(before);
+    lifecycle.stop();
+  });
+
   it("mounts on a supported PeopleSoft path even when the title arrives late", async () => {
     document.title = "Loading";
     const lifecycle = await startContentScript({
@@ -361,7 +403,7 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
-  it("adapts the native-tool strip for all six primary page families", async () => {
+  it("adapts the native-tool strip for all six navigation contexts", async () => {
     const lifecycle = await startContentScript({
       document,
       location: portalUrl,
@@ -417,6 +459,33 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("reconciles a PeopleSoft workspace replacement without stale adapter markers", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const originalWorkspace = document.querySelector(".isSSS_Main.selected");
+    const replacementWorkspace = originalWorkspace?.cloneNode(true) as Element;
+    originalWorkspace?.replaceWith(replacementWorkspace);
+    await settleLifecycle();
+
+    expect(replacementWorkspace.getAttribute("data-better-albert-region")).toBe(
+      "workspace",
+    );
+    expect(originalWorkspace?.hasAttribute("data-better-albert-region")).toBe(
+      false,
+    );
+    expect(document.documentElement.dataset.betterAlbertAdapter).toBe(
+      "family-home",
+    );
+    lifecycle.stop();
+    expect(replacementWorkspace.hasAttribute("data-better-albert-region")).toBe(
+      false,
+    );
+  });
+
   it("rolls back when navigation reaches an authentication document", async () => {
     const lifecycle = await startContentScript({
       document,
@@ -432,6 +501,10 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       false,
     );
+    expect(document.documentElement.hasAttribute("data-better-albert-adapter")).toBe(
+      false,
+    );
+    expect(document.querySelector("[data-better-albert-region]")).toBeNull();
     lifecycle.stop();
   });
 

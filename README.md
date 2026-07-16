@@ -1,29 +1,40 @@
 # Better Albert
 
 Better Albert is a local-first Manifest V3 extension that gives the authenticated
-NYU Albert interface a clearer, NYU-aligned application shell without replacing
-Albert authentication, data, controls, or transaction behavior.
+NYU Albert interface a full-page, NYU-aligned application workspace without
+replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.2.0 includes:
+Version 0.3.0 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
-- one isolated, page-aware Shadow DOM shell for the top-level Albert document;
+- one isolated Shadow DOM application frame: a fixed violet rail on desktop and
+  a compact responsive workspace header below 900px;
 - Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other
   Resources context and navigation delegated to existing native Albert links;
-- a reversible native theme for recognized `/psp/` and `/psc/` documents,
-  including PeopleSoft child frames and the proven Class Search/cart component;
+- reversible structure-aware layouts for the five observed selected Albert
+  workspaces, with Other Resources delegated to Albert's native overlay;
+- distinct overview, directory, table, form, alert, and supporting-section
+  regions that annotate original Albert nodes without copying their values;
+- a common full-page PeopleSoft layout for recognized deep `/psp/` and `/psc/`
+  documents, including child frames;
+- an exact two-column Class Search adapter with responsive filter/results
+  stacking for the proven cross-origin cart component;
 - lifecycle recovery for partial navigation and host replacement;
 - a boolean enablement preference in `chrome.storage.local`;
 - visible toolbar `ON`/`OFF` state and in-shell disablement;
 - authentication exclusions and fail-open rollback; and
-- a synthetic, sanitized Albert fixture with unit, integration, and packaged
-  browser tests.
+- sanitized fixtures for every family, a realistic deep form, Class Search
+  results/empty/error states, and read-only versus transaction dialogs, with
+  unit, integration, and packaged-browser tests.
 
-The universal theme covers recognized pages even when a deep screen has no
-specific adapter. Better Albert never reconstructs official values or replaces
-native buttons, forms, tables, or submission flows.
+The adapter registry uses the most specific verified structure available and
+falls back to a conservative native workspace when a page does not match a
+family or deep-page contract. Better Albert never reconstructs official values,
+moves controls between forms, or replaces native buttons, tables, validation,
+and submission flows. Disabling or any rendering failure removes every adapter
+marker and returns the original native DOM immediately.
 
 No student data is stored, logged, or transmitted. There are no analytics,
 external services, remote assets, cookie permissions, authentication changes,
@@ -46,13 +57,17 @@ npx playwright install chromium
 ```
 
 The end-to-end suite loads the unpacked `dist/` extension into a temporary
-Chrome-for-Testing profile and fulfills Albert-host URLs with the sanitized
-fixture. It does not contact Albert or reuse the user's browser profile.
+Chrome-for-Testing profile and fulfills Albert-host URLs with sanitized
+fixtures. It verifies desktop/mobile composition, 200% zoom, no document-level
+overflow, exact rollback, PeopleSoft replacement recovery, native transaction
+click behavior, and storage/network privacy. It does not contact Albert or
+reuse the user's browser profile.
 
 Run `npm run build`, then load `dist/` as an unpacked extension. After updating
 an already installed unpacked copy, use the extension manager's Reload action
 and refresh the Albert tab. The toolbar badge reports whether the preference is
-`ON` or `OFF`.
+`ON` or `OFF`. On desktop the native portal is offset beside the fixed Better
+Albert rail; Class Search opened directly never receives a phantom rail offset.
 
 ## Fixture policy
 

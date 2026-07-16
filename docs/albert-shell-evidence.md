@@ -41,6 +41,15 @@ included classes, enrollment, schedule, grades, transcript, degree progress,
 graduation, planner, transfer credit, test scores, registrar, financial aid,
 housing, and academic calendar. No associated values were retained.
 
+The primary portal pages shared one `.isSSS_Wrp`, one `.isSSS_Menu`, and one
+`.isSSS_Main.selected`. Home exposed one `.is_bb_LinkContainer`; Academics
+exposed two; Grades and Finances exposed three each; Personal Info exposed
+four. Corresponding directory-column counts were 1, 4, 6, 6, and 8. Grades,
+Finances, and Personal Info also exposed 6, 8, and 10 native tables. These are
+structure counts only. Other Resources appeared as a native overlay directory
+rather than a sixth selected `.isSSS_Main` tab, so resource links remain
+delegated to the original overlay controls.
+
 ## Current detection contract
 
 The extension requires all of the following:
@@ -56,9 +65,11 @@ The extension requires all of the following:
    portal context, or the exact Class Search/cart component.
 
 Bare SIS PeopleSoft paths remain untouched. The page family is inferred only
-from selected native navigation labels or
-allowlisted heading labels. Unknown deep screens receive the generic Albert
-context and universal theme. No arbitrary page text or student values are
+from selected native navigation labels or allowlisted heading labels. A
+separate adapter registry then chooses the exact Class Search layout, one of
+five observed selected-workspace layouts, a verified deep PeopleSoft layout, or a conservative
+generic workspace in that order. Adapters add only extension-prefixed
+attributes to original nodes; no arbitrary page text or student values are
 copied into extension UI.
 
 ## Packaged-browser verification
@@ -68,20 +79,29 @@ Chrome-for-Testing profile while Albert-host URLs are fulfilled locally with
 the sanitized fixture. Tests verify:
 
 - Shadow DOM mounting and keyboard focus under strict `default-src 'none'` CSP;
-- computed native-theme styles from extension-packaged CSS;
-- primary page context and native navigation delegation;
-- 200% page scaling and a 400px layout without horizontal overflow;
+- computed full-page structural styles from extension-packaged CSS;
+- distinct adapter IDs and layout regions for all five observed selected
+  workspaces, plus native delegation for the Other Resources overlay;
+- primary page context and native navigation/tool delegation;
+- 1440, 1200, 900, 768, and 400px layouts without document-level horizontal
+  overflow, plus 200% page scaling;
 - preference persistence and full presentation rollback;
-- shell remount after host removal with native controls still usable;
-- cross-origin Class Search/cart theming with Add to Cart and Enroll controls
-  preserved; and
+- shell and workspace remount after PeopleSoft replacement with stale markers
+  removed;
+- native form action, method, hidden state, control ownership, and click
+  listeners preserved;
+- cross-origin Class Search/cart desktop and mobile layout with Add to Cart and
+  Enroll controls preserved;
+- only the boolean interface preference present in extension storage and no
+  unexpected HTTP request from the fixture run; and
 - exclusion of public and portal-hosted authentication surfaces.
 
 ## Remaining evidence risks
 
-- The live walkthrough establishes the six primary families, not every
-  PeopleSoft route or version-specific selector.
-- Deep transactional pages intentionally use the reversible universal theme
-  until stable, sanitized selector evidence exists.
+- The live walkthrough establishes shared structure for the primary families,
+  not every PeopleSoft route or version-specific deep selector.
+- Unknown deep transactional pages receive bounded workspace framing only;
+  field- or action-specific restructuring stays disabled until stable,
+  sanitized selector evidence exists.
 - Popups, cross-origin frames, and PeopleSoft version changes remain browser
   compatibility risks and must fail open.

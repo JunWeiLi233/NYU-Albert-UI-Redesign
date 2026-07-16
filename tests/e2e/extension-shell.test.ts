@@ -42,6 +42,12 @@ let userDataDirectory: string;
 let fixtureHtml: string;
 let deepFixtureHtml: string;
 let classSearchFixtureHtml: string;
+let familyFixtureHtml: {
+  academics: string;
+  finances: string;
+  grades: string;
+  personal: string;
+};
 
 async function extensionWorker(): Promise<Worker> {
   const existingWorker = context.serviceWorkers()[0];
@@ -65,6 +71,19 @@ test.beforeAll(async () => {
   fixtureHtml = await readFile(fixturePath, "utf8");
   deepFixtureHtml = await readFile(deepFixturePath, "utf8");
   classSearchFixtureHtml = await readFile(classSearchFixturePath, "utf8");
+  familyFixtureHtml = Object.fromEntries(
+    await Promise.all(
+      ["academics", "grades", "finances", "personal"].map(
+        async (family) => [
+          family,
+          await readFile(
+            resolve(process.cwd(), `tests/fixtures/families/${family}.html`),
+            "utf8",
+          ),
+        ],
+      ),
+    ),
+  ) as typeof familyFixtureHtml;
 });
 
 test.beforeEach(async () => {
@@ -87,6 +106,12 @@ test.afterEach(async () => {
 });
 
 test("mounts an accessible page-aware shell and computed native theme", async () => {
+  const unexpectedHttpRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/^https?:/i.test(request.url()) && request.url() !== PORTAL_URL) {
+      unexpectedHttpRequests.push(request.url());
+    }
+  });
   await routeSanitizedFixture();
   await page.goto(PORTAL_URL);
 
@@ -100,11 +125,11 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(banner).toBeVisible();
   await expect(page.locator(".ba-shell")).toHaveCSS(
     "background-color",
-    "rgb(255, 255, 255)",
+    "rgb(87, 6, 140)",
   );
   await expect(page.locator(".ba-product-name")).toHaveCSS(
     "color",
-    "rgb(11, 11, 11)",
+    "rgb(255, 255, 255)",
   );
   await expect(page.locator("#albert-native-content")).toBeVisible();
   await expect(
@@ -121,12 +146,28 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
     "data-better-albert-enabled",
     "",
   );
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-better-albert-adapter",
+    "family-home",
+  );
+  await expect(page.locator("#albert-native-content")).toHaveCSS(
+    "display",
+    "grid",
+  );
+  expect(
+    await page.locator(HEADER_HOST_SELECTOR).evaluate((element) =>
+      Math.round(element.getBoundingClientRect().width),
+    ),
+  ).toBe(264);
+  await expect(page.locator("body")).toHaveCSS("padding-left", "264px");
   expect(
     await page.locator("body").evaluate((body) => getComputedStyle(body).backgroundColor),
-  ).toBe("rgb(245, 243, 246)");
+  ).toBe("rgb(247, 247, 247)");
 
   await page.keyboard.press("Tab");
-  await expect(disableButton).toBeFocused();
+  await expect(page.getByRole("button", { name: "Skip to Albert content" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#albert-native-content")).toBeFocused();
 
   const devtoolsSession = await context.newCDPSession(page);
   await devtoolsSession.send("Emulation.setPageScaleFactor", {
@@ -139,14 +180,146 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await devtoolsSession.send("Emulation.setPageScaleFactor", {
     pageScaleFactor: 1,
   });
-  await devtoolsSession.detach();
+
+  for (const [width, expectedHostWidth, expectedPadding] of [
+    [1440, 264, "264px"],
+    [1200, 264, "264px"],
+    [900, 264, "264px"],
+    [768, 768, "0px"],
+  ] as const) {
+    await page.setViewportSize({ height: 800, width });
+    expect(
+      await page.locator(HEADER_HOST_SELECTOR).evaluate((element) =>
+        Math.round(element.getBoundingClientRect().width),
+      ),
+    ).toBe(expectedHostWidth);
+    await expect(page.locator("body")).toHaveCSS("padding-left", expectedPadding);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      ),
+    ).toBeLessThanOrEqual(0);
+  }
 
   await page.setViewportSize({ height: 800, width: 400 });
   await expect(disableButton).toBeVisible();
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+  expect(
+    await page.locator(HEADER_HOST_SELECTOR).evaluate((element) =>
+      Math.round(element.getBoundingClientRect().width),
+    ),
+  ).toBe(400);
+  await expect(
+    page.getByRole("button", { exact: true, name: "Academics" }),
+  ).toHaveCSS("color", "rgb(11, 11, 11)");
+  await expect(
+    page.getByRole("button", { exact: true, name: "Course Search" }),
+  ).toHaveCSS("color", "rgb(11, 11, 11)");
+  const extensionTargetHeights = await page
+    .locator(".ba-disable-button, .ba-nav-item, .ba-tool-item")
+    .evaluateAll((elements) =>
+      elements.map((element) => element.getBoundingClientRect().height),
+    );
+  expect(Math.min(...extensionTargetHeights)).toBeGreaterThanOrEqual(44);
+  const mobileWorkspaceColumns = await page
+    .locator("#albert-native-content")
+    .evaluate((element) => getComputedStyle(element).gridTemplateColumns);
+  expect(mobileWorkspaceColumns.trim().split(/\s+/)).toHaveLength(1);
+  await devtoolsSession.send("Emulation.setPageScaleFactor", {
+    pageScaleFactor: 2,
+  });
+  await expect(disableButton).toBeVisible();
+  await devtoolsSession.send("Emulation.setPageScaleFactor", {
+    pageScaleFactor: 1,
+  });
   const horizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth - window.innerWidth,
   );
   expect(horizontalOverflow).toBeLessThanOrEqual(0);
+  const worker = await extensionWorker();
+  const storedValues = await worker.evaluate(async () => chrome.storage.local.get());
+  expect(storedValues).toEqual({ [ENABLED_PREFERENCE_KEY]: true });
+  expect(JSON.stringify(storedValues)).not.toMatch(
+    /schedule|grade|balance|student name|native_token/i,
+  );
+  expect(unexpectedHttpRequests).toEqual([]);
+  await devtoolsSession.detach();
+});
+
+test("applies a distinct full-page adapter to every selected Albert workspace", async () => {
+  await routeSanitizedFixture();
+  await page.goto(PORTAL_URL);
+
+  const families = [
+    ["home", fixtureHtml],
+    ["academics", familyFixtureHtml.academics],
+    ["grades", familyFixtureHtml.grades],
+    ["finances", familyFixtureHtml.finances],
+    ["personal", familyFixtureHtml.personal],
+  ] as const;
+
+  for (const [family, html] of families) {
+    await page.evaluate((fixtureSource) => {
+      const parsed = new DOMParser().parseFromString(fixtureSource, "text/html");
+      document.title = parsed.title;
+      document.body.className = parsed.body.className;
+      document.body.innerHTML = parsed.body.innerHTML;
+    }, html);
+
+    await expect(page.locator("html")).toHaveAttribute(
+      "data-better-albert-adapter",
+      `family-${family}`,
+    );
+    await expect(page.locator('[data-better-albert-region="workspace"]')).toHaveCount(1);
+    await expect(page.locator('[data-better-albert-region="directory"]')).not.toHaveCount(0);
+    await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(1);
+    const currentArea = page.locator(HEADER_HOST_SELECTOR).locator('[aria-current="page"]');
+    await expect(currentArea).toHaveCount(1);
+  }
+});
+
+test("keeps every tool-heavy rail control reachable at a short desktop height", async () => {
+  await page.setViewportSize({ height: 420, width: 1280 });
+  await routeSanitizedFixture();
+  await page.goto(PORTAL_URL);
+  await page.evaluate((fixtureSource) => {
+    const parsed = new DOMParser().parseFromString(fixtureSource, "text/html");
+    document.title = parsed.title;
+    document.body.className = parsed.body.className;
+    document.body.innerHTML = parsed.body.innerHTML;
+  }, familyFixtureHtml.personal);
+
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-better-albert-adapter",
+    "family-personal",
+  );
+  const shell = page.locator(".ba-shell");
+  await expect(shell).toHaveCSS("overflow-y", "auto");
+  expect(
+    await shell.evaluate((element) => ({
+      hostHeight: Math.round(
+        (element.getRootNode() as ShadowRoot).host.getBoundingClientRect().height,
+      ),
+      shellHeight: Math.round(element.getBoundingClientRect().height),
+      viewportHeight: window.innerHeight,
+    })),
+  ).toEqual({ hostHeight: 420, shellHeight: 420, viewportHeight: 420 });
+
+  const controls = page.locator(
+    ".ba-disable-button, .ba-nav-item:not(:disabled), .ba-tool-item",
+  );
+  expect(await controls.count()).toBe(12);
+  for (const control of await controls.all()) {
+    await control.evaluate((element) =>
+      element.scrollIntoView({ block: "center", inline: "nearest" }),
+    );
+    await control.focus();
+    await expect(control).toBeFocused();
+    const bounds = await control.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds?.y ?? -1).toBeGreaterThanOrEqual(0);
+    expect((bounds?.y ?? 0) + (bounds?.height ?? 0)).toBeLessThanOrEqual(420);
+  }
 });
 
 test("persists disablement and remounts when the local preference is enabled", async () => {
@@ -211,6 +384,25 @@ test("delegates shell navigation to the native Albert control", async () => {
   );
 });
 
+test("delegates Other Resources to Albert's native overlay trigger", async () => {
+  await routeSanitizedFixture();
+  await page.goto(PORTAL_URL);
+  await page.locator('a[href="/fixture-resources"]').evaluate((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.body.dataset.nativeResourceOverlay = "opened";
+    });
+  });
+
+  await page
+    .getByRole("button", { exact: true, name: "Other Resources" })
+    .click();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-resource-overlay",
+    "opened",
+  );
+});
+
 test("delegates the active page tool to its allowlisted native control", async () => {
   await routeSanitizedFixture();
   await page.goto(PORTAL_URL);
@@ -233,6 +425,23 @@ test("delegates the active page tool to its allowlisted native control", async (
 test("themes a sanitized PeopleSoft report modal without replacing its controls", async () => {
   await routeSanitizedFixture();
   await page.goto(PORTAL_URL);
+  await page.evaluate(() => {
+    const hiddenContainer = document.createElement("div");
+    hiddenContainer.hidden = true;
+    const hiddenDialog = document.createElement("div");
+    hiddenDialog.setAttribute("role", "dialog");
+    hiddenContainer.append(hiddenDialog);
+    document.body.append(hiddenContainer);
+  });
+  await expect(page.locator("html")).not.toHaveAttribute(
+    "data-better-albert-native-modal-open",
+    "",
+  );
+  await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCSS(
+    "visibility",
+    "visible",
+  );
+  await expect(page.locator("body")).toHaveCSS("padding-left", "264px");
   await page.locator("#pt_modalMaskCover, #pt_modals").evaluateAll((elements) => {
     for (const element of elements) {
       element.removeAttribute("hidden");
@@ -242,6 +451,15 @@ test("themes a sanitized PeopleSoft report modal without replacing its controls"
   await expect(
     page.getByRole("dialog", { name: "Sanitized Albert report" }),
   ).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-better-albert-native-modal-open",
+    "",
+  );
+  await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCSS(
+    "visibility",
+    "hidden",
+  );
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
   await expect(page.locator(".ptpopuptitlebar")).toHaveCSS(
     "background-color",
     "rgb(87, 6, 140)",
@@ -252,7 +470,16 @@ test("themes a sanitized PeopleSoft report modal without replacing its controls"
   );
   const nativeReturn = page.getByRole("button", { exact: true, name: "Return" });
   await expect(nativeReturn).toBeVisible();
+  await nativeReturn.focus();
+  await expect(nativeReturn).toBeFocused();
   await nativeReturn.click();
+
+  const dialogBounds = await page.locator("#pt_modals").evaluate((dialog) => {
+    const bounds = dialog.getBoundingClientRect();
+    return { left: bounds.left, right: bounds.right, width: window.innerWidth };
+  });
+  expect(dialogBounds.left).toBeGreaterThanOrEqual(0);
+  expect(dialogBounds.right).toBeLessThanOrEqual(dialogBounds.width);
 
   await page.locator(".PTPOPUP_TITLE").evaluate((title) => {
     title.textContent = "Enrollment Error";
@@ -265,6 +492,25 @@ test("themes a sanitized PeopleSoft report modal without replacing its controls"
     "background-color",
     "rgb(87, 6, 140)",
   );
+  await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCSS(
+    "visibility",
+    "hidden",
+  );
+
+  await page.locator("#pt_modalMaskCover, #pt_modals").evaluateAll((elements) => {
+    for (const element of elements) {
+      element.setAttribute("hidden", "");
+    }
+  });
+  await expect(page.locator("html")).not.toHaveAttribute(
+    "data-better-albert-native-modal-open",
+    "",
+  );
+  await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCSS(
+    "visibility",
+    "visible",
+  );
+  await expect(page.locator("body")).toHaveCSS("padding-left", "264px");
 });
 
 test("recognizes and redesigns an explicit student-self-service deep page", async () => {
@@ -298,13 +544,23 @@ test("recognizes and redesigns an explicit student-self-service deep page", asyn
     "data-better-albert-page",
     "academics",
   );
-  await expect(deepPage.locator(".ps_box-pagetitle")).toHaveCSS(
-    "border-bottom-color",
-    "rgb(87, 6, 140)",
+  await expect(deepPage.locator("html")).toHaveAttribute(
+    "data-better-albert-adapter",
+    "peoplesoft-deep",
+  );
+  await expect(deepPage.locator(".ps_box-page")).toHaveCSS(
+    "display",
+    "grid",
+  );
+  await expect(deepPage.locator(".ps_box-pagetitle")).toHaveCSS("font-weight", "900");
+  const nativePlannerForm = deepPage.locator('form[action="/native/planner"]');
+  await expect(nativePlannerForm).toHaveAttribute("method", "post");
+  await expect(nativePlannerForm.locator('input[name="native_token"]')).toHaveValue(
+    "synthetic-token",
   );
   const nativeAction = deepPage.getByRole("button", {
     name: "Native planner action placeholder",
-  });
+  }).first();
   await expect(nativeAction).toBeVisible();
   await nativeAction.click();
 });
@@ -363,7 +619,7 @@ test("re-evaluates delayed same-origin parent evidence in a packaged child frame
 test("themes the proven cross-origin class-search frame and preserves transaction controls", async () => {
   const shellWithClassSearchFrame = fixtureHtml.replace(
     "</body>",
-    `<iframe title="Sanitized Class Search" src="${CLASS_SEARCH_URL}"></iframe></body>`,
+    `<iframe title="Sanitized Class Search" src="${CLASS_SEARCH_URL}" width="1000" height="720" frameborder="0"></iframe></body>`,
   );
   await context.route(PORTAL_URL, (route) =>
     route.fulfill({
@@ -391,10 +647,14 @@ test("themes the proven cross-origin class-search frame and preserves transactio
     "data-better-albert-page",
     "academics",
   );
+  await expect(classSearch.locator("html")).toHaveAttribute(
+    "data-better-albert-adapter",
+    "class-search",
+  );
   await expect(classSearch.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
   await expect(classSearch.locator(".ps_box-search")).toHaveCSS(
     "background-color",
-    "rgb(255, 255, 255)",
+    "rgb(247, 247, 247)",
   );
   await expect(classSearch.locator(".ps_grid-header")).toHaveCSS(
     "background-color",
@@ -404,9 +664,46 @@ test("themes the proven cross-origin class-search frame and preserves transactio
   const enroll = classSearch.getByRole("button", { name: "Enroll" });
   await expect(addToCart).toBeVisible();
   await expect(enroll).toBeVisible();
+  const transactionForm = classSearch.locator('form[action="/native/enrollment"]');
+  await expect(transactionForm).toHaveAttribute("method", "post");
+  await expect(transactionForm.locator('input[name="native_token"]')).toHaveValue(
+    "synthetic-token",
+  );
+  await addToCart.evaluate((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.body.dataset.nativeTransactionClick = "cart";
+    });
+  });
+  await addToCart.click();
+  await expect(classSearch.locator("body")).toHaveAttribute(
+    "data-native-transaction-click",
+    "cart",
+  );
   expect(
     await addToCart.evaluate((button) => getComputedStyle(button).backgroundColor),
   ).not.toBe("rgb(87, 6, 140)");
+
+  const desktopColumns = await classSearch
+    .locator(".ps_box-page")
+    .evaluate((element) => getComputedStyle(element).gridTemplateColumns);
+  expect(desktopColumns.trim().split(/\s+/)).toHaveLength(2);
+  await page.setViewportSize({ height: 800, width: 768 });
+  await page
+    .locator('iframe[title="Sanitized Class Search"]')
+    .evaluate((frame) => frame.setAttribute("width", "700"));
+  const mobileColumns = await classSearch
+    .locator(".ps_box-page")
+    .evaluate((element) => getComputedStyle(element).gridTemplateColumns);
+  expect(mobileColumns.trim().split(/\s+/)).toHaveLength(1);
+  const stackedPositions = await classSearch.locator(".ps_box-page").evaluate((root) => {
+    const filter = root.querySelector(".ps_box-search")?.getBoundingClientRect();
+    const results = root.querySelector(".ps_grid-flex")?.getBoundingClientRect();
+    return { filterBottom: filter?.bottom ?? 0, resultsTop: results?.top ?? 0 };
+  });
+  expect(stackedPositions.resultsTop).toBeGreaterThanOrEqual(
+    stackedPositions.filterBottom,
+  );
 
   await page.goto(CLASS_SEARCH_URL);
   await expect(page.locator("html")).toHaveAttribute(
@@ -414,6 +711,7 @@ test("themes the proven cross-origin class-search frame and preserves transactio
     "academics",
   );
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
 });
 
 test("does not run on public or portal-hosted authentication surfaces", async () => {

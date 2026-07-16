@@ -2,9 +2,9 @@
 
 ## Source of truth
 
-- Status: Active
+- Status: Active — full-page redesign contract
 - Last refreshed: July 16, 2026
-- Primary product surfaces: the authenticated Albert shell and its Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other Resources page families.
+- Primary product surfaces: the authenticated Albert shell; its selected Home, Academics, Grades & Transcripts, Finances, and Personal Info workspaces; recognized deep pages; exact Class Search; and the native Other Resources navigation overlay.
 - Evidence reviewed: this file's NYU website evidence appendix, `nyu-albert-extension-plan.md`, the extension source and sanitized fixtures, and a privacy-preserving authenticated walkthrough of Albert's primary and deep hub navigation on July 16, 2026.
 
 ## Brand
@@ -17,7 +17,13 @@
 
 - Goals: make the full authenticated Albert experience feel coherent and NYU-aligned, improve visual hierarchy across every recognized page family, survive PeopleSoft partial navigation and frame rendering, and preserve immediate access to the native interface.
 - Non-goals: changing authentication; automating login, MFA, enrollment, payment, drop, or swap actions; replacing official data or controls; calling undocumented APIs; reconstructing student records inside extension UI.
-- Success signals: one isolated application shell appears in the top frame, reversible native theming reaches recognized Albert content frames, page context follows navigation, disablement removes all extension presentation, failures leave native Albert usable, and only interface preferences are stored.
+- Success signals: one isolated full-height application frame appears in the top portal document, every recognized Albert document receives exactly one reversible structural adapter, each selected portal workspace has a distinct content hierarchy, Class Search has a proven filter/results workspace, the non-document Other Resources overlay remains delegated to Albert, page context follows partial navigation, disablement removes every extension-owned marker and style, failures leave native Albert usable, and only interface preferences are stored.
+
+## Binding definition of full-page redesign
+
+“Full-page redesign” means every recognized Albert document receives an extension-owned application frame and a structure-aware content layout covering its page header, primary sections, navigation or tool areas, lists, tables, forms, alerts, empty/error states, and supported read-only dialogs. A font or color swap, a title border, a generic white container, or a header alone does not satisfy this requirement.
+
+The redesign operates on original native DOM in place. Adapters may annotate stable structural containers and apply scoped layout, but they must not clone or reconstruct student data, synthesize destinations, replace native controls, change transaction semantics, move controls between forms, or visually reorder focusable controls away from their DOM order.
 
 ## Personas and jobs
 
@@ -30,14 +36,14 @@
 - Primary navigation: Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other Resources. Extension navigation delegates to matching native Albert links and never synthesizes destinations.
 - Secondary tools: show only allowlisted, currently present native destinations for the active family. Home may expose Course Search and Weekly Schedule; Academics may expose Academic Planner, Degree Progress Report, What If Report, and graduation status; Records may expose Enrollment Verification, Test Scores, unofficial transcripts, and transfer credit; Finances may expose balance, statement, and financial-aid status; Personal Info may expose read-only section entry points; Resources may expose calendars and NYU offices.
 - Core routes/screens: recognized authenticated `/psp/` and `/psc/` documents on `https://sis.portal.nyu.edu/*`, plus the proven cross-origin Class Search/cart component at `https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL`; launcher, authentication, and unrelated SIS components are excluded.
-- Content hierarchy: compact NYU-violet identity band, page-aware primary navigation, an optional current-family native-tool strip, current-area context, then visible and fully operable native Albert content arranged as flat section boards.
+- Content hierarchy: identity and primary-navigation frame, page-family title and context, family-specific primary workspace, secondary native tools, supporting sections, then the original native transaction controls and messages.
 
 ## Design principles
 
 - Progressive enhancement: extension UI must be additive, isolated, removable, and non-blocking.
 - Institutional restraint: use violet for identity, focus, and selected actions rather than as a universal surface color.
-- Trust native Albert: theme and frame native content without copying sensitive values or replacing official transaction controls.
-- Tradeoffs: choose a flat, compact application shell and conservative CSS adapter over a data-reconstructed dashboard, unofficial assets, remote fonts, or public-site layout imitation.
+- Trust native Albert: restructure only verified containers around native content without copying sensitive values or replacing official transaction controls.
+- Tradeoffs: prefer page-family layout adapters operating on the original DOM over cloning or reconstructing Albert data. Keep unofficial assets, remote fonts, public-site imitation, and any data-reconstructed dashboard out of scope.
 
 ## Visual language
 
@@ -51,8 +57,8 @@
 ## Components
 
 - Existing components to reuse: native Albert links, tables, forms, buttons, alerts, and transaction flows remain the source of truth.
-- New/changed components: `AppShell` with extension identity, primary navigation, current-area eyebrow/title, allowlisted native-tool shortcuts, native-view trust notice, and disable action; a reversible `NativeTheme` adapter styles recognized documents; a hub-board adapter presents `.is_bb_LinkContainer`, `.is_bb_LinkColumn`, and `.is_bb_LinkItem` as responsive, flat sections without changing link behavior; a modal adapter presents `#pt_modals.PSMODAL`, `.ptpopuptitlebar`, `.PTPOPUP_HEADER`, and `.PTPOPUP_INNER` as a clear focused workspace.
-- Variants and states: Home, Academics, Grades & Transcripts, Finances, Personal Info, Other Resources, generic Albert, tool-present/tool-unavailable, loading/reconciling, disabled, and failure rollback.
+- New/changed components: `AppShell` becomes a fixed desktop application rail and compact mobile workspace header with extension identity, primary navigation, current-area context, allowlisted native-tool shortcuts, a skip-to-native-content action, native-view trust notice, and disable action. An `AdapterManager` selects exactly one primary structural adapter and owns atomic rollback. A `DomPatchJournal` is the sole native-DOM mutation surface and records only extension-owned attributes. Five observed selected-workspace adapters present `.isSSS_Wrp`, `.isSSS_Main.selected`, `.is_bb_LinkContainer`, `.is_bb_LinkColumn`, and `.is_bb_LinkItem` as distinct responsive workspaces. A generic PeopleSoft adapter frames verified page titles, direct groups, forms, tables, and grids without moving controls. The exact Class Search adapter creates a filter/results workspace. Other Resources stays a delegated native overlay, not a reconstructed page. A read-only modal enhancer handles only allowlisted titles, while any open native dialog temporarily suppresses the rail.
+- Variants and states: Home, Academics, Grades & Transcripts, Finances, Personal Info, native Other Resources overlay delegation, generic Albert, tool-present/tool-unavailable, loading/reconciling, disabled, and failure rollback.
 - Token/component ownership: `src/design-system/tokens.css` owns Shadow-DOM tokens; `src/design-system/native-theme.css` duplicates only the required prefixed values under the extension-owned root attribute because Shadow DOM custom properties do not cross into native documents.
 
 ## Accessibility
@@ -65,8 +71,9 @@
 
 ## Responsive behavior
 
-- Supported breakpoints/devices: compact mobile below 600px, wrapped application navigation from 600–899px, and one-line desktop navigation at 900px and above.
-- Layout adaptations: keep the identity/action row visible, allow area navigation to scroll horizontally on narrow screens, and reduce secondary status copy before reducing control size.
+- Supported breakpoints/devices: single-column mobile below 600px, compact tablet workspace from 600–899px, desktop application rail from 900–1199px, and a bounded wide canvas at 1200px and above.
+- Layout adaptations: at 900px and above use a fixed 264px application rail and offset the verified top-level native workspace without moving it; below 900px use a compact sticky top header and horizontally scrollable navigation. Family and deep-page layouts reduce columns without document-level horizontal overflow. Below 900px all content follows source order in one column. Wide tables may scroll inside their marked region, but the document itself must not overflow horizontally.
+- Zoom: at 200% zoom no shell control, native action, validation message, or page region may be clipped or overlapped.
 - Touch/hover differences: keep the disable target at least 44px high and never make hover the only feedback state.
 
 ## Interaction states
@@ -74,8 +81,8 @@
 - Loading: do not show a blocking loader; start a lightweight lifecycle at `document_idle` and reconcile when PeopleSoft markers arrive.
 - Empty/unknown: retain the generic “Albert” context and native page; do not invent an empty-state interpretation.
 - Error: remove partial extension UI, root attributes, and injected styles; leave native Albert unchanged.
-- Success: show the page-aware shell and scoped native theme without hiding native content.
-- Disabled: remove the shell, native theme, and extension-owned attributes immediately while retaining only lifecycle listeners needed for re-enablement.
+- Success: show the page-aware application frame and one scoped structural adapter without hiding, cloning, or replacing native content.
+- Disabled: roll back the adapter journal first, then remove the shell, native theme, and every extension-owned attribute immediately while retaining only lifecycle listeners needed for re-enablement.
 - Offline/slow network: no extension network requests or remote assets are allowed.
 
 ## Content voice
@@ -90,8 +97,31 @@
 - Design-token constraints: tokens are prefixed `--ba-`; native-page values exist only inside selectors beginning with `html[data-better-albert-enabled]`.
 - Performance constraints: one debounced document observer plus a related-context observer only for same-origin child/popup documents; no polling, remote assets, bulk text extraction, or background network activity.
 - Compatibility constraints: Manifest V3 Chromium baseline; one explicit `sis.portal.nyu.edu` host permission plus a declarative `sis.nyu.edu` content-script match constrained to the proven Class Search/cart component path; `all_frames` is required for PeopleSoft child-document rendering, while top-level shell ownership remains unique.
-- Safety constraints: authentication exclusions win; adapter actions may only delegate to already-present, allowlisted links inside verified primary-navigation or hub-tool containers; transaction-changing labels are excluded; styles never hide native content, overwrite semantic control/status colors, or disable pointer/keyboard input.
-- Test/screenshot expectations: sanitized fixtures cover every primary page family plus auth/unknown/failure behavior; browser tests prove computed styles, replacement recovery, disablement, and native control usability.
+- Safety constraints: authentication exclusions win; each adapter declares required selectors and applies only when all anchors match uniquely; optional sections may disappear without breaking the page; missing, ambiguous, detached, or throwing anchors roll back exactly to native presentation. No document-wide text extraction or guessed selectors is allowed. Original nodes, IDs, names, values, event handlers, form ownership, DOM order, messages, pointer input, and keyboard input remain unchanged. Transaction-changing labels are excluded from extension navigation. Semantic warning, error, success, financial, and transaction-control colors are not overwritten.
+- Test/screenshot expectations: sanitized fixtures cover all five observed selected workspaces plus native Other Resources delegation, realistic deep forms, read-only and unknown transaction modals, Class Search success/empty/error states, authentication, unknown surfaces, and partial failure. Browser tests prove layout regions at 400, 768, 900, 1200, and 1440px; document overflow; 200% zoom; keyboard focus; disabled rollback; DOM replacement; missing selectors; native control identity/form ownership/click behavior; storage/network privacy; and exact Class Search host containment.
+
+## Page layout contracts
+
+| Surface | Required full-page layout | Safety boundary |
+| --- | --- | --- |
+| Home | Full-width page context; attention/deadline, schedule/today, enrollment-date/action, and native tool-directory regions; desktop primary workspace plus supporting column; mobile source order. | Do not clone appointments, holds, schedule entries, counts, or enrollment values. Missing overview anchors fail open to the common hub layout. |
+| Academics | Page context; distinct planning, enrollment, degree-progress, and graduation boards; deep pages use the common title/group/form/table frame. | Applications, submissions, add/drop/swap, and enrollment actions remain native and are never promoted into synthetic controls. |
+| Grades & Transcripts | Page context; term navigation; native academic-record table workspace; separate records/report directory. | Preserve official grade strings and table semantics exactly. Do not calculate GPA, copy grades into cards, or store values. |
+| Finances | Page context; separate account, statements, and financial-aid regions; clear native boundary for external payment systems. | Never copy or persist balances or awards. Payment and award actions retain native semantic styling and behavior. |
+| Personal Info | Page context; section index; distinct profile/contact summary and native edit-form workspaces; aligned labels, controls, and errors. | Never clone, cache, log, or expose identity/contact values. Preserve autocomplete, validation, and save/cancel behavior. |
+| Other Resources | This observed surface is a native overlay, not a selected page document. The shell delegates to Albert's original trigger and does not reconstruct or restyle the overlay without stable DOM anchors. Any distinct resource document still receives the generic/deep adapter. | Use only existing native destinations; add no tracking parameters, remote metadata, or synthetic links. |
+| Deep PeopleSoft pages | Bounded workspace with page title, native breadcrumbs/back control, direct grouped sections, readable labels, aligned fields, inline validation, native tables, and native action area. | Unknown transactional forms receive framing only. Do not change control order, form ancestry, validation, or status colors. |
+| Read-only modals | Violet title band, bounded content, visible native close/return, responsive sizing, and mask. | Only allowlisted read-only titles are enhanced; native focus behavior and unknown/transaction dialogs fail open. |
+| Class Search | Desktop 280–320px filter column plus flexible native results workspace; mobile filters then results in source order. | Search, Add to Cart, Enroll, and details remain original controls with original listeners and form ownership. No API bridge or automation. |
+
+## Adapter readiness and fail-open
+
+- Each adapter has a documented required-selector set and fixture contract.
+- Preparation gathers DOM references and non-sensitive layout enums only; it never copies page values.
+- Application writes extension-owned `data-better-albert-*` attributes and, only when absent, a journaled `tabindex="-1"` skip target through one rollback journal. It never uses `innerHTML`, clones native nodes, or moves native controls.
+- Every major visible native section is assigned a documented layout region or explicitly left untouched as a safety exception.
+- A primary adapter exception rolls back that adapter without poisoning future lifecycle reconciliation; shell failure removes all extension presentation.
+- Reconciliation is idempotent and treats detached anchors after PeopleSoft partial replacement as stale.
 
 ## Open questions
 
@@ -99,7 +129,7 @@
 - [x] Confirm primary authenticated navigation labels: Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other Resources.
 - [x] Confirm that the v0.1.0 Shadow-DOM header mounts on the authenticated `/psp/` shell and that a header-only release is visually insufficient.
 - [x] Confirm shared hub-board markers from the authenticated shell: `.is_bb_LinkContainer`, `.is_bb_LinkColumn`, and `.is_bb_LinkItem`.
-- [x] Confirm allowlisted read-only tool labels for all six primary families without retaining page values.
+- [x] Confirm allowlisted read-only tool labels for all six primary navigation contexts without retaining page values.
 - [x] Confirm PeopleSoft lightbox markers on a read-only degree-progress route: `body.iLightboxOpen`, `.ps_modalmask_cover`, `#pt_modals.PSMODAL`, `.ptpopuptitlebar`, `.PTPOPUP_HEADER`, and `.PTPOPUP_INNER`.
 - [x] Confirm that Class Search/cart renders in a cross-origin iframe at the exact `sis.nyu.edu` component `NYU_SR_FL.NYU_SSENRL_CART_FL.GBL` and requires a second narrow manifest match.
 - [ ] Capture version-stable PeopleSoft selectors for each deep transactional form; until proven, transaction forms retain native layout and semantic colors.
