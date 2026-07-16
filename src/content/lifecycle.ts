@@ -5,6 +5,7 @@ import {
   type MountHeaderOptions,
   type ShellViewModel,
 } from "../app/mount-header";
+import { AdapterManager } from "../adapters/adapter-manager";
 import type { PreferenceStore } from "../storage/preferences";
 import {
   getAvailablePageFamilies,
@@ -63,6 +64,7 @@ export async function startContentScript({
   let stopped = false;
   let unsubscribe = (): void => undefined;
   const window = document.defaultView;
+  const adapterManager = new AdapterManager();
 
   const safeUnmount = (): void => {
     try {
@@ -76,6 +78,11 @@ export async function startContentScript({
   };
 
   const rollback = (): void => {
+    try {
+      adapterManager.rollback();
+    } catch {
+      // Adapter cleanup is journaled and best-effort; native DOM stays in place.
+    }
     safeUnmount();
     try {
       removeNativeTheme(document);
@@ -98,8 +105,16 @@ export async function startContentScript({
 
     mutationObserver = new window.MutationObserver(scheduleReconcile);
     mutationObserver.observe(document.documentElement, {
-      attributeFilter: ["aria-current", "aria-selected", "class"],
+      attributeFilter: [
+        "aria-current",
+        "aria-hidden",
+        "aria-selected",
+        "class",
+        "hidden",
+        "style",
+      ],
       attributes: true,
+      characterData: true,
       childList: true,
       subtree: true,
     });
@@ -110,7 +125,14 @@ export async function startContentScript({
     ) {
       relatedContextObserver = new window.MutationObserver(scheduleReconcile);
       relatedContextObserver.observe(relatedContextDocument.documentElement, {
-        attributeFilter: ["aria-current", "aria-selected", "class"],
+        attributeFilter: [
+          "aria-current",
+          "aria-hidden",
+          "aria-selected",
+          "class",
+          "hidden",
+          "style",
+        ],
         attributes: true,
         characterData: true,
         childList: true,
@@ -152,7 +174,21 @@ export async function startContentScript({
     }
 
     try {
-      applyNativeTheme(document, classification.pageFamily);
+      applyNativeTheme(
+        document,
+        classification.pageFamily,
+        classification.topLevel && location.hostname === "sis.portal.nyu.edu",
+      );
+      const adapterId = adapterManager.reconcile({
+        document,
+        location,
+        pageFamily: classification.pageFamily,
+        topLevel: classification.topLevel,
+      });
+      if (!adapterId) {
+        rollback();
+        return;
+      }
 
       if (
         !classification.topLevel ||
@@ -206,6 +242,15 @@ export async function startContentScript({
               activePageFamily,
               toolId,
             );
+          },
+          onSkipToContent: () => {
+            const workspace = document.querySelector<HTMLElement>(
+              '[data-better-albert-region="workspace"]',
+            );
+            if (!workspace) {
+              return;
+            }
+            workspace.focus({ preventScroll: false });
           },
         });
         lastViewModelSignature = nextSignature;

@@ -26,6 +26,7 @@ export interface MountHeaderOptions extends ShellViewModel {
   onDisable: () => Promise<void>;
   onNavigate: (pageFamily: PrimaryPageFamily) => void;
   onOpenTool: (toolId: PageToolId) => void;
+  onSkipToContent: () => void;
 }
 
 export interface MountedHeader {
@@ -52,6 +53,7 @@ export function mountHeader({
   onDisable,
   onNavigate,
   onOpenTool,
+  onSkipToContent,
 }: MountHeaderOptions): MountedHeader {
   removeMountedHeader(document);
 
@@ -61,10 +63,8 @@ export function mountHeader({
 
   const host = document.createElement("div");
   host.id = HEADER_HOST_ID;
-  host.style.all = "initial";
   host.style.display = "block";
-  host.style.position = "relative";
-  host.style.width = "100%";
+  host.style.isolation = "isolate";
   host.style.zIndex = "2147483000";
 
   let root: Root | undefined;
@@ -93,6 +93,7 @@ export function mountHeader({
             onDisable={onDisable}
             onNavigate={onNavigate}
             onOpenTool={onOpenTool}
+            onSkipToContent={onSkipToContent}
           />,
         );
       });

@@ -18,6 +18,7 @@ export interface AppShellProps {
   onDisable: () => Promise<void>;
   onNavigate: (pageFamily: PrimaryPageFamily) => void;
   onOpenTool: (toolId: PageToolId) => void;
+  onSkipToContent: () => void;
 }
 
 export function AppShell({
@@ -27,6 +28,7 @@ export function AppShell({
   onDisable,
   onNavigate,
   onOpenTool,
+  onSkipToContent,
 }: AppShellProps) {
   const [isDisabling, setIsDisabling] = useState(false);
   const currentPage = PAGE_FAMILY_DEFINITIONS[currentPageFamily];
@@ -38,15 +40,19 @@ export function AppShell({
 
   return (
     <header className="ba-shell" aria-label="Better Albert">
+      <button className="ba-skip-link" type="button" onClick={onSkipToContent}>
+        Skip to Albert content
+      </button>
+
       <div className="ba-identity-row">
         <div className="ba-brand-lockup">
           <span className="ba-nyu">NYU</span>
           <span className="ba-brand-rule" aria-hidden="true" />
           <span className="ba-product-name">Better Albert</span>
-          <span className="ba-product-status">Unofficial local enhancement</span>
+          <span className="ba-product-status">Unofficial · Local only</span>
         </div>
         <div className="ba-shell-actions">
-          <span className="ba-local-status">Local only · Native controls</span>
+          <span className="ba-local-status">Official data stays in Albert</span>
           <button
             className="ba-disable-button"
             type="button"
@@ -60,7 +66,7 @@ export function AppShell({
 
       <div className="ba-workspace-row">
         <div className="ba-page-context" aria-live="polite">
-          <span className="ba-page-eyebrow">Current area</span>
+          <span className="ba-page-eyebrow">Workspace</span>
           <strong className="ba-page-title">{currentPage.label}</strong>
           <span className="ba-page-description">{currentPage.description}</span>
         </div>
@@ -109,6 +115,10 @@ export function AppShell({
           </div>
         </nav>
       )}
+
+      <div className="ba-trust-note">
+        Native Albert controls remain authoritative. Better Albert changes presentation only.
+      </div>
     </header>
   );
 }
