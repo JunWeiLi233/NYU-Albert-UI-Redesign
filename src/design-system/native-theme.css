@@ -426,7 +426,7 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
   max-width: 100%;
 }
 
-
+html[data-better-albert-enabled] [data-better-albert-region="directory"] {
   display: grid !important;
   grid-column: 1 / -1;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1030,6 +1030,88 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   border-bottom: 1px solid var(--ba-native-rule);
 }
 
+/*
+ * Card-style result rows with prominent status. Each native result row (ARIA
+ * grid row in the fluid variant, table body row in the legacy variant) is marked
+ * `data-better-albert-region="result-row"` by the adapter. Lay it out as a
+ * two-track card: course identity on the left, status on the right. Flat cards
+ * (no shadow) per design.md. Native values, text, and click targets are
+ * unchanged — this is presentational only.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="result-row"] {
+  display: grid;
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 2fr) minmax(96px, auto);
+  align-items: start;
+  gap: 8px 20px;
+  padding: 16px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--ba-native-rule);
+  background: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="result-row"]:last-child {
+  border-bottom: 0;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="result-row"]
+  :where(td, [role="cell"]):first-child {
+  grid-column: 1;
+  align-self: center;
+  color: var(--ba-native-ink);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+/*
+ * Status pill: the second cell of each result row (the Open/Closed/Waitlist
+ * column) becomes a right-aligned, high-contrast pill so students can scan seat
+ * availability at a glance. The pill background is a neutral pale surface; the
+ * native status text and any native color are preserved, so semantic meaning
+ * still comes from Albert's own wording.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="result-row"]
+  :where(td, [role="cell"]):nth-child(2) {
+  grid-column: 2;
+  justify-self: end;
+  align-self: center;
+  box-sizing: border-box;
+  min-width: 96px;
+  padding: 8px 14px;
+  border: 1px solid var(--ba-native-rule-strong);
+  border-radius: 3px;
+  background: var(--ba-native-pale-violet);
+  color: var(--ba-native-violet-dark);
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+/*
+ * Supporting cells beyond the first two (meeting info, instructor, etc.) span
+ * the full card width beneath the identity/status row.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="result-row"]
+  :where(td, [role="cell"]):nth-child(n + 3) {
+  grid-column: 1 / -1;
+  padding-top: 4px;
+  border-top: 1px solid var(--ba-native-rule);
+  color: var(--ba-native-muted);
+  font-size: 0.95rem;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="result-row"]:hover {
+  background: var(--ba-native-page);
+}
+
 html[data-better-albert-enabled][data-better-albert-readonly-modal-open]
   body
   .ps_modalmask_cover,
@@ -1184,6 +1266,23 @@ html[data-better-albert-enabled]
     grid-column: 1;
   }
 
+  /*
+   * On compact widths the card status pill moves below the course identity and
+   * stretches full-width so the status stays scannable without cramming.
+   */
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-region="result-row"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-region="result-row"]
+    :where(td, [role="cell"]):nth-child(2) {
+    justify-self: stretch;
+    min-width: 0;
+    margin-top: 8px;
+  }
+
   html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
     [data-better-albert-region="form"] {
     grid-template-columns: minmax(0, 1fr);
@@ -1249,6 +1348,16 @@ html[data-better-albert-enabled]
 
   html[data-better-albert-enabled] [data-better-albert-region="directory"] {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /*
+   * Tighten the class-search result cards on handsets so course identity and
+   * status remain readable on a narrow column.
+   */
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-region="result-row"] {
+    padding: 12px 14px;
+    gap: 6px;
   }
 
   html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]

@@ -17,9 +17,31 @@ interface ClassSearchPlan {
   form?: HTMLFormElement;
   groups: readonly Element[];
   results?: Element;
+  resultRows: readonly Element[];
   root: Element;
   title: Element | undefined;
   variant: "fluid" | "legacy";
+}
+
+/**
+ * Collect the native result rows from a results region so each can be marked
+ * as a card. The fluid variant renders ARIA grid rows; the legacy variant
+ * renders table body rows. Header rows / thead are excluded. Read-only: only
+ * gathers live element references, never mutates.
+ */
+function collectResultRows(results: Element | undefined): readonly Element[] {
+  if (!results) {
+    return [];
+  }
+
+  const rows = Array.from(results.querySelectorAll("[role='row']"));
+  if (rows.length > 0) {
+    return rows.filter((row) =>
+      row.querySelector(":scope > [role='cell'], :scope > td"),
+    );
+  }
+
+  return Array.from(results.querySelectorAll("table > tbody > tr, tbody > tr"));
 }
 
 export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
@@ -51,6 +73,7 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
         filter: fluidFilter,
         groups: [],
         results: fluidResults,
+        resultRows: collectResultRows(fluidResults),
         root: fluidRoot,
         title:
           fluidRoot.querySelector(
@@ -99,12 +122,15 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
         ? legacyFilter.parentElement ?? undefined
         : undefined;
 
+    const legacyResultRows = collectResultRows(legacyResults);
+
     return {
       ...(body ? { body } : {}),
       ...(legacyFilter ? { filter: legacyFilter } : {}),
       form: legacyForm,
       groups,
       ...(legacyResults ? { results: legacyResults } : {}),
+      resultRows: legacyResultRows,
       root: legacyRoot,
       title:
         uniqueElement(
@@ -144,6 +170,9 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
       if (plan.results) {
         markRegion(journal, plan.results, "results");
       }
+      for (const row of plan.resultRows) {
+        markRegion(journal, row, "result-row");
+      }
       if (plan.title) {
         markRegion(journal, plan.title, "page-title");
       }
@@ -156,6 +185,7 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
           ...(plan.body ? [plan.body] : []),
           ...(plan.filter ? [plan.filter] : []),
           ...(plan.results ? [plan.results] : []),
+          ...plan.resultRows,
           ...plan.groups,
         ],
       );
