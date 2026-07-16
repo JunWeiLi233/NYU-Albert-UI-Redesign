@@ -441,7 +441,15 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       `family-${family}`,
     );
     await expect(page.locator('[data-better-albert-region="workspace"]')).toHaveCount(1);
-    await expect(page.locator('[data-better-albert-region="directory"]')).not.toHaveCount(0);
+    if (family === "finances") {
+      await expect(
+        page.locator('[data-better-albert-region="directory"]'),
+      ).toHaveCount(0);
+    } else {
+      await expect(
+        page.locator('[data-better-albert-region="directory"]'),
+      ).not.toHaveCount(0);
+    }
     for (const region of expectedRegions[family]) {
       await expect(
         page.locator(`[data-better-albert-region="${region}"]`),
