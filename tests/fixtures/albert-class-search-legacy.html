@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sanitized Enrollment Shopping Cart</title>
+</head>
+<body>
+  <form id="NYU_SSENRL_CART_FL" class="PSForm" action="/native/class-search" method="post">
+    <div id="win0divPSTOOLSHIDDENS" class="ps_box-toolshiddens" hidden></div>
+    <a id="ICFirstAnchor_win0" class="ps-anchor" href="#legacy-main">Skip to main content</a>
+    <div id="PT_WRAPPER" class="ps_wrapper">
+      <header class="ps_box-group">
+        <h1 class="PAPAGETITLE">Add Classes</h1>
+      </header>
+      <main id="legacy-main">
+        <section id="sanitized-search" class="ps_box-group">
+          <div class="ps_box-label"><label class="ps-label" for="subject">Subject</label></div>
+          <div class="ps_box-value"><input id="subject" name="subject" type="text"></div>
+          <div class="ps_box-value"><label><input id="open-only" name="open-only" type="checkbox"> Open only</label></div>
+          <div class="ps_box-value"><label><input id="delivery-in-person" name="delivery" type="radio"> In person</label></div>
+          <div class="ps_box-value"><label for="synthetic-file">Synthetic attachment</label><input id="synthetic-file" name="synthetic-file" type="file"></div>
+          <div class="ps_box-button"><button class="ps-button" type="button">Search</button></div>
+        </section>
+        <section id="sanitized-results" class="ps_box-group">
+          <table aria-label="Sanitized class search results">
+            <thead><tr><th>Class</th><th>Status</th></tr></thead>
+            <tbody><tr><td>TEST-UA 000</td><td>Sanitized</td></tr></tbody>
+          </table>
+        </section>
+        <section id="sanitized-actions" class="ps_box-group">
+          <input type="hidden" name="native_token" value="synthetic-token">
+          <button class="ps-button" type="submit" name="action" value="continue">Continue</button>
+        </section>
+      </main>
+    </div>
+    <a id="ICLastAnchor_win0" class="ps-anchor" href="#legacy-main">Return to main content</a>
+  </form>
+</body>
+</html>

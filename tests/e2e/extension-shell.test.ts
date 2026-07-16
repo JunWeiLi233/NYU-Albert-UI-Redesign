@@ -35,6 +35,10 @@ const classSearchFixturePath = resolve(
   process.cwd(),
   "tests/fixtures/albert-class-search.html",
 );
+const legacyClassSearchFixturePath = resolve(
+  process.cwd(),
+  "tests/fixtures/albert-class-search-legacy.html",
+);
 
 let context: BrowserContext;
 let page: Page;
@@ -42,6 +46,7 @@ let userDataDirectory: string;
 let fixtureHtml: string;
 let deepFixtureHtml: string;
 let classSearchFixtureHtml: string;
+let legacyClassSearchFixtureHtml: string;
 let familyFixtureHtml: {
   academics: string;
   finances: string;
@@ -71,6 +76,10 @@ test.beforeAll(async () => {
   fixtureHtml = await readFile(fixturePath, "utf8");
   deepFixtureHtml = await readFile(deepFixturePath, "utf8");
   classSearchFixtureHtml = await readFile(classSearchFixturePath, "utf8");
+  legacyClassSearchFixtureHtml = await readFile(
+    legacyClassSearchFixturePath,
+    "utf8",
+  );
   familyFixtureHtml = Object.fromEntries(
     await Promise.all(
       ["academics", "grades", "finances", "personal"].map(
@@ -712,6 +721,73 @@ test("themes the proven cross-origin class-search frame and preserves transactio
   );
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
   await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+});
+
+test("redesigns the exact legacy Class Search PSForm without owning its transaction", async () => {
+  await context.route(CLASS_SEARCH_URL, (route) =>
+    route.fulfill({
+      body: legacyClassSearchFixtureHtml,
+      contentType: "text/html; charset=utf-8",
+      headers: { "content-security-policy": "default-src 'none'" },
+    }),
+  );
+  await page.goto(CLASS_SEARCH_URL);
+
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-better-albert-adapter",
+    "class-search",
+  );
+  await expect(
+    page.locator('[data-better-albert-layout="class-search-legacy"]'),
+  ).toHaveCount(1);
+  await expect(page.locator('[data-better-albert-region="group"]')).toHaveCount(4);
+  await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
+  await expect(page.locator("#PT_WRAPPER")).toHaveCSS(
+    "border-top-color",
+    "rgb(87, 6, 140)",
+  );
+  await expect(page.locator(".PAPAGETITLE")).toHaveCSS("font-weight", "900");
+
+  const nativeForm = page.locator("form#NYU_SSENRL_CART_FL.PSForm");
+  const nativeSearch = page.getByRole("button", { name: "Search" });
+  const nativeContinue = page.getByRole("button", { name: "Continue" });
+  await expect(nativeForm).toHaveAttribute("action", "/native/class-search");
+  await expect(nativeForm).toHaveAttribute("method", "post");
+  await expect(nativeForm.locator('[name="native_token"]')).toHaveValue(
+    "synthetic-token",
+  );
+  await expect(page.locator('#subject')).toHaveCSS("min-height", "42px");
+  for (const selector of [
+    '#open-only',
+    '#delivery-in-person',
+    '#synthetic-file',
+  ]) {
+    await expect(page.locator(selector)).not.toHaveCSS("min-height", "42px");
+  }
+  for (const control of [nativeSearch, nativeContinue]) {
+    await expect(control).not.toHaveCSS(
+      "background-color",
+      "rgb(87, 6, 140)",
+    );
+  }
+  await nativeContinue.evaluate((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.body.dataset.nativeTransactionClick = "continue";
+    });
+  });
+  await nativeContinue.click();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-transaction-click",
+    "continue",
+  );
+
+  await page.setViewportSize({ height: 800, width: 400 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    ),
+  ).toBeLessThanOrEqual(0);
 });
 
 test("does not run on public or portal-hosted authentication surfaces", async () => {

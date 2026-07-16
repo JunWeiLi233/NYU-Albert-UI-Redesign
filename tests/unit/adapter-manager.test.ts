@@ -134,6 +134,66 @@ describe("structural adapter manager", () => {
     expect(enroll?.closest("form")).toBe(form);
   });
 
+  it("adapts the exact legacy Class Search form without changing its transaction contract", () => {
+    const document = fixture("tests/fixtures/albert-class-search-legacy.html");
+    const manager = new AdapterManager();
+    const form = document.querySelector<HTMLFormElement>(
+      "form#NYU_SSENRL_CART_FL.PSForm",
+    );
+    const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const before = document.documentElement.outerHTML;
+    const formContract = {
+      action: form?.getAttribute("action"),
+      method: form?.getAttribute("method"),
+      token: form?.querySelector<HTMLInputElement>('[name="native_token"]')?.value,
+    };
+
+    expect(
+      manager.reconcile({
+        document,
+        location: CLASS_SEARCH_LOCATION,
+        pageFamily: "academics",
+        topLevel: false,
+      }),
+    ).toBe("class-search");
+    expect(
+      document.querySelector('[data-better-albert-layout="class-search-legacy"]'),
+    ).toBe(document.querySelector("#PT_WRAPPER"));
+    expect(
+      document.querySelectorAll('[data-better-albert-region="group"]'),
+    ).toHaveLength(4);
+    expect(submit?.closest("form")).toBe(form);
+    expect(form?.getAttribute("action")).toBe(formContract.action);
+    expect(form?.getAttribute("method")).toBe(formContract.method);
+    expect(
+      form?.querySelector<HTMLInputElement>('[name="native_token"]')?.value,
+    ).toBe(formContract.token);
+
+    manager.rollback();
+    expect(document.documentElement.outerHTML).toBe(before);
+  });
+
+  it("fails open when the legacy Class Search root is missing or ambiguous", () => {
+    const document = new DOMParser().parseFromString(
+      `<!doctype html><title>Class Search</title>
+      <form id="NYU_SSENRL_CART_FL" class="PSForm"><div class="ps_box-group"></div></form>
+      <form id="NYU_SSENRL_CART_FL" class="PSForm"><div id="PT_WRAPPER" class="ps_wrapper"><div class="ps_box-group"></div></div></form>`,
+      "text/html",
+    );
+    const before = document.documentElement.outerHTML;
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: CLASS_SEARCH_LOCATION,
+        pageFamily: "academics",
+        topLevel: false,
+      }),
+    ).toBeUndefined();
+    expect(document.documentElement.outerHTML).toBe(before);
+  });
+
   it.each([
     "tests/fixtures/albert-class-search-empty.html",
     "tests/fixtures/albert-class-search-error.html",
