@@ -936,6 +936,60 @@ html[data-better-albert-enabled]
   color: var(--ba-native-ink);
 }
 
+@media (max-width: 399px) {
+  html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+    [data-better-albert-region="workspace"]::before {
+    font-size: clamp(1.5rem, 14vw, 2rem);
+    letter-spacing: -0.035em;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+    [data-better-albert-layout="family-content"]
+    > [data-better-albert-region] {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+    [data-better-albert-layout="peoplesoft-page"]
+    > [data-better-albert-region] {
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    :where(
+      [data-better-albert-layout="class-search"],
+      [data-better-albert-layout="class-search-body"]
+    )
+    > [data-better-albert-region] {
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search-legacy"]
+    input[type="file"] {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html[data-better-albert-enabled] [data-better-albert-region="directory"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-better-albert-enabled] [data-better-albert-region="table"] {
+    display: block;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+}
+
 @media (max-width: 899px) {
   html[data-better-albert-enabled] [data-better-albert-layout="portal-workspace"] {
     padding: 16px 20px 32px;

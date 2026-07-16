@@ -458,7 +458,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
     const currentArea = page.locator(HEADER_HOST_SELECTOR).locator('[aria-current="page"]');
     await expect(currentArea).toHaveCount(1);
 
-    for (const width of [400, 600, 768, 899, 900, 1200, 1440] as const) {
+    for (const width of [200, 400, 600, 768, 899, 900, 1200, 1440] as const) {
       await page.setViewportSize({ height: 900, width });
       const alignment = await page.evaluate(() => {
         const bodyBounds = document.body.getBoundingClientRect();
@@ -526,9 +526,18 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       expect(alignment.bodyLeft).toBe(0);
       expect(alignment.bodyRight).toBe(width);
       expect(alignment.columns).toBe(expectedColumns);
-      expect(alignment.documentOverflow).toBe(0);
-      expect(alignment.overflowRegions).toBe(0);
-      expect(alignment.overlappingRegionPairs).toEqual([]);
+      expect(
+        alignment.documentOverflow,
+        `${family} document overflow at ${width}px`,
+      ).toBe(0);
+      expect(
+        alignment.overflowRegions,
+        `${family} region overflow at ${width}px`,
+      ).toBe(0);
+      expect(
+        alignment.overlappingRegionPairs,
+        `${family} region overlap at ${width}px`,
+      ).toEqual([]);
       expect(alignment.workspaceLeft).toBeGreaterThanOrEqual(
         width >= 900 ? 264 : 0,
       );
@@ -919,12 +928,22 @@ test("themes a sanitized PeopleSoft report modal without replacing its controls"
   await expect(nativeReturn).toBeFocused();
   await nativeReturn.click();
 
-  const dialogBounds = await page.locator("#pt_modals").evaluate((dialog) => {
-    const bounds = dialog.getBoundingClientRect();
-    return { left: bounds.left, right: bounds.right, width: window.innerWidth };
-  });
-  expect(dialogBounds.left).toBeGreaterThanOrEqual(0);
-  expect(dialogBounds.right).toBeLessThanOrEqual(dialogBounds.width);
+  for (const width of [200, 400, 600, 768, 899, 900, 1200, 1440] as const) {
+    await page.setViewportSize({ height: 900, width });
+    await expect(nativeReturn).toBeVisible();
+    const dialogBounds = await page.locator("#pt_modals").evaluate((dialog) => {
+      const bounds = dialog.getBoundingClientRect();
+      return {
+        documentOverflow:
+          document.documentElement.scrollWidth - window.innerWidth,
+        left: bounds.left,
+        right: bounds.right,
+      };
+    });
+    expect(dialogBounds.documentOverflow).toBe(0);
+    expect(dialogBounds.left).toBeGreaterThanOrEqual(0);
+    expect(dialogBounds.right).toBeLessThanOrEqual(width);
+  }
 
   await page.locator(".PTPOPUP_TITLE").evaluate((title) => {
     title.textContent = "Enrollment Error";
@@ -1038,6 +1057,51 @@ test("recognizes and redesigns an explicit student-self-service deep page", asyn
     deepAlignment.viewportWidth,
   );
   expect(deepAlignment.overflowRegions).toBe(0);
+
+  for (const width of [200, 400, 600, 768, 899, 900, 1200, 1440] as const) {
+    await deepPage.setViewportSize({ height: 900, width });
+    const responsiveAlignment = await deepPage.evaluate(() => {
+      const layout = document.querySelector<HTMLElement>(
+        '[data-better-albert-layout="peoplesoft-page"]',
+      );
+      const layoutBounds = layout?.getBoundingClientRect();
+      const form = document.querySelector<HTMLElement>(
+        '[data-better-albert-region="form"]',
+      );
+      const visibleRegions = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-better-albert-region]'),
+      )
+        .map((element) => element.getBoundingClientRect())
+        .filter((bounds) => bounds.width > 0 && bounds.height > 0);
+      return {
+        documentOverflow:
+          document.documentElement.scrollWidth - window.innerWidth,
+        formColumns: form
+          ? getComputedStyle(form).gridTemplateColumns.trim().split(/\s+/).length
+          : 0,
+        layoutLeft: Math.round(layoutBounds?.left ?? -1),
+        layoutRight: Math.round(layoutBounds?.right ?? -1),
+        overflowRegions: visibleRegions.filter(
+          (bounds) => bounds.left < -1 || bounds.right > window.innerWidth + 1,
+        ).length,
+      };
+    });
+    expect(
+      responsiveAlignment.documentOverflow,
+      `deep document overflow at ${width}px`,
+    ).toBe(0);
+    expect(responsiveAlignment.formColumns).toBe(width < 900 ? 1 : 2);
+    expect(responsiveAlignment.layoutLeft).toBeGreaterThanOrEqual(
+      width >= 900 ? 264 : 0,
+    );
+    expect(responsiveAlignment.layoutRight).toBeLessThanOrEqual(width);
+    expect(
+      responsiveAlignment.overflowRegions,
+      `deep region overflow at ${width}px`,
+    ).toBe(0);
+  }
+
+  await deepPage.setViewportSize({ height: 800, width: 1280 });
 
   const deepLocalOverflow = await deepLayout.evaluate((layout) => {
     const probe = document.createElement("div");
@@ -1255,6 +1319,44 @@ test("themes the proven cross-origin class-search frame and preserves transactio
   );
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
   await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+
+  for (const width of [200, 400, 600, 768, 899, 900, 1200, 1440] as const) {
+    await page.setViewportSize({ height: 900, width });
+    const responsiveAlignment = await page.evaluate(() => {
+      const layout = document.querySelector<HTMLElement>(
+        '[data-better-albert-layout="class-search"]',
+      );
+      const layoutBounds = layout?.getBoundingClientRect();
+      const visibleRegions = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-better-albert-region]'),
+      )
+        .map((element) => element.getBoundingClientRect())
+        .filter((bounds) => bounds.width > 0 && bounds.height > 0);
+      return {
+        columns: layout
+          ? getComputedStyle(layout).gridTemplateColumns.trim().split(/\s+/).length
+          : 0,
+        documentOverflow:
+          document.documentElement.scrollWidth - window.innerWidth,
+        layoutLeft: Math.round(layoutBounds?.left ?? -1),
+        layoutRight: Math.round(layoutBounds?.right ?? -1),
+        overflowRegions: visibleRegions.filter(
+          (bounds) => bounds.left < -1 || bounds.right > window.innerWidth + 1,
+        ).length,
+      };
+    });
+    expect(responsiveAlignment.columns).toBe(width < 900 ? 1 : 2);
+    expect(
+      responsiveAlignment.documentOverflow,
+      `fluid Class Search document overflow at ${width}px`,
+    ).toBe(0);
+    expect(responsiveAlignment.layoutLeft).toBeGreaterThanOrEqual(0);
+    expect(responsiveAlignment.layoutRight).toBeLessThanOrEqual(width);
+    expect(
+      responsiveAlignment.overflowRegions,
+      `fluid Class Search region overflow at ${width}px`,
+    ).toBe(0);
+  }
 });
 
 test("redesigns the exact legacy Class Search PSForm without owning its transaction", async () => {
@@ -1321,12 +1423,47 @@ test("redesigns the exact legacy Class Search PSForm without owning its transact
     "continue",
   );
 
-  await page.setViewportSize({ height: 800, width: 400 });
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth - window.innerWidth,
-    ),
-  ).toBeLessThanOrEqual(0);
+  for (const width of [200, 400, 600, 768, 899, 900, 1200, 1440] as const) {
+    await page.setViewportSize({ height: 900, width });
+    const responsiveAlignment = await page.evaluate((viewportWidth) => {
+      const layout = document.querySelector<HTMLElement>(
+        '[data-better-albert-layout="class-search-legacy"]',
+      );
+      const layoutBounds = layout?.getBoundingClientRect();
+      const body = document.querySelector<HTMLElement>(
+        '[data-better-albert-layout="class-search-body"]',
+      );
+      const filter = document.querySelector<HTMLElement>(
+        '[data-better-albert-region="filter"]',
+      );
+      const results = document.querySelector<HTMLElement>(
+        '[data-better-albert-region="results"]',
+      );
+      const filterBounds = filter?.getBoundingClientRect();
+      const resultsBounds = results?.getBoundingClientRect();
+      return {
+        bodyColumns: body
+          ? getComputedStyle(body).gridTemplateColumns.trim().split(/\s+/).length
+          : 0,
+        documentOverflow:
+          document.documentElement.scrollWidth - window.innerWidth,
+        layoutLeft: Math.round(layoutBounds?.left ?? -1),
+        layoutRight: Math.round(layoutBounds?.right ?? -1),
+        stacked:
+          viewportWidth < 900
+            ? (resultsBounds?.top ?? 0) >= (filterBounds?.bottom ?? 0)
+            : true,
+      };
+    }, width);
+    expect(responsiveAlignment.bodyColumns).toBe(width < 900 ? 1 : 2);
+    expect(
+      responsiveAlignment.documentOverflow,
+      `legacy Class Search document overflow at ${width}px`,
+    ).toBe(0);
+    expect(responsiveAlignment.layoutLeft).toBeGreaterThanOrEqual(0);
+    expect(responsiveAlignment.layoutRight).toBeLessThanOrEqual(width);
+    expect(responsiveAlignment.stacked).toBe(true);
+  }
 });
 
 test("does not run on public or portal-hosted authentication surfaces", async () => {

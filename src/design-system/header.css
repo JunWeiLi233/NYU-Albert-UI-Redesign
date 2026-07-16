@@ -444,6 +444,23 @@ button {
   }
 }
 
+@media (max-width: 279px) {
+  .ba-identity-row {
+    flex-wrap: wrap;
+    gap: var(--ba-space-1);
+    padding-inline: var(--ba-space-3);
+  }
+
+  .ba-brand-lockup,
+  .ba-shell-actions {
+    width: 100%;
+  }
+
+  .ba-shell-actions {
+    justify-content: flex-end;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ba-disable-button,
   .ba-nav-item,
