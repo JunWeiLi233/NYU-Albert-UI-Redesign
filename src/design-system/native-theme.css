@@ -150,6 +150,21 @@ html[data-better-albert-enabled]
   background: var(--ba-native-pale-violet);
 }
 
+/*
+ * Hide the oversized native PeopleSoft sprite icons inside the native-navigation
+ * strip. The text labels on the <a> controls are the source of truth for
+ * navigation, focus, and click behavior (verified to live on the <a>, not the
+ * decorative <span>); these 55x50 background-image glyphs overflow the 48px bar
+ * and duplicate the labels. Keeping them visible would violate the text-first,
+ * no-redrawn-icon contract in design.md.
+ */
+html[data-better-albert-enabled]
+  [data-better-albert-region="native-navigation"]
+  a
+  > span {
+  display: none !important;
+}
+
 html[data-better-albert-enabled] [data-better-albert-region="workspace"] {
   box-sizing: border-box;
   min-width: 0;
