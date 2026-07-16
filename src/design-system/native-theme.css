@@ -345,7 +345,38 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
   text-underline-offset: 3px;
 }
 
-html[data-better-albert-enabled] [data-better-albert-region="directory"] {
+/*
+ * Contain wide native tables inside Finances grid columns. The financial-aid
+ * table (.isSSS_FinAidTable) and bursar amounts carry intrinsic widths wider
+ * than the narrow grid column, so they overflowed the workspace. Per design.md,
+ * wide tables scroll inside their marked region while the document itself never
+ * overflows horizontally. min-width:0 lets the grid item shrink; overflow-x:auto
+ * scrolls the table within its column. Table semantics, IDs, and values unchanged.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  :where(
+    [data-better-albert-region="account-section"],
+    [data-better-albert-region="aid-section"]
+  ) {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  :where(.isSSS_FinAidTblWrp, .nyuSSS_Bursar, .nyuSSS_BursarA) {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  float: none !important;
+  overflow-x: auto;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  table {
+  max-width: 100%;
+}
+
+
   display: grid !important;
   grid-column: 1 / -1;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -489,6 +520,37 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
   grid-column: 1 / -1;
 }
 
+/*
+ * Neutralize the legacy native float/fixed-width layout on Personal Info
+ * contact fields. PeopleSoft ships .NYUEmail, .NYUPhone, and .ADDR_TYPE_DESCR
+ * as float:left boxes pinned to ~90px, so contact values overflow the box and
+ * the grid column instead of filling it. Let these flow to full section width
+ * (design.md: aligned labels and values, no document overflow). IDs, values,
+ * and validation remain unchanged.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region]
+  .NYUEmail,
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region]
+  .NYUPhone,
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region]
+  .ADDR_TYPE_DESCR,
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region]
+  .EMAIL_TYPE_DESCR_LONG,
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region]
+  .phonetype_descrLong {
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100%;
+  float: none !important;
+  margin: 0 !important;
+  overflow-wrap: anywhere;
+}
+
 @media (min-width: 1200px) {
   html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
     [data-better-albert-layout="family-content"] {
@@ -546,6 +608,20 @@ html[data-better-albert-enabled] [data-better-albert-region="table"] :where(th, 
 html[data-better-albert-enabled] [data-better-albert-region="table"] :where(td, [role="cell"]) {
   padding: 12px;
   border-bottom: 1px solid var(--ba-native-rule);
+}
+
+/*
+ * Contain wide native tables within whichever section holds them. A marked
+ * table can be intrinsically wider than its grid column (e.g. the Finances
+ * aid table); let its nearest section ancestor scroll horizontally instead of
+ * overflowing the document (design.md: wide tables scroll inside their marked
+ * region; the document must not overflow horizontally).
+ */
+html[data-better-albert-enabled]
+  [data-better-albert-region]
+  > :where(:has(table[data-better-albert-region="table"])) {
+  min-width: 0;
+  overflow-x: auto;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
