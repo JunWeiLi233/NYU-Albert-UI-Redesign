@@ -506,7 +506,7 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
       [data-better-albert-region="emergency-section"],
       [data-better-albert-region="missing-person-section"]
     ) {
-    grid-column: span 2;
+    grid-column: 1 / -1;
   }
 }
 
