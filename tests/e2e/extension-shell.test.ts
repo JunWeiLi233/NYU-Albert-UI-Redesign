@@ -168,7 +168,7 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
       Math.round(element.getBoundingClientRect().width),
     ),
   ).toBe(264);
-  await expect(page.locator("body")).toHaveCSS("padding-left", "264px");
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
   expect(
     await page.locator("body").evaluate((body) => getComputedStyle(body).backgroundColor),
   ).toBe("rgb(247, 247, 247)");
@@ -190,11 +190,13 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
     pageScaleFactor: 1,
   });
 
-  for (const [width, expectedHostWidth, expectedPadding] of [
-    [1440, 264, "264px"],
-    [1200, 264, "264px"],
-    [900, 264, "264px"],
-    [768, 768, "0px"],
+  for (const [width, expectedHostWidth, expectedWorkspaceLeft] of [
+    [1440, 264, 264],
+    [1200, 264, 264],
+    [1199, 264, 264],
+    [900, 264, 264],
+    [899, 899, 0],
+    [768, 768, 0],
   ] as const) {
     await page.setViewportSize({ height: 800, width });
     expect(
@@ -202,7 +204,27 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
         Math.round(element.getBoundingClientRect().width),
       ),
     ).toBe(expectedHostWidth);
-    await expect(page.locator("body")).toHaveCSS("padding-left", expectedPadding);
+    await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+    expect(
+      await page.locator("body").evaluate((body) => {
+        const bounds = body.getBoundingClientRect();
+        return {
+          left: Math.round(bounds.left),
+          right: Math.round(bounds.right),
+        };
+      }),
+    ).toEqual({ left: 0, right: width });
+    expect(
+      await page
+        .locator('[data-better-albert-layout="portal-workspace"]')
+        .evaluate((workspace) => {
+          const bounds = workspace.getBoundingClientRect();
+          return {
+            left: Math.round(bounds.left),
+            right: Math.round(bounds.right),
+          };
+        }),
+    ).toEqual({ left: expectedWorkspaceLeft, right: width });
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth,
@@ -255,6 +277,84 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await devtoolsSession.detach();
 });
 
+test("isolates desktop workspace overflow without obscuring native overlays", async () => {
+  await page.setViewportSize({ height: 800, width: 1440 });
+  await routeSanitizedFixture();
+  await page.goto(PORTAL_URL);
+
+  await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCSS("left", "0px");
+  await expect(page.locator("body")).toHaveCSS("position", "static");
+  await expect(page.locator("body")).toHaveCSS("left", "auto");
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+  await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCSS("z-index", "auto");
+  const portalWorkspace = page.locator(
+    '[data-better-albert-layout="portal-workspace"]',
+  );
+  await expect(portalWorkspace).toHaveCSS("overflow-x", "auto");
+  expect(
+    await portalWorkspace.evaluate((workspace) => {
+      const bounds = workspace.getBoundingClientRect();
+      return { left: Math.round(bounds.left), right: Math.round(bounds.right) };
+    }),
+  ).toEqual({ left: 264, right: 1440 });
+
+  const overlayGeometry = await page.evaluate(() => {
+    const fixedOverlay = document.createElement("div");
+    fixedOverlay.id = "synthetic-fixed-overlay";
+    fixedOverlay.style.cssText =
+      "position:fixed;z-index:1;inset:12px auto auto 18px;width:40px;height:40px;background:#fff;pointer-events:auto";
+    const absoluteOverlay = document.createElement("div");
+    absoluteOverlay.id = "synthetic-absolute-overlay";
+    absoluteOverlay.style.cssText =
+      "position:absolute;inset:24px auto auto 32px;width:40px;height:40px";
+    const overflowProbe = document.createElement("div");
+    overflowProbe.id = "synthetic-overflow-probe";
+    overflowProbe.style.cssText =
+      "width:calc(100% + 264px);height:1px";
+    const workspace = document.querySelector<HTMLElement>(
+      '[data-better-albert-layout="portal-workspace"]',
+    );
+    if (!workspace) {
+      throw new Error("Sanitized portal workspace is unavailable");
+    }
+    document.body.append(fixedOverlay, absoluteOverlay);
+    workspace.append(overflowProbe);
+    return {
+      absoluteLeft: Math.round(absoluteOverlay.getBoundingClientRect().left),
+      fixedLeft: Math.round(fixedOverlay.getBoundingClientRect().left),
+      topElementId: document.elementFromPoint(30, 30)?.id ?? "",
+    };
+  });
+  expect(overlayGeometry).toEqual({
+    absoluteLeft: 32,
+    fixedLeft: 18,
+    topElementId: "synthetic-fixed-overlay",
+  });
+
+  const localOverflow = await portalWorkspace.evaluate((workspace) => {
+    workspace.scrollLeft = workspace.scrollWidth;
+    return {
+      clientWidth: workspace.clientWidth,
+      documentOverflow:
+        document.documentElement.scrollWidth - window.innerWidth,
+      scrollLeft: workspace.scrollLeft,
+      scrollWidth: workspace.scrollWidth,
+    };
+  });
+  expect(localOverflow.scrollWidth).toBeGreaterThan(localOverflow.clientWidth);
+  expect(localOverflow.scrollLeft).toBeGreaterThan(0);
+  expect(localOverflow.documentOverflow).toBe(0);
+
+  await page.mouse.move(1100, 600);
+  await page.mouse.wheel(0, 500);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  expect(
+    await page.locator(HEADER_HOST_SELECTOR).evaluate((host) =>
+      Math.round(host.getBoundingClientRect().top),
+    ),
+  ).toBe(0);
+});
+
 test("applies a distinct full-page adapter to every selected Albert workspace", async () => {
   await routeSanitizedFixture();
   await page.goto(PORTAL_URL);
@@ -268,6 +368,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
   ] as const;
 
   for (const [family, html] of families) {
+    await page.setViewportSize({ height: 800, width: 1280 });
     await page.evaluate((fixtureSource) => {
       const parsed = new DOMParser().parseFromString(fixtureSource, "text/html");
       document.title = parsed.title;
@@ -284,6 +385,99 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
     await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(1);
     const currentArea = page.locator(HEADER_HOST_SELECTOR).locator('[aria-current="page"]');
     await expect(currentArea).toHaveCount(1);
+
+    const desktopAlignment = await page.evaluate(() => {
+      const bodyBounds = document.body.getBoundingClientRect();
+      const workspace = document.querySelector<HTMLElement>(
+        '[data-better-albert-region="workspace"]',
+      );
+      const workspaceBounds = workspace?.getBoundingClientRect();
+      const visibleRegions = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-better-albert-region]'),
+      )
+        .map((element) => element.getBoundingClientRect())
+        .filter((bounds) => bounds.width > 0 && bounds.height > 0);
+
+      return {
+        bodyLeft: Math.round(bodyBounds.left),
+        bodyRight: Math.round(bodyBounds.right),
+        columns: workspace
+          ? getComputedStyle(workspace).gridTemplateColumns.trim().split(/\s+/)
+              .length
+          : 0,
+        documentOverflow:
+          document.documentElement.scrollWidth - window.innerWidth,
+        overflowRegions: visibleRegions.filter(
+          (bounds) => bounds.left < -1 || bounds.right > window.innerWidth + 1,
+        ).length,
+        workspaceLeft: Math.round(workspaceBounds?.left ?? -1),
+        workspaceRight: Math.round(workspaceBounds?.right ?? -1),
+      };
+    });
+    expect(desktopAlignment).toEqual({
+      bodyLeft: 0,
+      bodyRight: 1280,
+      columns: 2,
+      documentOverflow: 0,
+      overflowRegions: 0,
+      workspaceLeft: expect.any(Number),
+      workspaceRight: expect.any(Number),
+    });
+    expect(desktopAlignment.workspaceLeft).toBeGreaterThanOrEqual(264);
+    expect(desktopAlignment.workspaceRight).toBeLessThanOrEqual(1280);
+
+    for (const [width, expectedColumns, minimumWorkspaceLeft] of [
+      [900, 2, 264],
+      [899, 1, 0],
+    ] as const) {
+      await page.setViewportSize({ height: 800, width });
+      const boundaryAlignment = await page.evaluate(() => {
+        const workspace = document.querySelector<HTMLElement>(
+          '[data-better-albert-region="workspace"]',
+        );
+        const bounds = workspace?.getBoundingClientRect();
+        return {
+          columns: workspace
+            ? getComputedStyle(workspace).gridTemplateColumns.trim().split(/\s+/)
+                .length
+            : 0,
+          documentOverflow:
+            document.documentElement.scrollWidth - window.innerWidth,
+          workspaceLeft: Math.round(bounds?.left ?? -1),
+          workspaceRight: Math.round(bounds?.right ?? -1),
+        };
+      });
+      expect(boundaryAlignment.columns).toBe(expectedColumns);
+      expect(boundaryAlignment.documentOverflow).toBe(0);
+      expect(boundaryAlignment.workspaceLeft).toBeGreaterThanOrEqual(
+        minimumWorkspaceLeft,
+      );
+      expect(boundaryAlignment.workspaceRight).toBeLessThanOrEqual(width);
+    }
+
+    await page.setViewportSize({ height: 800, width: 768 });
+    const mobileAlignment = await page.evaluate(() => {
+      const bodyBounds = document.body.getBoundingClientRect();
+      const workspace = document.querySelector<HTMLElement>(
+        '[data-better-albert-region="workspace"]',
+      );
+      return {
+        bodyLeft: Math.round(bodyBounds.left),
+        bodyRight: Math.round(bodyBounds.right),
+        columns: workspace
+          ? getComputedStyle(workspace).gridTemplateColumns.trim().split(/\s+/)
+              .length
+          : 0,
+        documentOverflow:
+          document.documentElement.scrollWidth - window.innerWidth,
+      };
+    });
+    expect(mobileAlignment).toEqual({
+      bodyLeft: 0,
+      bodyRight: 768,
+      columns: 1,
+      documentOverflow: 0,
+    });
   }
 });
 
@@ -343,9 +537,27 @@ test("persists disablement and remounts when the local preference is enabled", a
     "data-better-albert-enabled",
     "",
   );
+  await expect(page.locator("body")).toHaveCSS("position", "static");
+  await expect(page.locator("body")).toHaveCSS("left", "auto");
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+  const disabledBodyGeometry = await page.locator("body").evaluate((body) => {
+    const bounds = body.getBoundingClientRect();
+    return {
+      clientWidth: document.documentElement.clientWidth,
+      left: Math.round(bounds.left),
+      right: Math.round(bounds.right),
+    };
+  });
+  expect(disabledBodyGeometry.left).toBeLessThan(264);
+  expect(disabledBodyGeometry.right).toBeLessThanOrEqual(
+    disabledBodyGeometry.clientWidth,
+  );
 
   await page.reload();
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
+  await expect(page.locator("body")).toHaveCSS("position", "static");
+  await expect(page.locator("body")).toHaveCSS("left", "auto");
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
 
   const worker = await extensionWorker();
   await worker.evaluate(
@@ -353,6 +565,14 @@ test("persists disablement and remounts when the local preference is enabled", a
     { key: ENABLED_PREFERENCE_KEY },
   );
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(1);
+  await expect(page.locator("body")).toHaveCSS("position", "static");
+  await expect(page.locator("body")).toHaveCSS("left", "auto");
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+  expect(
+    await page
+      .locator('[data-better-albert-layout="portal-workspace"]')
+      .evaluate((workspace) => Math.round(workspace.getBoundingClientRect().left)),
+  ).toBe(264);
 });
 
 test("remounts after PeopleSoft removes the extension host and keeps native controls usable", async () => {
@@ -450,7 +670,9 @@ test("themes a sanitized PeopleSoft report modal without replacing its controls"
     "visibility",
     "visible",
   );
-  await expect(page.locator("body")).toHaveCSS("padding-left", "264px");
+  await expect(page.locator("body")).toHaveCSS("position", "static");
+  await expect(page.locator("body")).toHaveCSS("left", "auto");
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
   await page.locator("#pt_modalMaskCover, #pt_modals").evaluateAll((elements) => {
     for (const element of elements) {
       element.removeAttribute("hidden");
@@ -469,6 +691,8 @@ test("themes a sanitized PeopleSoft report modal without replacing its controls"
     "hidden",
   );
   await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+  await expect(page.locator("body")).toHaveCSS("position", "static");
+  await expect(page.locator("body")).toHaveCSS("left", "auto");
   await expect(page.locator(".ptpopuptitlebar")).toHaveCSS(
     "background-color",
     "rgb(87, 6, 140)",
@@ -519,13 +743,15 @@ test("themes a sanitized PeopleSoft report modal without replacing its controls"
     "visibility",
     "visible",
   );
-  await expect(page.locator("body")).toHaveCSS("padding-left", "264px");
+  await expect(page.locator("body")).toHaveCSS("position", "static");
+  await expect(page.locator("body")).toHaveCSS("left", "auto");
+  await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
 });
 
 test("recognizes and redesigns an explicit student-self-service deep page", async () => {
   const shellWithDeepPageLink = fixtureHtml.replace(
-    "</body>",
-    `<a id="sanitized-deep-page" href="${DEEP_PAGE_URL}" target="_blank" rel="opener">Open sanitized deep page</a></body>`,
+    "</main>",
+    `<a id="sanitized-deep-page" href="${DEEP_PAGE_URL}" target="_blank" rel="opener">Open sanitized deep page</a></main>`,
   );
   await context.route(PORTAL_URL, (route) =>
     route.fulfill({
@@ -561,6 +787,57 @@ test("recognizes and redesigns an explicit student-self-service deep page", asyn
     "display",
     "grid",
   );
+  const deepLayout = deepPage.locator(
+    '[data-better-albert-layout="peoplesoft-page"]',
+  );
+  await expect(deepLayout).toHaveCSS("overflow-x", "auto");
+  const deepAlignment = await deepPage.evaluate(() => {
+    const layout = document.querySelector<HTMLElement>(
+      '[data-better-albert-layout="peoplesoft-page"]',
+    );
+    const layoutBounds = layout?.getBoundingClientRect();
+    const visibleRegions = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-better-albert-region]'),
+    )
+      .map((element) => element.getBoundingClientRect())
+      .filter((bounds) => bounds.width > 0 && bounds.height > 0);
+    return {
+      documentOverflow:
+        document.documentElement.scrollWidth - window.innerWidth,
+      layoutLeft: Math.round(layoutBounds?.left ?? -1),
+      layoutRight: Math.round(layoutBounds?.right ?? -1),
+      overflowRegions: visibleRegions.filter(
+        (bounds) => bounds.left < -1 || bounds.right > window.innerWidth + 1,
+      ).length,
+      viewportWidth: window.innerWidth,
+    };
+  });
+  expect(deepAlignment.documentOverflow).toBe(0);
+  expect(deepAlignment.layoutLeft).toBeGreaterThanOrEqual(264);
+  expect(deepAlignment.layoutRight).toBeLessThanOrEqual(
+    deepAlignment.viewportWidth,
+  );
+  expect(deepAlignment.overflowRegions).toBe(0);
+
+  const deepLocalOverflow = await deepLayout.evaluate((layout) => {
+    const probe = document.createElement("div");
+    probe.id = "synthetic-deep-overflow-probe";
+    probe.style.cssText = "grid-column:1/-1;width:1400px;height:1px";
+    layout.append(probe);
+    layout.scrollLeft = layout.scrollWidth;
+    return {
+      clientWidth: layout.clientWidth,
+      documentOverflow:
+        document.documentElement.scrollWidth - window.innerWidth,
+      scrollLeft: layout.scrollLeft,
+      scrollWidth: layout.scrollWidth,
+    };
+  });
+  expect(deepLocalOverflow.scrollWidth).toBeGreaterThan(
+    deepLocalOverflow.clientWidth,
+  );
+  expect(deepLocalOverflow.scrollLeft).toBeGreaterThan(0);
+  expect(deepLocalOverflow.documentOverflow).toBe(0);
   await expect(deepPage.locator(".ps_box-pagetitle")).toHaveCSS("font-weight", "900");
   const nativePlannerForm = deepPage.locator('form[action="/native/planner"]');
   await expect(nativePlannerForm).toHaveAttribute("method", "post");
@@ -669,6 +946,43 @@ test("themes the proven cross-origin class-search frame and preserves transactio
     "background-color",
     "rgb(238, 230, 243)",
   );
+  await expect(classSearch.locator("html")).not.toHaveAttribute(
+    "data-better-albert-top-level",
+    "",
+  );
+  await classSearch.locator("body").evaluate((body) => {
+    body.style.paddingLeft = "37px";
+    const dialog = document.createElement("div");
+    dialog.id = "synthetic-child-dialog";
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-label", "Synthetic child dialog");
+    dialog.textContent = "Sanitized dialog placeholder";
+    body.append(dialog);
+  });
+  await expect(classSearch.locator("html")).toHaveAttribute(
+    "data-better-albert-native-modal-open",
+    "",
+  );
+  await expect(classSearch.locator("body")).toHaveCSS("padding-left", "37px");
+  expect(
+    await classSearch.locator("body").evaluate((body) => {
+      const bounds = body.getBoundingClientRect();
+      return {
+        left: Math.round(bounds.left),
+        right: Math.round(bounds.right),
+        viewportWidth: window.innerWidth,
+      };
+    }),
+  ).toEqual({ left: 0, right: 1000, viewportWidth: 1000 });
+  await classSearch.locator("#synthetic-child-dialog").evaluate((dialog) => {
+    dialog.remove();
+  });
+  await expect(classSearch.locator("html")).not.toHaveAttribute(
+    "data-better-albert-native-modal-open",
+    "",
+  );
+  await expect(classSearch.locator("body")).toHaveCSS("padding-left", "37px");
+
   const addToCart = classSearch.getByRole("button", { name: "Add to Cart" });
   const enroll = classSearch.getByRole("button", { name: "Enroll" });
   await expect(addToCart).toBeVisible();

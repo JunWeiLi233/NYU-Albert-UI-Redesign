@@ -26,12 +26,36 @@ html[data-better-albert-enabled] body {
 @media (min-width: 900px) {
   html[data-better-albert-enabled][data-better-albert-top-level] body {
     min-height: 100vh;
-    padding-left: var(--ba-native-rail) !important;
+    padding-left: 0 !important;
   }
 
-  html[data-better-albert-enabled][data-better-albert-native-modal-open]
-    body {
-    padding-left: 0 !important;
+  html[data-better-albert-enabled][data-better-albert-top-level]
+    [data-better-albert-layout="portal-workspace"] {
+    width: min(calc(100% - var(--ba-native-rail)), 1600px) !important;
+    max-width: calc(100% - var(--ba-native-rail)) !important;
+    margin-left: max(
+      var(--ba-native-rail),
+      calc((100% - 1600px + var(--ba-native-rail)) / 2)
+    ) !important;
+    margin-right: 0 !important;
+    overflow-x: auto;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-top-level][data-better-albert-adapter="peoplesoft-deep"]
+    [data-better-albert-layout="peoplesoft-page"],
+  html[data-better-albert-enabled][data-better-albert-top-level][data-better-albert-adapter="albert-workspace"]
+    [data-better-albert-layout="generic-workspace"] {
+    width: min(
+      calc(100% - var(--ba-native-rail) - 64px),
+      1440px
+    ) !important;
+    max-width: calc(100% - var(--ba-native-rail) - 64px) !important;
+    margin-left: max(
+      calc(var(--ba-native-rail) + 32px),
+      calc((100% - 1440px + var(--ba-native-rail)) / 2)
+    ) !important;
+    margin-right: 32px !important;
+    overflow-x: auto;
   }
 }
 

@@ -65,7 +65,6 @@ export function mountHeader({
   host.id = HEADER_HOST_ID;
   host.style.display = "block";
   host.style.isolation = "isolate";
-  host.style.zIndex = "2147483000";
 
   let root: Root | undefined;
 
