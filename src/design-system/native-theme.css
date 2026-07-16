@@ -23,10 +23,42 @@ html[data-better-albert-enabled] body {
   font-family: var(--ba-native-font);
 }
 
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  :where(#NYU_ALBERT_LOGO, #IS_BB_HEADER_MENU) {
+  display: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  :where(#ptbr_header_container, #NYU_DEFAULT_HEADER, #Header_Container) {
+  box-sizing: border-box;
+  width: 100% !important;
+  min-height: 60px !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  :where(#Header_Container, #IS_BB_HEADER_WRAPPER) {
+  max-width: 100% !important;
+  margin-left: 0 !important;
+}
+
 @media (min-width: 900px) {
   html[data-better-albert-enabled][data-better-albert-top-level] body {
     min-height: 100vh;
     padding-left: 0 !important;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-compact-header]
+    :where(#ptbr_header_container, #NYU_DEFAULT_HEADER, #Header_Container) {
+    height: 60px !important;
+    max-height: 60px !important;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-compact-header]
+    #Header_Container {
+    width: calc(100% - var(--ba-native-rail)) !important;
+    margin-left: var(--ba-native-rail) !important;
   }
 
   html[data-better-albert-enabled][data-better-albert-top-level]
@@ -128,10 +160,10 @@ html[data-better-albert-enabled] [data-better-albert-region="workspace"] {
 
 html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
   [data-better-albert-region="workspace"] {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.85fr);
-  gap: 24px;
-  align-items: start;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100%;
+  margin: 0 !important;
   padding: 32px !important;
   border-top: 6px solid var(--ba-native-violet);
   background: var(--ba-native-surface);
@@ -139,7 +171,8 @@ html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
 
 html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
   [data-better-albert-region="workspace"]::before {
-  grid-column: 1 / -1;
+  display: block;
+  margin-bottom: 24px;
   padding-bottom: 24px;
   border-bottom: 1px solid var(--ba-native-rule);
   color: var(--ba-native-ink);
@@ -151,21 +184,60 @@ html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
-  [data-better-albert-region="workspace"] > * {
+  [data-better-albert-region="workspace"][data-better-albert-layout="family-content"]::before {
+  grid-column: 1 / -1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-layout="family-content-container"] {
+  display: block !important;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-layout="family-content"] {
+  display: grid !important;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.85fr);
+  gap: 24px;
+  clear: both;
+  align-items: start;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-layout="family-content"] > * {
   min-width: 0;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
-  [data-better-albert-region="workspace"] > :where(button, form) {
+  [data-better-albert-layout="family-content"] > [data-better-albert-region] {
+  width: 100% !important;
+  max-width: 100%;
+  float: none !important;
+  margin: 0 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-layout="family-content"] > :where(button, form) {
   grid-column: 1 / -1;
+  float: none !important;
   justify-self: start;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
-  [data-better-albert-region="workspace"],
-html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
-  [data-better-albert-region="workspace"] {
+  [data-better-albert-layout="family-content"] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  [data-better-albert-layout="family-content"] {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
@@ -184,6 +256,12 @@ html[data-better-albert-enabled] [data-better-albert-region="directory"] {
   margin: 0 !important;
   border: 1px solid var(--ba-native-rule);
   background: var(--ba-native-rule);
+}
+
+html[data-better-albert-enabled] [data-better-albert-region="directory-section"] {
+  grid-column: 1 / -1;
+  min-width: 0;
+  max-width: 100%;
 }
 
 html[data-better-albert-enabled] [data-better-albert-region="directory-group"] {
@@ -514,20 +592,20 @@ html[data-better-albert-enabled]
   }
 
   html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
-    [data-better-albert-region="workspace"],
-  html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
-    [data-better-albert-region="workspace"],
-  html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
     [data-better-albert-region="workspace"] {
-    grid-template-columns: minmax(0, 1fr);
     padding: 24px !important;
   }
 
   html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
-    [data-better-albert-region="workspace"]::before,
+    [data-better-albert-layout="family-content"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+    [data-better-albert-layout="family-content"] > [data-better-albert-region],
   html[data-better-albert-enabled] [data-better-albert-region="directory"],
   html[data-better-albert-enabled] [data-better-albert-region="table"] {
-    grid-column: 1;
+    grid-column: 1 !important;
   }
 
   html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
