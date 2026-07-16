@@ -279,6 +279,33 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
   grid-column: 2;
 }
 
+/*
+ * Contain the Home attention panels (To Do / Holds / Enrollment Dates).
+ * PeopleSoft lays these out as three .nyuSSS_ThirdW float:left boxes pinned
+ * to ~80px inside an .NYU_same_height_width flex row; their content (e.g.
+ * "Enrollment Dates") is intrinsically wider than 80px, so the row overflowed.
+ * Stack the panels full-width inside the narrow attention column so each panel
+ * fills the section instead of overflowing (design.md: no document overflow;
+ * source order and native control identity preserved).
+ */
+html[data-better-albert-enabled]
+  [data-better-albert-region="attention-section"]
+  .NYU_same_height_width {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100%;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="attention-section"]
+  .nyuSSS_ThirdW {
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100%;
+  float: none !important;
+  margin: 0 !important;
+}
+
 html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
   :where(
     [data-better-albert-region="enrollment-section"],
@@ -369,6 +396,28 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
   max-width: 100%;
   float: none !important;
   overflow-x: auto;
+}
+
+/*
+ * The bursar header's "View Bursar Balance" button (.nyuSSS_Bursarbtn) ships
+ * with a native fixed 350px width, which overflowed the narrow account column.
+ * Let the button size to its label so it fits its section (design.md: native
+ * controls keep their behavior; only presentation is aligned). Click target and
+ * label are unchanged.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  .nyuSSS_Bursarbtn {
+  box-sizing: border-box;
+  width: auto !important;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  .nyuSSS_BursarHeader {
+  box-sizing: border-box;
+  max-width: 100%;
+  float: none !important;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
