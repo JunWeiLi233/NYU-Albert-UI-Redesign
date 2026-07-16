@@ -26,9 +26,19 @@ This repository is a Manifest V3 Chromium extension built with React, TypeScript
 
 Before handing off a change, run test, lint, typecheck, build, and relevant E2E coverage.
 
+## Architecture Boundaries
+
+- Adapters are reversible: implement `StructuralAdapter` from `src/adapters/types.ts` — `prepare()` probes the DOM and returns a plan or `undefined`; `apply()` mutates and returns an `AdapterSession` exposing `rollback()` and `isStale()`. Never mutate the DOM in `prepare()`. The `AdapterManager` runs adapters by descending `priority`, rolls back on any thrown error, and never reuses a session — always produce a fresh one per `reconcile()`.
+- The content script runs `all_frames: true` on `document_idle`. `src/content/bootstrap.ts` distinguishes top-level windows from iframes/popovers and infers Albert context from related documents only via `getRelatedAlbertContext()` — cross-origin parents/openers are caught and treated as untrusted.
+- Fail-open is mandatory: any error in mount/lifecycle must remove the header (`removeMountedHeader`) and native theme (`removeNativeTheme`) so the user is never left with a half-applied UI. Preserve native DOM identity, form ownership, events, and validation; never destroy or re-create native controls.
+- Only the manifest grants authority. Do not broaden host permissions beyond `https://sis.portal.nyu.edu/*` and the Class Search route, and do not add permissions, telemetry, or undocumented API calls without evidence.
+- Storage is limited to the single boolean enable/disable preference in `src/storage/preferences.ts`. Do not introduce new persisted state.
+
 ## Coding Style & Naming Conventions
 
 Use two-space indentation, ES modules, strict TypeScript, and small single-purpose functions. Follow existing naming patterns: React components use PascalCase (`AppShell.tsx`), helpers use kebab-case, adapters end in `.adapter.ts`, and tests end in `.test.ts` or `.test.tsx`. Prefer existing utilities and extension-owned `data-better-albert-*` attributes over new abstractions. Run ESLint instead of applying manual style exceptions.
+
+`tsconfig.json` enables several unforgiving flags — `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `noUnusedLocals`, and `noUnusedParameters`. `noUncheckedIndexedAccess` means array/object indexing returns `T | undefined` and must be narrowed before use; spread conditionally (`...(value ? { key: value } : {})`) rather than assigning `undefined` when a property is optional.
 
 ## Testing Guidelines
 
