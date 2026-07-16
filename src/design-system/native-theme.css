@@ -346,6 +346,101 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   grid-column: 2;
 }
 
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"] {
+  box-sizing: border-box;
+  width: min(calc(100% - 48px), 1440px);
+  max-width: 100%;
+  margin: 24px auto;
+  padding: 32px;
+  border-top: 6px solid var(--ba-native-violet);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="page-title"] {
+  margin: 0 0 24px;
+  padding: 0 0 20px;
+  border-bottom: 1px solid var(--ba-native-rule);
+  color: var(--ba-native-ink);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="group"] {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin-block: 16px;
+  padding: 20px;
+  border: 1px solid var(--ba-native-rule);
+  background: var(--ba-native-page);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  :where(.ps_box-label, .ps-label) {
+  color: var(--ba-native-ink);
+  font-weight: 800;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  :where(
+    input:not([type]),
+    input[type="text"],
+    input[type="search"],
+    input[type="email"],
+    input[type="url"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="week"],
+    select,
+    textarea
+  ) {
+  box-sizing: border-box;
+  min-height: 42px;
+  max-width: 100%;
+  border: 1px solid var(--ba-native-rule-strong);
+  border-radius: 2px;
+  background: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  table {
+  width: 100%;
+  max-width: 100%;
+  border-spacing: 0;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  :where(th, .ps_grid-header, .ps_grid-head) {
+  padding: 12px;
+  background: var(--ba-native-pale-violet);
+  color: var(--ba-native-ink);
+  font-weight: 900;
+  text-align: left;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ba-native-rule);
+}
+
 html[data-better-albert-enabled] body .ps_modalmask_cover,
 html[data-better-albert-enabled] body .ps_modalmask {
   background: rgb(11 11 11 / 62%);
@@ -416,7 +511,9 @@ html[data-better-albert-enabled]
   html[data-better-albert-enabled][data-better-albert-adapter="albert-workspace"]
     [data-better-albert-layout="generic-workspace"],
   html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
-    [data-better-albert-layout="class-search"] {
+    [data-better-albert-layout="class-search"],
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search-legacy"] {
     width: min(calc(100% - 32px), 100%);
     margin: 16px auto;
     grid-template-columns: minmax(0, 1fr);
@@ -453,7 +550,9 @@ html[data-better-albert-enabled]
   html[data-better-albert-enabled][data-better-albert-adapter="albert-workspace"]
     [data-better-albert-layout="generic-workspace"],
   html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
-    [data-better-albert-layout="class-search"] {
+    [data-better-albert-layout="class-search"],
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search-legacy"] {
     width: calc(100% - 24px);
     padding: 20px;
   }

@@ -9,6 +9,7 @@ const fixtureFiles = [
   "tests/fixtures/albert-class-search.html",
   "tests/fixtures/albert-class-search-empty.html",
   "tests/fixtures/albert-class-search-error.html",
+  "tests/fixtures/albert-class-search-legacy.html",
   "tests/fixtures/families/academics.html",
   "tests/fixtures/families/grades.html",
   "tests/fixtures/families/finances.html",
