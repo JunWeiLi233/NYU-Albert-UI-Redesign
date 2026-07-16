@@ -28,6 +28,18 @@ describe("page-family native tools", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
+  it("preserves native tool handlers while blocking javascript URL evaluation", () => {
+    const search = document.querySelector<HTMLAnchorElement>('a[href="#search"]');
+    search?.setAttribute("href", "javascript:void(0)");
+    const click = vi.fn((event: Event) => {
+      expect(event.defaultPrevented).toBe(true);
+    });
+    search?.addEventListener("click", click);
+
+    expect(openNativePageTool(document, "home", "course-search")).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
   it("does not expose transaction labels or same-label links outside tool containers", () => {
     expect(
       getAvailablePageTools(document, "finances").map(({ label }) => label),

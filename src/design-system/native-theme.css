@@ -235,6 +235,13 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  [data-better-albert-layout="family-content"],
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-layout="family-content"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
   [data-better-albert-layout="family-content"] {
   grid-template-columns: minmax(0, 1fr);
@@ -245,6 +252,48 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
 html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
   [data-better-albert-region="table"] {
   grid-column: 1 / -1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"] {
+  grid-column: 1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="attention-section"] {
+  grid-column: 2;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  :where(
+    [data-better-albert-region="enrollment-section"],
+    [data-better-albert-region="home-tools"]
+  ),
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  :where(
+    [data-better-albert-region="enrollment-section"],
+    [data-better-albert-region="graduation-section"]
+  ),
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  :where(
+    [data-better-albert-region="reports-directory"],
+    [data-better-albert-region="term-selector"],
+    [data-better-albert-region="term-navigation"],
+    [data-better-albert-region="record-section"]
+  ),
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region="profile-directory"] {
+  grid-column: 1 / -1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  [data-better-albert-region="account-section"] {
+  grid-column: 1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  [data-better-albert-region="aid-section"] {
+  grid-column: 2;
 }
 
 html[data-better-albert-enabled] [data-better-albert-region="directory"] {
@@ -289,8 +338,32 @@ html[data-better-albert-enabled] [data-better-albert-region="directory-item"] :w
   text-underline-offset: 3px;
 }
 
-html[data-better-albert-enabled] [data-better-albert-region="primary-section"],
-html[data-better-albert-enabled] [data-better-albert-region="supporting-section"] {
+html[data-better-albert-enabled]
+  :where(
+    [data-better-albert-region="primary-section"],
+    [data-better-albert-region="supporting-section"],
+    [data-better-albert-region="schedule-section"],
+    [data-better-albert-region="attention-section"],
+    [data-better-albert-region="enrollment-section"],
+    [data-better-albert-region="planning-section"],
+    [data-better-albert-region="degree-section"],
+    [data-better-albert-region="graduation-section"],
+    [data-better-albert-region="reports-directory"],
+    [data-better-albert-region="term-selector"],
+    [data-better-albert-region="term-navigation"],
+    [data-better-albert-region="record-section"],
+    [data-better-albert-region="account-section"],
+    [data-better-albert-region="aid-section"],
+    [data-better-albert-region="profile-directory"],
+    [data-better-albert-region="contact-section"],
+    [data-better-albert-region="address-section"],
+    [data-better-albert-region="phone-section"],
+    [data-better-albert-region="email-section"],
+    [data-better-albert-region="emergency-section"],
+    [data-better-albert-region="missing-person-section"],
+    [data-better-albert-region="citizenship-section"],
+    [data-better-albert-region="identifier-section"]
+  ) {
   box-sizing: border-box;
   min-width: 0;
   padding: 20px;
@@ -298,8 +371,88 @@ html[data-better-albert-enabled] [data-better-albert-region="supporting-section"
   background: var(--ba-native-surface);
 }
 
-html[data-better-albert-enabled] [data-better-albert-region="primary-section"] {
+html[data-better-albert-enabled]
+  :where(
+    [data-better-albert-region="primary-section"],
+    [data-better-albert-region="attention-section"],
+    [data-better-albert-region="planning-section"],
+    [data-better-albert-region="account-section"],
+    [data-better-albert-region="profile-directory"]
+  ) {
   border-top: 5px solid var(--ba-native-violet);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-layout="family-content"]
+  :where(h1, h2, h3):first-child {
+  margin-top: 0;
+  color: var(--ba-native-ink);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-layout="family-content"]
+  :where(input:not([type="hidden"]), select, textarea) {
+  box-sizing: border-box;
+  min-height: 42px;
+  max-width: 100%;
+  border: 1px solid var(--ba-native-rule-strong);
+  border-radius: 2px;
+  background: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-layout="family-content"]
+  :where([role="alert"], [role="status"], .PSERROR, .PSMESSAGE) {
+  max-width: 100%;
+  padding: 12px 16px;
+  border-left: 5px solid currentcolor;
+  background: var(--ba-native-page);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-layout="family-content"]
+  form {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(8rem, 0.4fr) minmax(0, 1fr);
+  gap: 12px 16px;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ba-native-rule);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-layout="family-content"]
+  form
+  > :where(label, input:not([type="hidden"]), select, textarea) {
+  min-width: 0;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-layout="family-content"]
+  form
+  > :where([role="alert"], .PSERROR, .PSMESSAGE) {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 1200px) {
+  html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+    [data-better-albert-layout="family-content"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+    :where(
+      [data-better-albert-region="emergency-section"],
+      [data-better-albert-region="missing-person-section"]
+    ) {
+    grid-column: span 2;
+  }
 }
 
 html[data-better-albert-enabled] [data-better-albert-region="table"] {
@@ -369,9 +522,101 @@ html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
   [data-better-albert-region="table"],
 html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
   [data-better-albert-region="alert"],
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="breadcrumbs"],
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="action-area"],
 html[data-better-albert-enabled][data-better-albert-adapter="albert-workspace"]
   [data-better-albert-layout="generic-workspace"] > * {
   grid-column: 1 / -1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="breadcrumbs"] {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ba-native-rule);
+  color: var(--ba-native-muted);
+  font-size: 0.875rem;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="breadcrumbs"] a {
+  color: var(--ba-native-violet);
+  font-weight: 800;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="form"] {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(10rem, 0.35fr) minmax(0, 1fr);
+  gap: 12px 20px;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid var(--ba-native-rule);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="form"]
+  > :where(label, .ps-label, .ps_box-label) {
+  grid-column: 1;
+  color: var(--ba-native-ink);
+  font-weight: 800;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="form"]
+  > :where(
+    input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    select,
+    textarea,
+    .ps_box-value,
+    .ps_box-control
+  ) {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 42px;
+  max-width: 100%;
+  grid-column: 2;
+  border-color: var(--ba-native-rule-strong);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="form"]
+  > :where([role="alert"], .PSERROR, .PSMESSAGE),
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="action-area"] {
+  grid-column: 1 / -1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="form"]
+  > :where(button, .PSPUSHBUTTON) {
+  grid-column: 2;
+  justify-self: start;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="alert"] {
+  min-width: 0;
+  padding: 12px 16px;
+  border-left: 5px solid currentcolor;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-region="action-area"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--ba-native-rule);
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
@@ -485,6 +730,52 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-body"] {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-body"]
+  > [data-better-albert-region="filter"] {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-body"]
+  > :where(
+    [data-better-albert-region="results"],
+    [data-better-albert-region="group"]
+  ) {
+  grid-column: 2;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-body"]
+  > :where(
+    [data-better-albert-region="filter"],
+    [data-better-albert-region="results"]
+  ) {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--ba-native-rule);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-body"]
+  > [data-better-albert-region="results"] {
+  overflow-x: auto;
+  background: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   [data-better-albert-layout="class-search-legacy"]
   :where(.ps_box-label, .ps-label) {
   color: var(--ba-native-ink);
@@ -543,8 +834,12 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   border-bottom: 1px solid var(--ba-native-rule);
 }
 
-html[data-better-albert-enabled] body .ps_modalmask_cover,
-html[data-better-albert-enabled] body .ps_modalmask {
+html[data-better-albert-enabled][data-better-albert-readonly-modal-open]
+  body
+  .ps_modalmask_cover,
+html[data-better-albert-enabled][data-better-albert-readonly-modal-open]
+  body
+  .ps_modalmask {
   background: rgb(11 11 11 / 62%);
 }
 
@@ -638,6 +933,49 @@ html[data-better-albert-enabled]
     ) {
     grid-column: 1;
   }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+    [data-better-albert-region="form"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+    [data-better-albert-region="form"]
+    > :where(
+      label,
+      .ps-label,
+      .ps_box-label,
+      input:not([type="hidden"]),
+      select,
+      textarea,
+      .ps_box-value,
+      .ps_box-control,
+      [role="alert"],
+      .PSERROR,
+      .PSMESSAGE,
+      button,
+      .PSPUSHBUTTON
+    ),
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search-body"]
+    > :where(
+      [data-better-albert-region="filter"],
+      [data-better-albert-region="results"],
+      [data-better-albert-region="group"]
+    ) {
+    grid-column: 1;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search-body"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search-body"]
+    > [data-better-albert-region="filter"] {
+    grid-row: auto;
+  }
 }
 
 @media (max-width: 599px) {
@@ -661,6 +999,19 @@ html[data-better-albert-enabled]
 
   html[data-better-albert-enabled] [data-better-albert-region="directory"] {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+    [data-better-albert-layout="family-content"]
+    form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+    [data-better-albert-layout="family-content"]
+    form
+    > * {
+    grid-column: 1;
   }
 }
 

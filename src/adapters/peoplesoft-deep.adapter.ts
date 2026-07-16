@@ -12,7 +12,9 @@ import {
 import type { AdapterContext, StructuralAdapter } from "./types";
 
 interface DeepPagePlan {
+  actionAreas: readonly Element[];
   alerts: readonly Element[];
+  breadcrumbs: readonly Element[];
   forms: readonly Element[];
   groups: readonly Element[];
   root: Element;
@@ -37,15 +39,27 @@ export class PeopleSoftDeepAdapter implements StructuralAdapter<DeepPagePlan> {
       root.querySelectorAll(":scope > .PSGROUPBOX, :scope > .ps_box-group"),
     );
     const tables = Array.from(
-      root.querySelectorAll(":scope > table, :scope > .ps_grid-flex, :scope > .ps_box-grid"),
+      root.querySelectorAll("table, .ps_grid-flex, .ps_box-grid"),
     );
     if (!title && groups.length === 0 && tables.length === 0) {
       return undefined;
     }
 
     return {
-      alerts: Array.from(root.querySelectorAll(":scope > [role='alert'], :scope > .PSERROR, :scope > .PSMESSAGE")),
-      forms: Array.from(root.querySelectorAll(":scope > form")),
+      actionAreas: Array.from(
+        root.querySelectorAll(
+          ":scope > .ps_box-actions, :scope > .ps-buttonbar, :scope > .PSBUTTONTOOLBAR",
+        ),
+      ),
+      alerts: Array.from(
+        root.querySelectorAll("[role='alert'], .PSERROR, .PSMESSAGE"),
+      ),
+      breadcrumbs: Array.from(
+        root.querySelectorAll(
+          ":scope > .ps_box-breadcrumbs, :scope > .PABREADCRUMB, :scope > #PT_BREADCRUMBS, :scope > nav[aria-label='Breadcrumb']",
+        ),
+      ),
+      forms: Array.from(root.querySelectorAll("form")),
       groups,
       root,
       tables,
@@ -72,7 +86,21 @@ export class PeopleSoftDeepAdapter implements StructuralAdapter<DeepPagePlan> {
       for (const table of plan.tables) markRegion(journal, table, "table");
       for (const form of plan.forms) markRegion(journal, form, "form");
       for (const alert of plan.alerts) markRegion(journal, alert, "alert");
-      return createSession(this.id, journal, [plan.root]);
+      for (const breadcrumbs of plan.breadcrumbs) {
+        markRegion(journal, breadcrumbs, "breadcrumbs");
+      }
+      for (const actionArea of plan.actionAreas) {
+        markRegion(journal, actionArea, "action-area");
+      }
+      return createSession(this.id, journal, [
+        plan.root,
+        ...plan.groups,
+        ...plan.tables,
+        ...plan.forms,
+        ...plan.alerts,
+        ...plan.breadcrumbs,
+        ...plan.actionAreas,
+      ]);
     } catch (error) {
       journal.rollback();
       throw error;

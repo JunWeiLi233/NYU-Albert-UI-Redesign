@@ -12,6 +12,7 @@ import {
 import type { AdapterContext, StructuralAdapter } from "./types";
 
 interface ClassSearchPlan {
+  body?: Element;
   filter?: Element;
   form?: HTMLFormElement;
   groups: readonly Element[];
@@ -75,9 +76,35 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
       return undefined;
     }
 
+    const filterCandidates = groups.filter(
+      (group) =>
+        !group.querySelector("table, .ps_grid-flex, .ps_box-grid") &&
+        Boolean(
+          group.querySelector(
+            "input:not([type='hidden']), select, textarea",
+          ),
+        ),
+    );
+    const resultCandidates = groups.filter((group) =>
+      Boolean(group.querySelector("table, .ps_grid-flex, .ps_box-grid")),
+    );
+    const legacyFilter =
+      filterCandidates.length === 1 ? filterCandidates[0] : undefined;
+    const legacyResults =
+      resultCandidates.length === 1 ? resultCandidates[0] : undefined;
+    const body =
+      legacyFilter &&
+      legacyResults &&
+      legacyFilter.parentElement === legacyResults.parentElement
+        ? legacyFilter.parentElement ?? undefined
+        : undefined;
+
     return {
+      ...(body ? { body } : {}),
+      ...(legacyFilter ? { filter: legacyFilter } : {}),
       form: legacyForm,
       groups,
+      ...(legacyResults ? { results: legacyResults } : {}),
       root: legacyRoot,
       title:
         uniqueElement(
@@ -103,14 +130,19 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
       if (plan.form) {
         markRegion(journal, plan.form, "class-search-form");
       }
+      if (plan.body) {
+        journal.setAttribute(plan.body, LAYOUT_ATTRIBUTE, "class-search-body");
+      }
+      for (const group of plan.groups) {
+        if (group !== plan.filter && group !== plan.results) {
+          markRegion(journal, group, "group");
+        }
+      }
       if (plan.filter) {
         markRegion(journal, plan.filter, "filter");
       }
       if (plan.results) {
         markRegion(journal, plan.results, "results");
-      }
-      for (const group of plan.groups) {
-        markRegion(journal, group, "group");
       }
       if (plan.title) {
         markRegion(journal, plan.title, "page-title");
@@ -121,6 +153,7 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
         [
           plan.root,
           ...(plan.form ? [plan.form] : []),
+          ...(plan.body ? [plan.body] : []),
           ...(plan.filter ? [plan.filter] : []),
           ...(plan.results ? [plan.results] : []),
           ...plan.groups,

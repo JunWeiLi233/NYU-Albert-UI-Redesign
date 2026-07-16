@@ -28,6 +28,20 @@ describe("native Albert navigation delegation", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
+  it("preserves native click handlers while blocking javascript URL evaluation", () => {
+    const nativeControl = document.querySelector<HTMLAnchorElement>(
+      'nav a[href="#finances"]',
+    );
+    nativeControl?.setAttribute("href", "javascript:void(0)");
+    const click = vi.fn((event: Event) => {
+      expect(event.defaultPrevented).toBe(true);
+    });
+    nativeControl?.addEventListener("click", click);
+
+    expect(navigateWithNativeAlbert(document, "finances")).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
   it("never falls back to a same-label link in page content", () => {
     document.querySelector("nav")?.remove();
     const contentControl = document.querySelector<HTMLAnchorElement>(
