@@ -9,7 +9,10 @@ import {
   startContentScript,
   type HeaderMount,
 } from "../../src/content/lifecycle";
-import { THEME_ENABLED_ATTRIBUTE } from "../../src/content/native-theme";
+import {
+  COMPACT_HEADER_ATTRIBUTE,
+  THEME_ENABLED_ATTRIBUTE,
+} from "../../src/content/native-theme";
 import type { PreferenceStore } from "../../src/storage/preferences";
 
 const fixture = readFileSync(
@@ -92,6 +95,7 @@ describe("content-script lifecycle", () => {
     });
 
     const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    expect(document.getElementById(HEADER_HOST_ID)?.style.zIndex).toBe("90");
     expect(shadowRoot?.querySelector("header")?.textContent).toContain(
       "Better Albert",
     );
@@ -104,6 +108,9 @@ describe("content-script lifecycle", () => {
       ).map((button) => button.textContent),
     ).toEqual(["Course Search", "Weekly Schedule"]);
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
+      true,
+    );
+    expect(document.documentElement.hasAttribute(COMPACT_HEADER_ATTRIBUTE)).toBe(
       true,
     );
     expect(document.querySelector("#albert-native-content")).toBe(nativeContent);
@@ -182,6 +189,9 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       false,
     );
+    expect(document.documentElement.hasAttribute(COMPACT_HEADER_ATTRIBUTE)).toBe(
+      false,
+    );
     expect(document.documentElement.hasAttribute("data-better-albert-adapter")).toBe(
       false,
     );
@@ -207,6 +217,9 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       false,
     );
+    expect(document.documentElement.hasAttribute(COMPACT_HEADER_ATTRIBUTE)).toBe(
+      false,
+    );
     expect(document.documentElement.hasAttribute("data-better-albert-adapter")).toBe(
       false,
     );
@@ -214,6 +227,34 @@ describe("content-script lifecycle", () => {
     expect(await enabledStore.getEnabled()).toBe(false);
     enabledLifecycle.stop();
   });
+
+  it.each(["missing", "duplicate"] as const)(
+    "keeps the native masthead when compact-header anchors are %s",
+    async (variant) => {
+      const headerContainer = document.querySelector("#Header_Container");
+      if (variant === "missing") {
+        document.querySelector("#IS_BB_HEADER_WRAPPER")?.remove();
+      } else {
+        headerContainer?.parentElement?.append(headerContainer.cloneNode(true));
+      }
+
+      const lifecycle = await startContentScript({
+        document,
+        location: portalUrl,
+        preferenceStore: new FakePreferenceStore(true),
+        topLevel: true,
+      });
+
+      expect(document.documentElement.dataset.betterAlbertAdapter).toBe(
+        "family-home",
+      );
+      expect(document.getElementById(HEADER_HOST_ID)).not.toBeNull();
+      expect(
+        document.documentElement.hasAttribute(COMPACT_HEADER_ATTRIBUTE),
+      ).toBe(false);
+      lifecycle.stop();
+    },
+  );
 
   it("removes presentation immediately when preference persistence stalls", async () => {
     const preferenceStore: PreferenceStore = {

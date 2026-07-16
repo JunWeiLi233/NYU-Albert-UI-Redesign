@@ -12,7 +12,10 @@ import {
 import type { AdapterContext, StructuralAdapter } from "./types";
 
 interface FamilyHubPlan {
+  contentContainers: readonly Element[];
+  contentRoot: Element;
   directoryColumns: readonly Element[];
+  directoryHosts: readonly Element[];
   directoryItems: readonly Element[];
   directories: readonly Element[];
   menu: Element | undefined;
@@ -51,22 +54,64 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
       return undefined;
     }
 
+    const liveContentRoots = Array.from(
+      workspace.querySelectorAll(
+        "#IS_AC_RESPONSE > .ptprtlcontainer > .isDS_Section",
+      ),
+    );
+    if (liveContentRoots.length > 1) {
+      return undefined;
+    }
+
+    const contentRoot = liveContentRoots[0] ?? workspace;
+    const contentContainers: Element[] = [];
+    let container = contentRoot.parentElement;
+    while (container && container !== workspace) {
+      contentContainers.push(container);
+      container = container.parentElement;
+    }
+    if (contentRoot !== workspace && container !== workspace) {
+      return undefined;
+    }
+
+    const directoryHosts = Array.from(contentRoot.children).filter((child) =>
+      directories.some(
+        (directory) => child !== directory && child.contains(directory),
+      ),
+    );
+    const excludedTags = new Set([
+      "BUTTON",
+      "FORM",
+      "LINK",
+      "META",
+      "NOSCRIPT",
+      "SCRIPT",
+      "STYLE",
+      "TABLE",
+      "TEMPLATE",
+      "TITLE",
+    ]);
+
     return {
+      contentContainers,
+      contentRoot,
       directoryColumns: directories.flatMap((directory) =>
         Array.from(directory.querySelectorAll(":scope > .is_bb_LinkColumn")),
       ),
+      directoryHosts,
       directoryItems: directories.flatMap((directory) =>
         Array.from(directory.querySelectorAll(".is_bb_LinkItem")),
       ),
       directories,
       menu: wrapper.querySelector(":scope > .isSSS_Menu") ?? undefined,
-      sections: Array.from(workspace.children).filter(
+      sections: Array.from(contentRoot.children).filter(
         (child) =>
           !directories.some(
             (directory) => child === directory || child.contains(directory),
           ) &&
-          !["BUTTON", "FORM", "SCRIPT", "STYLE", "TABLE"].includes(
-            child.tagName,
+          !excludedTags.has(child.tagName) &&
+          !child.matches(
+            "[hidden], .hide, [aria-hidden='true'], #NYUBlockerMessage, #NYUBlueMessage_medsmall",
           ),
       ),
       tables: Array.from(workspace.querySelectorAll("table")),
@@ -77,12 +122,25 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
 
   apply(context: AdapterContext, plan: FamilyHubPlan) {
     const journal = new DomPatchJournal();
-    const anchors: Element[] = [plan.wrapper, plan.workspace, ...plan.directories];
+    const anchors: Element[] = [
+      plan.wrapper,
+      plan.workspace,
+      plan.contentRoot,
+      ...plan.directories,
+    ];
 
     try {
       journal.setAttribute(context.document.documentElement, ADAPTER_ATTRIBUTE, this.id);
       journal.setAttribute(plan.wrapper, LAYOUT_ATTRIBUTE, "portal-workspace");
       markRegion(journal, plan.workspace, "workspace");
+      for (const container of plan.contentContainers) {
+        journal.setAttribute(
+          container,
+          LAYOUT_ATTRIBUTE,
+          "family-content-container",
+        );
+      }
+      journal.setAttribute(plan.contentRoot, LAYOUT_ATTRIBUTE, "family-content");
       markFocusTarget(journal, plan.workspace);
       journal.setAttribute(
         plan.workspace,
@@ -100,6 +158,9 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
           index === 0 ? "primary-section" : "supporting-section",
         );
       });
+      for (const directoryHost of plan.directoryHosts) {
+        markRegion(journal, directoryHost, "directory-section");
+      }
       for (const directory of plan.directories) {
         markRegion(journal, directory, "directory");
       }

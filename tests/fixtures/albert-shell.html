@@ -7,6 +7,19 @@
     <style>body { height: 100vh; overflow-x: auto; overflow-y: scroll; }</style>
   </head>
   <body class="PSPAGE container-fluid isEdBody nyuStuBody">
+    <header id="ptbr_header_container" style="height: 361px">
+      <div id="NYU_DEFAULT_HEADER" style="height: 361px">
+        <div id="Header_Container" style="height: 361px; width: calc(100% - 56px); margin-left: 28px">
+          <div id="IS_BB_HEADER_WRAPPER" style="height: 60px">
+            <a href="/fixture-utility">Albert utility navigation</a>
+          </div>
+          <div id="NYU_ALBERT_LOGO" style="height: 90px">Albert</div>
+          <nav id="IS_BB_HEADER_MENU" style="height: 211px" aria-label="Legacy Albert menu">
+            <a href="/fixture-students">Students</a>
+          </nav>
+        </div>
+      </div>
+    </header>
     <div class="ptprtlcontainer">
       <div class="isSSS_Wrp">
         <nav class="isSSS_Menu" id="albert-native-navigation" aria-label="Albert navigation">
@@ -18,6 +31,13 @@
           <a href="/fixture-resources">OTHER RESOURCES</a>
         </nav>
         <main class="isSSS_Main selected" id="albert-native-content" tabindex="-1">
+          <script type="application/json">{"fixture":"sanitized"}</script>
+          <style>.native-fixture-only { display: block; }</style>
+          <title>Albert workspace metadata</title>
+          <span class="native-response-wrapper">
+            <div id="IS_AC_RESPONSE">
+              <div class="ptprtlcontainer">
+                <section class="isDS_Section">
           <section class="isSSS_Attention" aria-labelledby="attention-title">
             <h1 id="attention-title">Attention</h1>
             <div role="status">Sanitized registration reminder.</div>
@@ -30,11 +50,12 @@
             <h2 id="enrollment-title">Enrollment dates</h2>
             <p>[appointment details removed]</p>
           </section>
-          <section
-            class="is_bb_LinkContainer"
-            data-better-albert-tools
-            aria-label="Home tools"
-          >
+          <section id="nyuSSSHomeLinksStatic" class="isSSS_FullW">
+            <div
+              class="is_bb_LinkContainer"
+              data-better-albert-tools
+              aria-label="Home tools"
+            >
             <div class="is_bb_LinkColumn">
               <div class="is_bb_LinkItem"><a href="/fixture-course-search">Course Search</a></div>
               <div class="is_bb_LinkItem"><a href="/fixture-weekly-schedule">Weekly Schedule</a></div>
@@ -63,12 +84,18 @@
               <div class="is_bb_LinkItem"><a href="/fixture-wellness">Wellness Center</a></div>
               <div class="is_bb_LinkItem"><a href="/fixture-housing">Housing</a></div>
             </div>
+            </div>
           </section>
           <table aria-label="Sanitized overview status">
             <thead><tr><th scope="col">Item</th><th scope="col">Status</th></tr></thead>
             <tbody><tr><td>Native Albert row</td><td>Placeholder</td></tr></tbody>
           </table>
           <button type="button">Native action placeholder</button>
+          <div id="NYUBlockerMessage" class="NYUblocker-message" hidden>Sanitized hidden message.</div>
+                </section>
+              </div>
+            </div>
+          </span>
         </main>
       </div>
     </div>

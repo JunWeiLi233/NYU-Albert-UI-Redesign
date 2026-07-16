@@ -161,8 +161,29 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   );
   await expect(page.locator("#albert-native-content")).toHaveCSS(
     "display",
-    "grid",
+    "block",
   );
+  await expect(page.locator("#IS_BB_HEADER_WRAPPER")).toBeVisible();
+  await expect(page.locator("#NYU_ALBERT_LOGO")).toHaveCSS("display", "none");
+  await expect(page.locator("#IS_BB_HEADER_MENU")).toHaveCSS("display", "none");
+  expect(
+    await page.locator("#ptbr_header_container, #NYU_DEFAULT_HEADER").evaluateAll(
+      (elements) =>
+        elements.map((element) =>
+          Math.round(element.getBoundingClientRect().height),
+        ),
+    ),
+  ).toEqual([60, 60]);
+  expect(
+    await page.locator("#Header_Container").evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      return {
+        height: Math.round(bounds.height),
+        left: Math.round(bounds.left),
+        right: Math.round(bounds.right),
+      };
+    }),
+  ).toEqual({ height: 60, left: 264, right: 1280 });
   expect(
     await page.locator(HEADER_HOST_SELECTOR).evaluate((element) =>
       Math.round(element.getBoundingClientRect().width),
@@ -286,7 +307,7 @@ test("isolates desktop workspace overflow without obscuring native overlays", as
   await expect(page.locator("body")).toHaveCSS("position", "static");
   await expect(page.locator("body")).toHaveCSS("left", "auto");
   await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
-  await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCSS("z-index", "auto");
+  await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCSS("z-index", "90");
   const portalWorkspace = page.locator(
     '[data-better-albert-layout="portal-workspace"]',
   );
@@ -299,10 +320,16 @@ test("isolates desktop workspace overflow without obscuring native overlays", as
   ).toEqual({ left: 264, right: 1440 });
 
   const overlayGeometry = await page.evaluate(() => {
+    const ordinaryNativeLayer = document.createElement("div");
+    ordinaryNativeLayer.id = "synthetic-native-layer";
+    ordinaryNativeLayer.style.cssText =
+      "position:fixed;z-index:5;inset:12px auto auto 18px;width:40px;height:40px;background:#fff;pointer-events:auto";
+    document.body.append(ordinaryNativeLayer);
+    const ordinaryTopElementId = document.elementFromPoint(30, 30)?.id ?? "";
     const fixedOverlay = document.createElement("div");
     fixedOverlay.id = "synthetic-fixed-overlay";
     fixedOverlay.style.cssText =
-      "position:fixed;z-index:1;inset:12px auto auto 18px;width:40px;height:40px;background:#fff;pointer-events:auto";
+      "position:fixed;z-index:100;inset:12px auto auto 18px;width:40px;height:40px;background:#fff;pointer-events:auto";
     const absoluteOverlay = document.createElement("div");
     absoluteOverlay.id = "synthetic-absolute-overlay";
     absoluteOverlay.style.cssText =
@@ -322,12 +349,14 @@ test("isolates desktop workspace overflow without obscuring native overlays", as
     return {
       absoluteLeft: Math.round(absoluteOverlay.getBoundingClientRect().left),
       fixedLeft: Math.round(fixedOverlay.getBoundingClientRect().left),
+      ordinaryTopElementId,
       topElementId: document.elementFromPoint(30, 30)?.id ?? "",
     };
   });
   expect(overlayGeometry).toEqual({
     absoluteLeft: 32,
     fixedLeft: 18,
+    ordinaryTopElementId: HEADER_HOST_SELECTOR.slice(1),
     topElementId: "synthetic-fixed-overlay",
   });
 
@@ -392,6 +421,10 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
         '[data-better-albert-region="workspace"]',
       );
       const workspaceBounds = workspace?.getBoundingClientRect();
+      const content = document.querySelector<HTMLElement>(
+        '[data-better-albert-layout="family-content"]',
+      );
+      const contentBounds = content?.getBoundingClientRect();
       const visibleRegions = Array.from(
         document.querySelectorAll<HTMLElement>('[data-better-albert-region]'),
       )
@@ -401,10 +434,12 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       return {
         bodyLeft: Math.round(bodyBounds.left),
         bodyRight: Math.round(bodyBounds.right),
-        columns: workspace
-          ? getComputedStyle(workspace).gridTemplateColumns.trim().split(/\s+/)
+        columns: content
+          ? getComputedStyle(content).gridTemplateColumns.trim().split(/\s+/)
               .length
           : 0,
+        contentLeft: Math.round(contentBounds?.left ?? -1),
+        contentRight: Math.round(contentBounds?.right ?? -1),
         documentOverflow:
           document.documentElement.scrollWidth - window.innerWidth,
         overflowRegions: visibleRegions.filter(
@@ -417,7 +452,9 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
     expect(desktopAlignment).toEqual({
       bodyLeft: 0,
       bodyRight: 1280,
-      columns: 2,
+      columns: family === "grades" ? 1 : 2,
+      contentLeft: expect.any(Number),
+      contentRight: expect.any(Number),
       documentOverflow: 0,
       overflowRegions: 0,
       workspaceLeft: expect.any(Number),
@@ -425,9 +462,18 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
     });
     expect(desktopAlignment.workspaceLeft).toBeGreaterThanOrEqual(264);
     expect(desktopAlignment.workspaceRight).toBeLessThanOrEqual(1280);
+    expect(desktopAlignment.contentLeft).toBeGreaterThanOrEqual(
+      desktopAlignment.workspaceLeft,
+    );
+    expect(desktopAlignment.contentRight).toBeLessThanOrEqual(
+      desktopAlignment.workspaceRight,
+    );
+    expect(
+      desktopAlignment.contentRight - desktopAlignment.contentLeft,
+    ).toBeGreaterThan(700);
 
     for (const [width, expectedColumns, minimumWorkspaceLeft] of [
-      [900, 2, 264],
+      [900, family === "grades" ? 1 : 2, 264],
       [899, 1, 0],
     ] as const) {
       await page.setViewportSize({ height: 800, width });
@@ -436,9 +482,12 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
           '[data-better-albert-region="workspace"]',
         );
         const bounds = workspace?.getBoundingClientRect();
+        const content = document.querySelector<HTMLElement>(
+          '[data-better-albert-layout="family-content"]',
+        );
         return {
-          columns: workspace
-            ? getComputedStyle(workspace).gridTemplateColumns.trim().split(/\s+/)
+          columns: content
+            ? getComputedStyle(content).gridTemplateColumns.trim().split(/\s+/)
                 .length
             : 0,
           documentOverflow:
@@ -458,14 +507,14 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
     await page.setViewportSize({ height: 800, width: 768 });
     const mobileAlignment = await page.evaluate(() => {
       const bodyBounds = document.body.getBoundingClientRect();
-      const workspace = document.querySelector<HTMLElement>(
-        '[data-better-albert-region="workspace"]',
+      const content = document.querySelector<HTMLElement>(
+        '[data-better-albert-layout="family-content"]',
       );
       return {
         bodyLeft: Math.round(bodyBounds.left),
         bodyRight: Math.round(bodyBounds.right),
-        columns: workspace
-          ? getComputedStyle(workspace).gridTemplateColumns.trim().split(/\s+/)
+        columns: content
+          ? getComputedStyle(content).gridTemplateColumns.trim().split(/\s+/)
               .length
           : 0,
         documentOverflow:
@@ -479,6 +528,55 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       documentOverflow: 0,
     });
   }
+});
+
+test("keeps the direct legacy family fallback aligned", async () => {
+  await page.setViewportSize({ height: 800, width: 1280 });
+  await routeSanitizedFixture();
+  await page.goto(PORTAL_URL);
+  await page.evaluate((fixtureSource) => {
+    const parsed = new DOMParser().parseFromString(fixtureSource, "text/html");
+    const workspace = parsed.querySelector(".isSSS_Main.selected");
+    const content = parsed.querySelector(
+      "#IS_AC_RESPONSE > .ptprtlcontainer > .isDS_Section",
+    );
+    if (!workspace || !content) {
+      throw new Error("Sanitized direct-family fixture could not be prepared");
+    }
+    workspace.replaceChildren(
+      ...Array.from(content.children, (child) => child.cloneNode(true)),
+    );
+    document.title = parsed.title;
+    document.body.innerHTML = parsed.body.innerHTML;
+  }, familyFixtureHtml.academics);
+
+  const workspace = page.locator('[data-better-albert-region="workspace"]');
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-better-albert-adapter",
+    "family-academics",
+  );
+  await expect(workspace).toHaveAttribute(
+    "data-better-albert-layout",
+    "family-content",
+  );
+  expect(
+    await workspace.evaluate((element) => {
+      const titleStyle = getComputedStyle(element, "::before");
+      return {
+        columns: getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/)
+          .length,
+        documentOverflow:
+          document.documentElement.scrollWidth - window.innerWidth,
+        titleColumnEnd: titleStyle.gridColumnEnd,
+        titleColumnStart: titleStyle.gridColumnStart,
+      };
+    }),
+  ).toEqual({
+    columns: 2,
+    documentOverflow: 0,
+    titleColumnEnd: "-1",
+    titleColumnStart: "1",
+  });
 });
 
 test("keeps every tool-heavy rail control reachable at a short desktop height", async () => {
@@ -540,6 +638,17 @@ test("persists disablement and remounts when the local preference is enabled", a
   await expect(page.locator("body")).toHaveCSS("position", "static");
   await expect(page.locator("body")).toHaveCSS("left", "auto");
   await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+  await expect(page.locator("#NYU_ALBERT_LOGO")).toBeVisible();
+  await expect(page.locator("#IS_BB_HEADER_MENU")).toBeVisible();
+  await expect(page.locator("#ptbr_header_container")).toHaveAttribute(
+    "style",
+    /height:\s*361px/i,
+  );
+  expect(
+    await page
+      .locator("#ptbr_header_container")
+      .evaluate((element) => Math.round(element.getBoundingClientRect().height)),
+  ).not.toBe(60);
   const disabledBodyGeometry = await page.locator("body").evaluate((body) => {
     const bounds = body.getBoundingClientRect();
     return {
@@ -620,6 +729,21 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     link.addEventListener("click", (event) => {
       event.preventDefault();
       document.body.dataset.nativeResourceOverlay = "opened";
+      const overlay = document.createElement("section");
+      overlay.id = "sanitized-native-resource-overlay";
+      overlay.setAttribute("aria-label", "Sanitized native resources");
+      overlay.style.cssText =
+        "position:fixed;z-index:100;inset:0;background:#fff;pointer-events:auto";
+      const close = document.createElement("button");
+      close.type = "button";
+      close.textContent = "Close native resources";
+      close.style.cssText = "position:absolute;top:16px;left:300px";
+      close.addEventListener("click", () => {
+        document.body.dataset.nativeResourceOverlay = "closed";
+        overlay.remove();
+      });
+      overlay.append(close);
+      document.body.append(overlay);
     });
   });
 
@@ -629,6 +753,15 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-resource-overlay",
     "opened",
+  );
+  await expect(page.locator("#sanitized-native-resource-overlay")).toBeVisible();
+  expect(await page.evaluate(() => document.elementFromPoint(30, 30)?.id)).toBe(
+    "sanitized-native-resource-overlay",
+  );
+  await page.getByRole("button", { name: "Close native resources" }).click();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-resource-overlay",
+    "closed",
   );
 });
 
@@ -854,7 +987,7 @@ test("recognizes and redesigns an explicit student-self-service deep page", asyn
 test("re-evaluates delayed same-origin parent evidence in a packaged child frame", async () => {
   const delayedParentFixture = fixtureHtml
     .replace("<title>Albert</title>", "<title>Loading</title>")
-    .replace(/<nav[\s\S]*?<\/nav>/, "")
+    .replace(/<nav class="isSSS_Menu"[\s\S]*?<\/nav>/, "")
     .replace(
       "</body>",
       `<iframe title="Sanitized same-origin child" src="${SAME_ORIGIN_CHILD_URL}"></iframe></body>`,

@@ -63,6 +63,26 @@ describe("structural adapter manager", () => {
       expect(document.querySelector('[data-better-albert-region="workspace"]')).toBe(
         nativeWorkspace,
       );
+      const contentRoot = document.querySelector(
+        "#IS_AC_RESPONSE > .ptprtlcontainer > .isDS_Section",
+      );
+      expect(contentRoot?.getAttribute("data-better-albert-layout")).toBe(
+        "family-content",
+      );
+      expect(
+        document.querySelectorAll(
+          '[data-better-albert-layout="family-content-container"]',
+        ),
+      ).toHaveLength(3);
+      expect(
+        contentRoot?.querySelector('[data-better-albert-region="primary-section"]')
+          ?.parentElement,
+      ).toBe(contentRoot);
+      for (const metadata of document.querySelectorAll(
+        ":is(script, style, title)",
+      )) {
+        expect(metadata.hasAttribute("data-better-albert-region")).toBe(false);
+      }
       expect(
         document.querySelectorAll('[data-better-albert-region="directory"]'),
       ).not.toHaveLength(0);
@@ -235,6 +255,32 @@ describe("structural adapter manager", () => {
     ).toBe("albert-workspace");
     expect(document.querySelector("main")?.dataset.betterAlbertLayout).toBe(
       "generic-workspace",
+    );
+  });
+
+  it("fails open to the conservative workspace when live family content is ambiguous", () => {
+    const document = fixture("tests/fixtures/albert-shell.html");
+    const response = document.querySelector("#IS_AC_RESPONSE");
+    response?.append(
+      document.createRange().createContextualFragment(
+        '<div class="ptprtlcontainer"><section class="isDS_Section"></section></div>',
+      ),
+    );
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("albert-workspace");
+    expect(
+      document.querySelector('[data-better-albert-layout="family-content"]'),
+    ).toBeNull();
+    expect(document.documentElement.dataset.betterAlbertAdapter).toBe(
+      "albert-workspace",
     );
   });
 

@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.3.0 includes:
+Version 0.3.3 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - one isolated Shadow DOM application frame: a fixed violet rail on desktop and
@@ -15,6 +15,10 @@ Version 0.3.0 includes:
   Resources context and navigation delegated to existing native Albert links;
 - reversible structure-aware layouts for the five observed selected Albert
   workspaces, with Other Resources delegated to Albert's native overlay;
+- live PeopleSoft response-wrapper adaptation that expands legacy 397–514px
+  family content into the full responsive workspace without moving controls;
+- a compact 60px native utility strip that removes the duplicate Albert logo
+  and menu while the extension is enabled and restores them on disablement;
 - distinct overview, directory, table, form, alert, and supporting-section
   regions that annotate original Albert nodes without copying their values;
 - a common full-page PeopleSoft layout for recognized deep `/psp/` and `/psc/`
