@@ -6,6 +6,8 @@ export const THEME_PAGE_ATTRIBUTE = "data-better-albert-page";
 export const THEME_TOP_LEVEL_ATTRIBUTE = "data-better-albert-top-level";
 export const COMPACT_HEADER_ATTRIBUTE = "data-better-albert-compact-header";
 export const NATIVE_MODAL_OPEN_ATTRIBUTE = "data-better-albert-native-modal-open";
+export const READ_ONLY_MODAL_OPEN_ATTRIBUTE =
+  "data-better-albert-readonly-modal-open";
 const READ_ONLY_MODAL_ATTRIBUTE = "data-better-albert-readonly-modal";
 const READ_ONLY_MODAL_TITLES = new Set([
   "degree progress report",
@@ -51,6 +53,13 @@ function updateReadOnlyModalMarkers(document: Document): void {
   document.documentElement.toggleAttribute(
     NATIVE_MODAL_OPEN_ATTRIBUTE,
     hasOpenNativeDialog,
+  );
+  const hasOpenReadOnlyDialog = Array.from(
+    document.querySelectorAll(`#pt_modals.PSMODAL[${READ_ONLY_MODAL_ATTRIBUTE}]`),
+  ).some((dialog) => isPotentiallyVisible(dialog as HTMLElement, document));
+  document.documentElement.toggleAttribute(
+    READ_ONLY_MODAL_OPEN_ATTRIBUTE,
+    hasOpenReadOnlyDialog,
   );
 }
 
@@ -109,6 +118,7 @@ export function removeNativeTheme(document: Document): void {
   document.documentElement.removeAttribute(THEME_TOP_LEVEL_ATTRIBUTE);
   document.documentElement.removeAttribute(COMPACT_HEADER_ATTRIBUTE);
   document.documentElement.removeAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE);
+  document.documentElement.removeAttribute(READ_ONLY_MODAL_OPEN_ATTRIBUTE);
   for (const modal of document.querySelectorAll(
     `[${READ_ONLY_MODAL_ATTRIBUTE}]`,
   )) {

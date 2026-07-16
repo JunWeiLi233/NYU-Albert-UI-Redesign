@@ -30,6 +30,15 @@ describe("structural adapter manager", () => {
     ["finances", "tests/fixtures/families/finances.html"],
     ["personal", "tests/fixtures/families/personal.html"],
   ];
+  const primaryRegions: Record<PageFamily, string> = {
+    albert: "primary-section",
+    home: "schedule-section",
+    academics: "planning-section",
+    grades: "reports-directory",
+    finances: "account-section",
+    personal: "profile-directory",
+    resources: "primary-section",
+  };
 
   it.each(families)(
     "applies and exactly rolls back the %s family layout",
@@ -75,7 +84,9 @@ describe("structural adapter manager", () => {
         ),
       ).toHaveLength(3);
       expect(
-        contentRoot?.querySelector('[data-better-albert-region="primary-section"]')
+        contentRoot?.querySelector(
+          `[data-better-albert-region="${primaryRegions[pageFamily]}"]`,
+        )
           ?.parentElement,
       ).toBe(contentRoot);
       for (const metadata of document.querySelectorAll(
@@ -121,6 +132,9 @@ describe("structural adapter manager", () => {
     expect(document.querySelector("form")).toBe(form);
     expect(select?.closest("form")).toBe(form);
     expect(document.querySelectorAll('[data-better-albert-region="group"]')).toHaveLength(2);
+    expect(document.querySelectorAll('[data-better-albert-region="table"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-better-albert-region="breadcrumbs"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-better-albert-region="action-area"]')).toHaveLength(1);
 
     manager.rollback();
     expect(document.documentElement.outerHTML).toBe(before);
@@ -179,9 +193,12 @@ describe("structural adapter manager", () => {
     expect(
       document.querySelector('[data-better-albert-layout="class-search-legacy"]'),
     ).toBe(document.querySelector("#PT_WRAPPER"));
+    expect(document.querySelectorAll('[data-better-albert-region="group"]')).toHaveLength(2);
+    expect(document.querySelectorAll('[data-better-albert-region="filter"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-better-albert-region="results"]')).toHaveLength(1);
     expect(
-      document.querySelectorAll('[data-better-albert-region="group"]'),
-    ).toHaveLength(4);
+      document.querySelector('[data-better-albert-layout="class-search-body"]'),
+    ).toBe(document.querySelector("#legacy-main"));
     expect(submit?.closest("form")).toBe(form);
     expect(form?.getAttribute("action")).toBe(formContract.action);
     expect(form?.getAttribute("method")).toBe(formContract.method);
@@ -282,6 +299,62 @@ describe("structural adapter manager", () => {
     expect(document.documentElement.dataset.betterAlbertAdapter).toBe(
       "albert-workspace",
     );
+  });
+
+  it("selects the only rendered live response and leaves inactive duplicates untouched", () => {
+    const document = fixture("tests/fixtures/albert-shell.html");
+    const response = document.querySelector("#IS_AC_RESPONSE");
+    const activeRoot = response?.querySelector(
+      ":scope > .ptprtlcontainer > .isDS_Section",
+    );
+    response?.append(
+      document.createRange().createContextualFragment(`
+        <div class="ptprtlcontainer">
+          <section class="isDS_Section">
+            <div class="is_bb_LinkContainer">
+              <div class="is_bb_LinkColumn">
+                <div class="is_bb_LinkItem"><a href="#inactive">Inactive tool</a></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `),
+    );
+    const inactiveRoot = response?.querySelectorAll(
+      ":scope > .ptprtlcontainer > .isDS_Section",
+    )[1];
+    Object.defineProperty(activeRoot, "getBoundingClientRect", {
+      configurable: true,
+      value: () =>
+        ({
+          bottom: 600,
+          height: 600,
+          left: 0,
+          right: 800,
+          top: 0,
+          width: 800,
+          x: 0,
+          y: 0,
+          toJSON: () => ({}),
+        }) as DOMRect,
+    });
+
+    const manager = new AdapterManager();
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("family-home");
+    expect(activeRoot?.getAttribute("data-better-albert-layout")).toBe(
+      "family-content",
+    );
+    expect(inactiveRoot?.hasAttribute("data-better-albert-layout")).toBe(false);
+    expect(
+      inactiveRoot?.querySelector("[data-better-albert-region]"),
+    ).toBeNull();
   });
 
   it("restores pre-existing attribute values in reverse order", () => {

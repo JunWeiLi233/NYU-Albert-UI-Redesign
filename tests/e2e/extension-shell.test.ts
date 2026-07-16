@@ -395,6 +395,37 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
     ["finances", familyFixtureHtml.finances],
     ["personal", familyFixtureHtml.personal],
   ] as const;
+  const expectedRegions = {
+    home: [
+      "schedule-section",
+      "attention-section",
+      "enrollment-section",
+      "home-tools",
+    ],
+    academics: [
+      "planning-section",
+      "degree-section",
+      "enrollment-section",
+      "graduation-section",
+    ],
+    grades: [
+      "reports-directory",
+      "term-selector",
+      "term-navigation",
+      "record-section",
+    ],
+    finances: ["account-section", "aid-section"],
+    personal: [
+      "profile-directory",
+      "address-section",
+      "phone-section",
+      "email-section",
+      "emergency-section",
+      "missing-person-section",
+      "citizenship-section",
+      "identifier-section",
+    ],
+  } as const;
 
   for (const [family, html] of families) {
     await page.setViewportSize({ height: 800, width: 1280 });
@@ -411,6 +442,11 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
     );
     await expect(page.locator('[data-better-albert-region="workspace"]')).toHaveCount(1);
     await expect(page.locator('[data-better-albert-region="directory"]')).not.toHaveCount(0);
+    for (const region of expectedRegions[family]) {
+      await expect(
+        page.locator(`[data-better-albert-region="${region}"]`),
+      ).not.toHaveCount(0);
+    }
     await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(1);
     const currentArea = page.locator(HEADER_HOST_SELECTOR).locator('[aria-current="page"]');
     await expect(currentArea).toHaveCount(1);
@@ -452,7 +488,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
     expect(desktopAlignment).toEqual({
       bodyLeft: 0,
       bodyRight: 1280,
-      columns: family === "grades" ? 1 : 2,
+      columns: family === "grades" ? 1 : family === "personal" ? 3 : 2,
       contentLeft: expect.any(Number),
       contentRight: expect.any(Number),
       documentOverflow: 0,
@@ -705,13 +741,61 @@ test("remounts after PeopleSoft removes the extension host and keeps native cont
   await nativeButton.click();
 });
 
+test("selects the rendered Albert response when inactive duplicate roots remain", async () => {
+  const duplicateResponseFixture = fixtureHtml.replace(
+    '<span class="native-response-wrapper">',
+    `<span data-sanitized-inactive-response hidden>
+      <div id="IS_AC_RESPONSE"><div class="ptprtlcontainer"><section class="isDS_Section">
+        <div class="is_bb_LinkContainer"><div class="is_bb_LinkColumn"><div class="is_bb_LinkItem"><a href="#inactive">Inactive tool</a></div></div></div>
+      </section></div></div>
+    </span><span class="native-response-wrapper">`,
+  );
+  await context.route(PORTAL_URL, (route) =>
+    route.fulfill({
+      body: duplicateResponseFixture,
+      contentType: "text/html; charset=utf-8",
+      headers: { "content-security-policy": "default-src 'none'" },
+    }),
+  );
+  await page.goto(PORTAL_URL);
+
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-better-albert-adapter",
+    "family-home",
+  );
+  await expect(
+    page.locator(
+      '[data-sanitized-inactive-response] [data-better-albert-layout="family-content"]',
+    ),
+  ).toHaveCount(0);
+  await expect(
+    page.locator(
+      '.native-response-wrapper [data-better-albert-layout="family-content"]',
+    ),
+  ).toHaveCount(1);
+});
+
 test("delegates shell navigation to the native Albert control", async () => {
+  const javascriptUrlCspErrors: string[] = [];
+  page.on("console", (message) => {
+    if (
+      message.type() === "error" &&
+      /running the javascript url|refused to run the javascript url/i.test(
+        message.text(),
+      )
+    ) {
+      javascriptUrlCspErrors.push(message.text());
+    }
+  });
   await routeSanitizedFixture();
   await page.goto(PORTAL_URL);
   await page.locator('a[href="/fixture-finances"]').evaluate((link) => {
+    link.setAttribute("href", "javascript:void(0)");
     link.addEventListener("click", (event) => {
-      event.preventDefault();
       document.body.dataset.nativeNavigation = "finances";
+      document.body.dataset.nativeNavigationDefaultPrevented = String(
+        event.defaultPrevented,
+      );
     });
   });
 
@@ -720,6 +804,11 @@ test("delegates shell navigation to the native Albert control", async () => {
     "data-native-navigation",
     "finances",
   );
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-navigation-default-prevented",
+    "true",
+  );
+  expect(javascriptUrlCspErrors).toEqual([]);
 });
 
 test("delegates Other Resources to Albert's native overlay trigger", async () => {
@@ -834,6 +923,14 @@ test("themes a sanitized PeopleSoft report modal without replacing its controls"
     "data-better-albert-readonly-modal",
     "",
   );
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-better-albert-readonly-modal-open",
+    "",
+  );
+  await expect(page.locator("#pt_modalMaskCover")).toHaveCSS(
+    "background-color",
+    "rgba(11, 11, 11, 0.62)",
+  );
   const nativeReturn = page.getByRole("button", { exact: true, name: "Return" });
   await expect(nativeReturn).toBeVisible();
   await nativeReturn.focus();
@@ -853,6 +950,14 @@ test("themes a sanitized PeopleSoft report modal without replacing its controls"
   await expect(page.locator("#pt_modals")).not.toHaveAttribute(
     "data-better-albert-readonly-modal",
     "",
+  );
+  await expect(page.locator("html")).not.toHaveAttribute(
+    "data-better-albert-readonly-modal-open",
+    "",
+  );
+  await expect(page.locator("#pt_modalMaskCover")).not.toHaveCSS(
+    "background-color",
+    "rgba(11, 11, 11, 0.62)",
   );
   await expect(page.locator(".ptpopuptitlebar")).not.toHaveCSS(
     "background-color",
@@ -1187,7 +1292,12 @@ test("redesigns the exact legacy Class Search PSForm without owning its transact
   await expect(
     page.locator('[data-better-albert-layout="class-search-legacy"]'),
   ).toHaveCount(1);
-  await expect(page.locator('[data-better-albert-region="group"]')).toHaveCount(4);
+  await expect(page.locator('[data-better-albert-region="group"]')).toHaveCount(2);
+  await expect(page.locator('[data-better-albert-region="filter"]')).toHaveCount(1);
+  await expect(page.locator('[data-better-albert-region="results"]')).toHaveCount(1);
+  await expect(
+    page.locator('[data-better-albert-layout="class-search-body"]'),
+  ).toHaveCount(1);
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
   await expect(page.locator("#PT_WRAPPER")).toHaveCSS(
     "border-top-color",

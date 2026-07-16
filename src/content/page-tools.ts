@@ -1,4 +1,5 @@
 import type { PageFamily } from "./page-families";
+import { activateNativeControl } from "./native-control";
 
 export type PageToolId =
   | "course-search"
@@ -235,6 +236,6 @@ export function openNativePageTool(
     return false;
   }
 
-  control.click();
+  activateNativeControl(control);
   return true;
 }

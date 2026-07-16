@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.3.3 includes:
+Version 0.3.4 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - one isolated Shadow DOM application frame: a fixed violet rail on desktop and
@@ -15,16 +15,19 @@ Version 0.3.3 includes:
   Resources context and navigation delegated to existing native Albert links;
 - reversible structure-aware layouts for the five observed selected Albert
   workspaces, with Other Resources delegated to Albert's native overlay;
-- live PeopleSoft response-wrapper adaptation that expands legacy 397–514px
-  family content into the full responsive workspace without moving controls;
+- live PeopleSoft response-wrapper adaptation that selects the one rendered
+  response when Albert retains duplicate hidden roots, then expands legacy
+  397–514px content into the full workspace without moving controls;
 - a compact 60px native utility strip that removes the duplicate Albert logo
   and menu while the extension is enabled and restores them on disablement;
-- distinct overview, directory, table, form, alert, and supporting-section
+- distinct page-specific Home, Academics, Grades, Finances, and Personal Info
   regions that annotate original Albert nodes without copying their values;
 - a common full-page PeopleSoft layout for recognized deep `/psp/` and `/psc/`
   documents, including child frames;
-- an exact two-column Class Search adapter with responsive filter/results
+- exact fluid and legacy Class Search adapters with responsive filter/results
   stacking for the proven cross-origin cart component;
+- safe delegation for Albert's native `javascript:` navigation controls that
+  preserves their handlers while preventing extension-world CSP errors;
 - lifecycle recovery for partial navigation and host replacement;
 - a boolean enablement preference in `chrome.storage.local`;
 - visible toolbar `ON`/`OFF` state and in-shell disablement;
@@ -67,11 +70,14 @@ overflow, exact rollback, PeopleSoft replacement recovery, native transaction
 click behavior, and storage/network privacy. It does not contact Albert or
 reuse the user's browser profile.
 
-Run `npm run build`, then load `dist/` as an unpacked extension. After updating
-an already installed unpacked copy, use the extension manager's Reload action
-and refresh the Albert tab. The toolbar badge reports whether the preference is
-`ON` or `OFF`. On desktop the native portal is offset beside the fixed Better
-Albert rail; Class Search opened directly never receives a phantom rail offset.
+Run `npm run build`, then load the generated `dist/` directory as an unpacked
+extension. For a release ZIP, extract it first and select the extracted folder
+that contains `manifest.json` directly. Keep only one Better Albert copy
+enabled. After updating an installed unpacked copy, use the extension manager's
+Reload action and refresh every Albert tab. Confirm the extension card shows
+version `0.3.4` and the toolbar badge shows `ON`. On desktop the native portal is
+offset beside the fixed Better Albert rail; Class Search opened directly never
+receives a phantom rail offset.
 
 ## Fixture policy
 

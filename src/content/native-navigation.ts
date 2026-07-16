@@ -3,6 +3,7 @@ import {
   PRIMARY_PAGE_FAMILIES,
   type PrimaryPageFamily,
 } from "./page-families";
+import { activateNativeControl } from "./native-control";
 
 const PREFERRED_NAVIGATION_CONTAINERS = [
   "nav",
@@ -76,6 +77,6 @@ export function navigateWithNativeAlbert(
     return false;
   }
 
-  control.click();
+  activateNativeControl(control);
   return true;
 }

@@ -25,6 +25,116 @@ interface FamilyHubPlan {
   wrapper: Element;
 }
 
+function hasRenderedBox(element: Element): boolean {
+  const bounds = element.getBoundingClientRect();
+  return bounds.width > 0 && bounds.height > 0;
+}
+
+function resolveLiveContentRoot(
+  workspace: Element,
+): Element | undefined {
+  const candidates = Array.from(
+    workspace.querySelectorAll(
+      "#IS_AC_RESPONSE > .ptprtlcontainer > .isDS_Section",
+    ),
+  );
+  if (candidates.length <= 1) {
+    return candidates[0];
+  }
+
+  const renderedCandidates = candidates.filter(hasRenderedBox);
+  return renderedCandidates.length === 1 ? renderedCandidates[0] : undefined;
+}
+
+function getFamilyRegion(
+  family: PrimaryPageFamily,
+  element: Element,
+): string | undefined {
+  switch (family) {
+    case "home":
+      if (element.matches("#IS_SSS_SUMMARY_NEWS, .isSSS_ShCtSchWrp")) {
+        return "schedule-section";
+      }
+      if (element.matches("#ToDoHoldsEnrlDates, .isSSS_Attention")) {
+        return "attention-section";
+      }
+      if (element.matches(".isSSS_ShopCart, .isSSS_EnrollmentDates")) {
+        return "enrollment-section";
+      }
+      if (element.matches("#nyuSSSHomeLinksStatic")) {
+        return "home-tools";
+      }
+      break;
+    case "academics":
+      if (element.matches(".nyuGradTools, .isSSS_Degree")) {
+        return "degree-section";
+      }
+      if (element.matches(".isSSS_Graduation")) {
+        return "graduation-section";
+      }
+      if (element.matches(".isSSS_FullW, .isSSS_Enrollment")) {
+        return "enrollment-section";
+      }
+      if (element.matches(".isSSS_HalfW, .isSSS_Planning")) {
+        return "planning-section";
+      }
+      break;
+    case "grades":
+      if (element.matches("#nyuGradesLinks, .isSSS_Reports")) {
+        return "reports-directory";
+      }
+      if (element.matches(".isSSS_CareerSelect")) {
+        return "term-selector";
+      }
+      if (element.matches(".isSSS_GradesTop, .isSSS_Records")) {
+        return "term-navigation";
+      }
+      if (element.matches(".isSSS_GradesTwrp")) {
+        return "record-section";
+      }
+      break;
+    case "finances":
+      if (element.matches("#NYUBursarDisplay, .isSSS_Account, .isSSS_Statements")) {
+        return "account-section";
+      }
+      if (element.matches("#NYUFinancialAidDisplay, .isSSS_FinancialAid")) {
+        return "aid-section";
+      }
+      break;
+    case "personal":
+      if (element.matches(".isSSS_PersInfTop, .isSSS_Profile")) {
+        return "profile-directory";
+      }
+      if (element.matches(".isSSS_CitizenWrap")) {
+        return "citizenship-section";
+      }
+      if (element.matches(".isSSS_NationalIDWrap")) {
+        return "identifier-section";
+      }
+      if (element.querySelector(".ADDR_TYPE_DESCR")) {
+        return "address-section";
+      }
+      if (element.querySelector(".NYUPhone, .phonetype_descrLong")) {
+        return "phone-section";
+      }
+      if (element.querySelector(".NYUEmail, .EMAIL_TYPE_DESCR_LONG")) {
+        return "email-section";
+      }
+      if (element.querySelector("#tblEC_Phone, #tblEC_Address")) {
+        return "emergency-section";
+      }
+      if (element.querySelector("#tblMS_Phone, #tblMS_Email")) {
+        return "missing-person-section";
+      }
+      if (element.matches(".isSSS_Contact")) {
+        return "contact-section";
+      }
+      break;
+  }
+
+  return undefined;
+}
+
 export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
   readonly id;
   readonly priority = 300;
@@ -47,23 +157,21 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
       return undefined;
     }
 
+    const liveContentRoot = resolveLiveContentRoot(workspace);
+    const hasLiveContentRoots = workspace.querySelector(
+      "#IS_AC_RESPONSE > .ptprtlcontainer > .isDS_Section",
+    );
+    if (hasLiveContentRoots && !liveContentRoot) {
+      return undefined;
+    }
+
+    const contentRoot = liveContentRoot ?? workspace;
     const directories = Array.from(
-      workspace.querySelectorAll(":scope .is_bb_LinkContainer"),
+      contentRoot.querySelectorAll(":scope .is_bb_LinkContainer"),
     );
     if (directories.length === 0) {
       return undefined;
     }
-
-    const liveContentRoots = Array.from(
-      workspace.querySelectorAll(
-        "#IS_AC_RESPONSE > .ptprtlcontainer > .isDS_Section",
-      ),
-    );
-    if (liveContentRoots.length > 1) {
-      return undefined;
-    }
-
-    const contentRoot = liveContentRoots[0] ?? workspace;
     const contentContainers: Element[] = [];
     let container = contentRoot.parentElement;
     while (container && container !== workspace) {
@@ -111,10 +219,10 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
           ) &&
           !excludedTags.has(child.tagName) &&
           !child.matches(
-            "[hidden], .hide, [aria-hidden='true'], #NYUBlockerMessage, #NYUBlueMessage_medsmall",
+            "[hidden], .hide, .clearfloat, [aria-hidden='true'], #NYUBlockerMessage, #NYUBlueMessage_medsmall",
           ),
       ),
-      tables: Array.from(workspace.querySelectorAll("table")),
+      tables: Array.from(contentRoot.querySelectorAll("table")),
       workspace,
       wrapper,
     };
@@ -155,11 +263,16 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
         markRegion(
           journal,
           section,
-          index === 0 ? "primary-section" : "supporting-section",
+          getFamilyRegion(this.family, section) ??
+            (index === 0 ? "primary-section" : "supporting-section"),
         );
       });
       for (const directoryHost of plan.directoryHosts) {
-        markRegion(journal, directoryHost, "directory-section");
+        markRegion(
+          journal,
+          directoryHost,
+          getFamilyRegion(this.family, directoryHost) ?? "directory-section",
+        );
       }
       for (const directory of plan.directories) {
         markRegion(journal, directory, "directory");
