@@ -3,11 +3,15 @@ import { defineManifest } from "@crxjs/vite-plugin";
 export default defineManifest({
   manifest_version: 3,
   name: "Better Albert",
-  version: "0.4.3",
+  version: "0.4.4",
   description:
     "A local-first, NYU-aligned interface enhancement for NYU Albert.",
   permissions: ["storage"],
-  host_permissions: ["https://sis.portal.nyu.edu/*"],
+  host_permissions: [
+    "https://sis.portal.nyu.edu/*",
+    "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL*",
+    "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL*",
+  ],
   background: {
     service_worker: "src/background/service-worker.ts",
     type: "module",

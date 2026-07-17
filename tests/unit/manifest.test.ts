@@ -15,6 +15,8 @@ describe("extension manifest", () => {
     expect(staticManifest.permissions).toEqual(["storage"]);
     expect(staticManifest.host_permissions).toEqual([
       "https://sis.portal.nyu.edu/*",
+      "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL*",
+      "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL*",
     ]);
     expect(staticManifest.content_scripts).toEqual([
       expect.objectContaining({
@@ -28,13 +30,21 @@ describe("extension manifest", () => {
         run_at: "document_idle",
       }),
     ]);
-    // Every sis.nyu.edu match must stay scoped to the two proven Class Search
-    // component paths — never a broad sis.nyu.edu/* host grant.
+    // Every sis.nyu.edu match/host must stay scoped to the two proven Class
+    // Search component paths — never a broad sis.nyu.edu/* host grant.
+    const sisScoped = (list: readonly string[]) =>
+      list
+        .filter((m) => m.startsWith("https://sis.nyu.edu/"))
+        .every(
+          (m) =>
+            m.includes("NYU_SSENRL_CART_FL.GBL") || m.includes("NYU_CLS_SRCH.GBL"),
+        );
     const matches = (staticManifest.content_scripts ?? [])[0]?.matches ?? [];
-    const sisMatches = (matches as string[]).filter((m) =>
-      m.startsWith("https://sis.nyu.edu/"),
+    const hosts = staticManifest.host_permissions ?? [];
+    expect(sisScoped(matches as string[])).toBe(true);
+    expect(sisScoped(hosts)).toBe(true);
+    expect([...(matches as string[]), ...hosts]).not.toContain(
+      "https://sis.nyu.edu/*",
     );
-    expect(sisMatches.every((m) => m.includes("NYU_SSENRL_CART_FL.GBL") || m.includes("NYU_CLS_SRCH.GBL"))).toBe(true);
-    expect(sisMatches).not.toContain("https://sis.nyu.edu/*");
   });
 });
