@@ -20,14 +20,15 @@ interface ClassSearchPlan {
   resultRows: readonly Element[];
   root: Element;
   title: Element | undefined;
-  variant: "fluid" | "legacy";
+  variant: "fluid" | "legacy" | "classic";
 }
 
 /**
  * Collect the native result rows from a results region so each can be marked
- * as a card. The fluid variant renders ARIA grid rows; the legacy variant
- * renders table body rows. Header rows / thead are excluded. Read-only: only
- * gathers live element references, never mutates.
+ * as a card. Variants: fluid (ARIA grid rows), legacy cart (table body rows),
+ * and classic Class Search (`tr.ps_grid-row` rows inside a `ps_grid-flex`
+ * table). Header rows / thead are excluded. Read-only: only gathers live
+ * element references, never mutates.
  */
 function collectResultRows(results: Element | undefined): readonly Element[] {
   if (!results) {
@@ -39,6 +40,12 @@ function collectResultRows(results: Element | undefined): readonly Element[] {
     return rows.filter((row) =>
       row.querySelector(":scope > [role='cell'], :scope > td"),
     );
+  }
+
+  // Classic Class Search: PeopleSoft renders results as tr.ps_grid-row.
+  const gridRows = results.querySelectorAll("tr.ps_grid-row");
+  if (gridRows.length > 0) {
+    return Array.from(gridRows);
   }
 
   return Array.from(results.querySelectorAll("table > tbody > tr, tbody > tr"));
@@ -81,6 +88,49 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
           ) ?? undefined,
         variant: "fluid",
       };
+    }
+
+    /*
+     * Classic Class Search component (form #NYU_CLS_SRCH). Verified live: a
+     * ps_box-group layout with filter selects (NYU_CLS_WRK_*) and a
+     * ps_grid-flex results table whose rows are tr.ps_grid-row. Distinct from
+     * the fluid and legacy-cart variants.
+     */
+    const classicForm = uniqueElement(
+      context.document,
+      "form#NYU_CLS_SRCH",
+    );
+    if (classicForm instanceof HTMLFormElement) {
+      const classicRoot = uniqueElement(classicForm, "#PT_WRAPPER.ps_wrapper");
+      const classicResults = uniqueElement(
+        classicForm,
+        "table.ps_grid-flex, .ps_box-grid",
+      );
+      if (classicRoot && classicResults) {
+        const classicGroups = Array.from(
+          classicRoot.querySelectorAll(".ps_box-group"),
+        );
+        const classicFilterGroup = classicGroups.find(
+          (group) =>
+            !group.contains(classicResults) &&
+            Boolean(group.querySelector("select, input:not([type='hidden'])")),
+        );
+        const classicTitle =
+          uniqueElement(
+            classicRoot,
+            ".ps_box-pagetitle, .PAPAGETITLE, .PATRANSACTIONTITLE, h1",
+          ) ?? undefined;
+        return {
+          ...(classicFilterGroup ? { filter: classicFilterGroup } : {}),
+          form: classicForm,
+          groups: classicGroups,
+          results: classicResults,
+          resultRows: collectResultRows(classicResults),
+          root: classicRoot,
+          title: classicTitle,
+          variant: "classic",
+        };
+      }
     }
 
     const legacyForm = uniqueElement(
