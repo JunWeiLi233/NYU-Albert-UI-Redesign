@@ -8,8 +8,12 @@ import {
 const ALBERT_PORTAL_HOST = "sis.portal.nyu.edu";
 const ALBERT_COMPONENT_HOST = "sis.nyu.edu";
 const SUPPORTED_PATH = /^\/(?:psp|psc)\//i;
-const CLASS_SEARCH_COMPONENT =
-  /^\/psc\/csprod\/EMPLOYEE\/SA\/c\/NYU_SR_FL\.NYU_SSENRL_CART_FL\.GBL\/?$/i;
+const CLASS_SEARCH_COMPONENTS = [
+  // Fluid enrollment cart (original matched route).
+  /^\/psc\/csprod\/EMPLOYEE\/SA\/c\/NYU_SR_FL\.NYU_SSENRL_CART_FL\.GBL\/?$/i,
+  // Classic Class Search component (verified live: form #NYU_CLS_SRCH).
+  /^\/psc\/csprod\/EMPLOYEE\/SA\/c\/NYU_SR\.NYU_CLS_SRCH\.GBL\/?$/i,
+];
 const AUTHENTICATION_TITLE =
   /(?:sign[ -]?in|log[ -]?in|authentication|multi-factor|mfa|duo|shibboleth|password)/i;
 
@@ -161,7 +165,7 @@ export function isKnownAlbertComponentRoute(
   return (
     location.protocol === "https:" &&
     location.hostname === ALBERT_COMPONENT_HOST &&
-    CLASS_SEARCH_COMPONENT.test(location.pathname)
+    CLASS_SEARCH_COMPONENTS.some((pattern) => pattern.test(location.pathname))
   );
 }
 

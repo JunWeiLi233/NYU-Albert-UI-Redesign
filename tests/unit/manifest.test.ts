@@ -23,9 +23,18 @@ describe("extension manifest", () => {
         matches: [
           "https://sis.portal.nyu.edu/*",
           "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL*",
+          "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL*",
         ],
         run_at: "document_idle",
       }),
     ]);
+    // Every sis.nyu.edu match must stay scoped to the two proven Class Search
+    // component paths — never a broad sis.nyu.edu/* host grant.
+    const matches = (staticManifest.content_scripts ?? [])[0]?.matches ?? [];
+    const sisMatches = (matches as string[]).filter((m) =>
+      m.startsWith("https://sis.nyu.edu/"),
+    );
+    expect(sisMatches.every((m) => m.includes("NYU_SSENRL_CART_FL.GBL") || m.includes("NYU_CLS_SRCH.GBL"))).toBe(true);
+    expect(sisMatches).not.toContain("https://sis.nyu.edu/*");
   });
 });

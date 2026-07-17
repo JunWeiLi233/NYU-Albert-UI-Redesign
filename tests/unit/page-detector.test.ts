@@ -171,4 +171,23 @@ describe("Albert page detection", () => {
       }),
     ).toEqual({ kind: "unsupported" });
   });
+
+  it("recognizes the classic Class Search component route", () => {
+    document.title = "Class Search";
+    document.body.replaceChildren(document.createElement("main"));
+
+    expect(
+      classifyAlbertDocument({
+        document,
+        location: new URL(
+          "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL",
+        ),
+        topLevel: false,
+      }),
+    ).toMatchObject({
+      kind: "albert",
+      pageFamily: "academics",
+      topLevel: false,
+    });
+  });
 });

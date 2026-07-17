@@ -85,6 +85,42 @@ describe("Class Search card result rows", () => {
     manager.rollback();
   });
 
+  it("marks classic Class Search ps_grid-row results as result-row cards", () => {
+    const document = fixture("tests/fixtures/albert-class-search-classic.html");
+    const manager = new AdapterManager();
+    const classicLocation = new URL(
+      "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL",
+    );
+    const gridRows = document.querySelectorAll("tr.ps_grid-row");
+    // native status text of the first row is preserved
+    const firstStatus = gridRows[0]?.querySelectorAll("td")[1]?.textContent;
+
+    expect(
+      manager.reconcile({
+        document,
+        location: classicLocation,
+        pageFamily: "academics",
+        topLevel: false,
+      }),
+    ).toBe("class-search");
+
+    const marked = document.querySelectorAll(
+      '[data-better-albert-region="result-row"]',
+    );
+    expect(marked.length).toBe(gridRows.length);
+    // the classic variant reuses the class-search-legacy layout shell
+    expect(
+      document.querySelector('[data-better-albert-layout="class-search-legacy"]'),
+    ).toBe(document.querySelector("#PT_WRAPPER"));
+    // status cell text is untouched
+    const markedStatus = marked[0]?.querySelectorAll("td")[1];
+    expect(markedStatus?.textContent).toBe(firstStatus);
+    manager.rollback();
+    expect(
+      document.querySelector('[data-better-albert-region="result-row"]'),
+    ).toBeNull();
+  });
+
   it("does not mark rows when there are no results (fail open)", () => {
     const document = fixture("tests/fixtures/albert-class-search-empty.html");
     const manager = new AdapterManager();
