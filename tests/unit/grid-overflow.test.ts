@@ -86,4 +86,26 @@ describe("Grid overflow containment contract", () => {
     expect(idx).toBeGreaterThan(-1);
     expect(THEME_CSS.slice(idx, idx + 160)).toContain("width: auto !important");
   });
+
+  it("fills directory groups to their grid columns so link labels do not clip", () => {
+    // PeopleSoft .is_bb_LinkColumn groups ship at a fixed narrow width that
+    // under-fills the directory grid, so long labels (e.g. "Demographic
+    // Information") overflowed. The extension must force the group to fill.
+    const idx = THEME_CSS.indexOf(
+      '[data-better-albert-region="directory-group"] {',
+    );
+    expect(idx).toBeGreaterThan(-1);
+    const block = THEME_CSS.slice(idx, idx + 200);
+    expect(block).toContain("width: 100%");
+    expect(block).toContain("min-width: 0");
+
+    // Items must wrap long labels rather than clip them.
+    const itemIdx = THEME_CSS.indexOf(
+      '[data-better-albert-region="directory-item"] {',
+    );
+    expect(itemIdx).toBeGreaterThan(-1);
+    expect(THEME_CSS.slice(itemIdx, itemIdx + 300)).toContain(
+      "overflow-wrap: anywhere",
+    );
+  });
 });
