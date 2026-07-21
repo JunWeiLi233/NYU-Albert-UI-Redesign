@@ -346,20 +346,20 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await devtoolsSession.detach();
 });
 
-test("exposes mobile task explanations and delegates through native Albert controls", async () => {
+test("exposes task-first discovery at every supported width and delegates through native Albert controls", async () => {
   await routeSanitizedFixture();
   await page.goto(PORTAL_URL);
 
   const taskFinderToggle = page.getByRole("button", { name: "Find a task" });
-  const taskFinder = page.getByRole("region", { name: "Find a task" });
+  const taskFinder = page.getByRole("dialog", { name: "Find a task" });
   const closeTaskFinder = page.getByRole("button", {
     name: "Close task finder",
   });
 
-  await expect(taskFinderToggle).toBeHidden();
+  await expect(taskFinderToggle).toBeVisible();
   await expect(taskFinder).toBeHidden();
 
-  for (const width of [899, 768, 400, 200] as const) {
+  for (const width of [1440, 1200, 900, 899, 768, 400, 200] as const) {
     await page.setViewportSize({ height: 800, width });
     await expect(taskFinderToggle).toBeVisible();
     await expect(taskFinderToggle).toHaveAttribute("aria-expanded", "false");
@@ -374,6 +374,22 @@ test("exposes mobile task explanations and delegates through native Albert contr
     await expect(taskFinderToggle).toHaveAttribute("aria-expanded", "true");
     await expect(taskFinder).toBeVisible();
     await expect(closeTaskFinder).toBeFocused();
+    await expect(
+      taskFinder.getByRole("heading", {
+        exact: true,
+        name: "What you can do",
+      }),
+    ).toBeVisible();
+    await expect(
+      taskFinder.getByText("Available on this Albert page", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      taskFinder.getByText("Verified links from Other Resources", {
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(
       taskFinder.getByText("Plan classes and degree progress", {
         exact: true,
@@ -416,6 +432,48 @@ test("exposes mobile task explanations and delegates through native Albert contr
         () => document.documentElement.scrollWidth - window.innerWidth,
       ),
     ).toBeLessThanOrEqual(0);
+
+    if (width >= 900) {
+      await expect(taskFinder).toHaveCSS("position", "fixed");
+      expect(
+        await taskFinder.evaluate((finder) => {
+          const bounds = finder.getBoundingClientRect();
+          return {
+            bottom: Math.round(bounds.bottom),
+            left: Math.round(bounds.left),
+            right: Math.round(bounds.right),
+            top: Math.round(bounds.top),
+          };
+        }),
+      ).toEqual({
+        bottom: 800,
+        left: 264,
+        right: width,
+        top: 0,
+      });
+      expect(
+        await taskFinder
+          .locator(".ba-task-finder-section:first-child .ba-task-finder-list")
+          .evaluate((list) =>
+            getComputedStyle(list).gridTemplateColumns.trim().split(/\s+/)
+              .length,
+          ),
+      ).toBe(2);
+    } else {
+      await expect(taskFinder).toHaveCSS("position", "static");
+    }
+
+    if (width === 1200) {
+      const housingTask = taskFinder.getByRole("button", {
+        exact: true,
+        name: "Open Housing",
+      });
+      await closeTaskFinder.focus();
+      await closeTaskFinder.press("Shift+Tab");
+      await expect(housingTask).toBeFocused();
+      await housingTask.press("Tab");
+      await expect(closeTaskFinder).toBeFocused();
+    }
 
     await closeTaskFinder.press("Escape");
     await expect(taskFinderToggle).toHaveAttribute("aria-expanded", "false");
@@ -920,9 +978,9 @@ test("keeps every tool-heavy rail control reachable at a short desktop height", 
   ).toEqual({ hostHeight: 420, shellHeight: 420, viewportHeight: 420 });
 
   const controls = page.locator(
-    ".ba-disable-button, .ba-nav-item:not(:disabled), .ba-tool-item, .ba-resource-item",
+    ".ba-disable-button, .ba-nav-item:not(:disabled), .ba-task-finder-toggle, .ba-tool-item, .ba-resource-item",
   );
-  expect(await controls.count()).toBe(16);
+  expect(await controls.count()).toBe(17);
   for (const control of await controls.all()) {
     await control.evaluate((element) =>
       element.scrollIntoView({ block: "center", inline: "nearest" }),
@@ -1118,9 +1176,16 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
       });
     });
 
+  const taskFinderToggle = page.getByRole("button", { name: "Find a task" });
+  const taskFinder = page.getByRole("dialog", { name: "Find a task" });
+  await taskFinderToggle.click();
+  await expect(taskFinder).toBeVisible();
+
   await page
     .getByRole("button", { exact: true, name: "Other Resources" })
     .click();
+  await expect(taskFinder).toBeHidden();
+  await expect(taskFinderToggle).toHaveAttribute("aria-expanded", "false");
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-resource-overlay",
     "opened",

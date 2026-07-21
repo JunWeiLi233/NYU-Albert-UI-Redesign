@@ -122,15 +122,58 @@ export function AppShell({
     onOpenResource(toolId);
   };
 
+  const handlePrimaryNavigation = (
+    pageFamily: PrimaryPageFamily,
+  ): void => {
+    closeTaskFinder();
+    onNavigate(pageFamily);
+  };
+
+  const handlePrimaryTool = (toolId: PageToolId): void => {
+    closeTaskFinder();
+    onOpenTool(toolId);
+  };
+
+  const handlePrimaryResource = (toolId: PageToolId): void => {
+    closeTaskFinder();
+    onOpenResource(toolId);
+  };
+
   const handleTaskFinderKeyDown = (
     event: ReactKeyboardEvent<HTMLElement>,
   ): void => {
-    if (event.key !== "Escape") {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeTaskFinder(true);
+      return;
+    }
+
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const focusableControls = Array.from(
+      event.currentTarget.querySelectorAll<HTMLElement>(
+        "button:not(:disabled), a[href], [tabindex]:not([tabindex='-1'])",
+      ),
+    );
+    const firstControl = focusableControls[0];
+    const lastControl = focusableControls.at(-1);
+    if (!firstControl || !lastControl) {
+      return;
+    }
+
+    const root = event.currentTarget.getRootNode();
+    const activeElement =
+      root instanceof ShadowRoot ? root.activeElement : document.activeElement;
+    const shouldWrapBackward = event.shiftKey && activeElement === firstControl;
+    const shouldWrapForward = !event.shiftKey && activeElement === lastControl;
+    if (!shouldWrapBackward && !shouldWrapForward) {
       return;
     }
 
     event.preventDefault();
-    closeTaskFinder(true);
+    (shouldWrapBackward ? lastControl : firstControl).focus();
   };
 
   return (
@@ -188,7 +231,7 @@ export function AppShell({
                     ? `Open ${definition.label} using Albert navigation`
                     : `${definition.label} is not available in this Albert view`
                 }
-                onClick={() => onNavigate(pageFamily)}
+                onClick={() => handlePrimaryNavigation(pageFamily)}
               >
                 <span className="ba-nav-copy">
                   <span className="ba-nav-label-text">{definition.label}</span>
@@ -217,7 +260,7 @@ export function AppShell({
           >
             <span className="ba-task-finder-toggle-copy">
               <strong>Find a task</strong>
-              <span>Browse tasks and verified Albert links</span>
+              <span>Browse tasks and NYU resources</span>
             </span>
             <span className="ba-task-finder-toggle-arrow" aria-hidden="true">
               ⌄
@@ -228,8 +271,10 @@ export function AppShell({
             className="ba-task-finder"
             id={taskFinderId}
             aria-label="Find a task"
+            aria-modal="true"
             hidden={!isTaskFinderOpen}
             ref={taskFinderRef}
+            role="dialog"
             onKeyDown={handleTaskFinderKeyDown}
           >
             <div className="ba-task-finder-heading">
@@ -237,8 +282,8 @@ export function AppShell({
                 <span className="ba-task-finder-eyebrow">Find a task</span>
                 <strong>What do you need to do?</strong>
                 <span>
-                  Choose a task or an original Albert link. Better Albert
-                  never invents destinations.
+                  Choose a task or a link already available in Albert. Better
+                  Albert never invents destinations.
                 </span>
               </div>
               <button
@@ -258,7 +303,7 @@ export function AppShell({
                   className="ba-task-finder-section"
                   aria-labelledby={`${taskFinderId}-areas`}
                 >
-                  <h2 id={`${taskFinderId}-areas`}>Student services</h2>
+                  <h2 id={`${taskFinderId}-areas`}>What you can do</h2>
                   <div className="ba-task-finder-list">
                     {availableTaskFamilies.map((pageFamily) => {
                       const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
@@ -298,7 +343,7 @@ export function AppShell({
                 >
                   <div className="ba-task-finder-section-heading">
                     <h2 id={`${taskFinderId}-links`}>Quick access</h2>
-                    <span>Original Albert links</span>
+                    <span>Available on this Albert page</span>
                   </div>
                   <div className="ba-task-finder-list">
                     {availablePageTools.map((tool) => {
@@ -332,7 +377,7 @@ export function AppShell({
                 >
                   <div className="ba-task-finder-section-heading">
                     <h2 id={`${taskFinderId}-resources`}>NYU resources</h2>
-                    <span>Native Other Resources links</span>
+                    <span>Verified links from Other Resources</span>
                   </div>
                   <div className="ba-task-finder-list">
                     {availableResourceTools.map((tool) => {
@@ -380,7 +425,7 @@ export function AppShell({
                   aria-describedby={descriptionId}
                   aria-label={tool.label}
                   key={tool.id}
-                  onClick={() => onOpenTool(tool.id)}
+                  onClick={() => handlePrimaryTool(tool.id)}
                 >
                   <span className="ba-tool-copy">
                     <span className="ba-tool-name">{tool.label}</span>
@@ -415,7 +460,7 @@ export function AppShell({
                   aria-describedby={descriptionId}
                   aria-label={tool.label}
                   key={tool.id}
-                  onClick={() => onOpenResource(tool.id)}
+                  onClick={() => handlePrimaryResource(tool.id)}
                 >
                   <span className="ba-tool-copy">
                     <span className="ba-tool-name">{tool.label}</span>
