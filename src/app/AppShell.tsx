@@ -15,12 +15,14 @@ import {
 import type {
   PageToolDefinition,
   PageToolId,
+  TaskToolDefinition,
 } from "../content/page-tools";
 
 export interface AppShellProps {
   availablePageFamilies: readonly PrimaryPageFamily[];
   availablePageTools: readonly PageToolDefinition[];
   availableResourceTools: readonly PageToolDefinition[];
+  availableTaskTools: readonly TaskToolDefinition[];
   currentPageFamily: PageFamily;
   onDisable: () => Promise<void>;
   onNavigate: (pageFamily: PrimaryPageFamily) => void;
@@ -33,6 +35,7 @@ export function AppShell({
   availablePageFamilies,
   availablePageTools,
   availableResourceTools,
+  availableTaskTools,
   currentPageFamily,
   onDisable,
   onNavigate,
@@ -50,14 +53,20 @@ export function AppShell({
   const availableTaskFamilies = PRIMARY_PAGE_FAMILIES.filter((pageFamily) =>
     availablePageFamilies.includes(pageFamily),
   );
+  const taskToolGroups = PRIMARY_PAGE_FAMILIES.flatMap((pageFamily) => {
+    const tools = availableTaskTools.filter(
+      (tool) => tool.pageFamily === pageFamily,
+    );
+    return tools.length > 0 ? [{ pageFamily, tools }] : [];
+  });
   const hasTaskFinderContent =
     availableTaskFamilies.length > 0 ||
-    availablePageTools.length > 0 ||
+    availableTaskTools.length > 0 ||
     availableResourceTools.length > 0;
   const taskFinderViewSignature = [
     currentPageFamily,
     availableTaskFamilies.join(","),
-    availablePageTools.map(({ id }) => id).join(","),
+    availableTaskTools.map(({ id }) => id).join(","),
     availableResourceTools.map(({ id }) => id).join(","),
   ].join(":");
   const previousTaskFinderViewSignature = useRef(taskFinderViewSignature);
@@ -336,34 +345,51 @@ export function AppShell({
                 </section>
               )}
 
-              {availablePageTools.length > 0 && (
+              {taskToolGroups.length > 0 && (
                 <section
-                  className="ba-task-finder-section"
+                  className="ba-task-finder-section ba-task-finder-task-section"
                   aria-labelledby={`${taskFinderId}-links`}
                 >
                   <div className="ba-task-finder-section-heading">
-                    <h2 id={`${taskFinderId}-links`}>Quick access</h2>
-                    <span>Available on this Albert page</span>
+                    <h2 id={`${taskFinderId}-links`}>Task shortcuts</h2>
+                    <span>Verified in this Albert view</span>
                   </div>
-                  <div className="ba-task-finder-list">
-                    {availablePageTools.map((tool) => {
-                      const descriptionId = `${taskFinderId}-${tool.id}`;
+                  <div className="ba-task-finder-task-groups">
+                    {taskToolGroups.map(({ pageFamily, tools }) => {
+                      const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
+                      const groupId = `${taskFinderId}-task-group-${pageFamily}`;
 
                       return (
-                        <button
-                          className="ba-task-finder-item ba-task-finder-tool"
-                          type="button"
-                          aria-describedby={descriptionId}
-                          aria-label={`Open ${tool.label}`}
-                          key={tool.id}
-                          onClick={() => handleTaskFinderTool(tool.id)}
+                        <section
+                          className="ba-task-finder-task-group"
+                          aria-labelledby={groupId}
+                          key={pageFamily}
                         >
-                          <span className="ba-task-finder-item-copy">
-                            <strong>{tool.label}</strong>
-                            <span id={descriptionId}>{tool.description}</span>
-                          </span>
-                          <span aria-hidden="true">›</span>
-                        </button>
+                          <h3 id={groupId}>{definition.label}</h3>
+                          <div className="ba-task-finder-list">
+                            {tools.map((tool) => {
+                              const descriptionId = `${taskFinderId}-${tool.id}`;
+
+                              return (
+                                <button
+                                  className="ba-task-finder-item ba-task-finder-tool"
+                                  type="button"
+                                  aria-label={`Open ${tool.label} — ${tool.description}`}
+                                  key={tool.id}
+                                  onClick={() => handleTaskFinderTool(tool.id)}
+                                >
+                                  <span className="ba-task-finder-item-copy">
+                                    <strong>{tool.description}</strong>
+                                    <span id={descriptionId}>
+                                      {tool.label} · {definition.label}
+                                    </span>
+                                  </span>
+                                  <span aria-hidden="true">›</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </section>
                       );
                     })}
                   </div>
@@ -372,7 +398,7 @@ export function AppShell({
 
               {availableResourceTools.length > 0 && (
                 <section
-                  className="ba-task-finder-section"
+                  className="ba-task-finder-section ba-task-finder-resource-section"
                   aria-labelledby={`${taskFinderId}-resources`}
                 >
                   <div className="ba-task-finder-section-heading">

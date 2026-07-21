@@ -12,10 +12,10 @@ import {
   navigateWithNativeAlbert,
 } from "./native-navigation";
 import { applyNativeTheme, removeNativeTheme } from "./native-theme";
-import type { PageFamily } from "./page-families";
 import {
   getAvailablePageTools,
   getAvailableResourceTools,
+  getAvailableTaskTools,
   openNativePageTool,
   openNativeResourceTool,
 } from "./page-tools";
@@ -45,6 +45,7 @@ function viewModelSignature(viewModel: ShellViewModel): string {
     viewModel.availablePageFamilies.join(","),
     viewModel.availablePageTools.map(({ id }) => id).join(","),
     viewModel.availableResourceTools.map(({ id }) => id).join(","),
+    viewModel.availableTaskTools.map(({ id }) => id).join(","),
   ].join(":");
 }
 
@@ -62,7 +63,6 @@ export async function startContentScript({
   let mountedHeader: MountedHeader | undefined;
   let mutationObserver: MutationObserver | undefined;
   let relatedContextObserver: MutationObserver | undefined;
-  let activePageFamily: PageFamily = "albert";
   let lastViewModelSignature = "";
   let preferenceRevision = 0;
   let reconcileTimer: number | undefined;
@@ -221,9 +221,9 @@ export async function startContentScript({
           classification.pageFamily,
         ),
         availableResourceTools: getAvailableResourceTools(document),
+        availableTaskTools: getAvailableTaskTools(document),
         currentPageFamily: classification.pageFamily,
       };
-      activePageFamily = classification.pageFamily;
       const nextSignature = viewModelSignature(viewModel);
 
       if (!mountedHeader) {
@@ -247,11 +247,7 @@ export async function startContentScript({
             openNativeResourceTool(document, toolId);
           },
           onOpenTool: (toolId) => {
-            openNativePageTool(
-              document,
-              activePageFamily,
-              toolId,
-            );
+            openNativePageTool(document, toolId);
           },
           onSkipToContent: () => {
             const workspace = document.querySelector<HTMLElement>(

@@ -475,7 +475,13 @@ button {
     grid-column: 1 / -1;
   }
 
-  .ba-task-finder-section:first-child .ba-task-finder-list {
+  .ba-task-finder-task-section,
+  .ba-task-finder-resource-section {
+    grid-column: 1 / -1;
+  }
+
+  .ba-task-finder-section:first-child .ba-task-finder-list,
+  .ba-task-finder-resource-section .ba-task-finder-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -498,6 +504,21 @@ button {
   .ba-task-finder-list {
     display: grid;
     gap: var(--ba-space-2);
+  }
+
+  .ba-task-finder-task-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ba-space-6);
+  }
+
+  .ba-task-finder-task-group > h3 {
+    margin: 0 0 var(--ba-space-2);
+    color: var(--ba-color-muted-ink);
+    font-size: var(--ba-font-size-xs);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .ba-task-finder-item {
@@ -872,7 +893,7 @@ button {
 
   .ba-task-finder-sections {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--ba-space-6);
     padding-top: var(--ba-space-5);
   }
@@ -896,6 +917,26 @@ button {
   .ba-task-finder-list {
     display: grid;
     gap: var(--ba-space-2);
+  }
+
+  .ba-task-finder-section:first-child .ba-task-finder-list,
+  .ba-task-finder-resource-section .ba-task-finder-list,
+  .ba-task-finder-task-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ba-task-finder-task-groups {
+    display: grid;
+    gap: var(--ba-space-5);
+  }
+
+  .ba-task-finder-task-group > h3 {
+    margin: 0 0 var(--ba-space-2);
+    color: var(--ba-color-muted-ink);
+    font-size: var(--ba-font-size-xs);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .ba-task-finder-item {
@@ -1001,6 +1042,12 @@ button {
   .ba-task-finder-sections {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--ba-space-5);
+  }
+
+  .ba-task-finder-section:first-child .ba-task-finder-list,
+  .ba-task-finder-resource-section .ba-task-finder-list,
+  .ba-task-finder-task-groups {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
