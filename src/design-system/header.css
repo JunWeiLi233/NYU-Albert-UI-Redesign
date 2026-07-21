@@ -196,9 +196,22 @@ button {
   scrollbar-width: thin;
 }
 
+.ba-primary-label {
+  padding: var(--ba-space-3) var(--ba-space-6) var(--ba-space-2);
+  color: rgb(255 255 255 / 70%);
+  font-size: var(--ba-font-size-xs);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .ba-nav-item {
   position: relative;
+  display: grid;
   width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ba-space-2);
   padding: var(--ba-space-3) var(--ba-space-6);
   border: 0;
   background: transparent;
@@ -208,8 +221,41 @@ button {
   text-align: left;
 }
 
+.ba-nav-copy,
+.ba-tool-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.ba-nav-label-text,
+.ba-tool-name {
+  font-weight: 800;
+}
+
+.ba-nav-hint {
+  color: currentColor;
+  font-size: var(--ba-font-size-xs);
+  font-weight: 400;
+  line-height: 1.3;
+  opacity: 0.72;
+}
+
+.ba-nav-arrow,
+.ba-tool-arrow {
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1;
+  transition: transform var(--ba-motion-fast);
+}
+
 .ba-nav-item:hover:not(:disabled) {
   background: rgb(255 255 255 / 12%);
+}
+
+.ba-nav-item:hover:not(:disabled) .ba-nav-arrow,
+.ba-tool-item:hover .ba-tool-arrow {
+  transform: translateX(2px);
 }
 
 .ba-nav-item[aria-current="page"] {
@@ -237,10 +283,23 @@ button {
   background: #400066;
 }
 
+.ba-tool-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ba-space-2);
+  margin-bottom: var(--ba-space-2);
+}
+
 .ba-tool-label {
   display: block;
-  margin-bottom: var(--ba-space-2);
   color: rgb(255 255 255 / 72%);
+}
+
+.ba-tool-origin {
+  color: rgb(255 255 255 / 62%);
+  font-size: 0.625rem;
+  line-height: 1.2;
 }
 
 .ba-tool-list {
@@ -249,7 +308,11 @@ button {
 }
 
 .ba-tool-item {
+  display: grid;
   width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ba-space-2);
   padding: var(--ba-space-2) var(--ba-space-3);
   border: 1px solid rgb(255 255 255 / 34%);
   background: transparent;
@@ -257,6 +320,13 @@ button {
   font-size: var(--ba-font-size-sm);
   font-weight: 700;
   text-align: left;
+}
+
+.ba-tool-description {
+  color: rgb(255 255 255 / 70%);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  line-height: 1.3;
 }
 
 .ba-tool-item:hover {
@@ -386,7 +456,17 @@ button {
     border-left: 1px solid var(--ba-color-rule);
   }
 
+  .ba-primary-label,
+  .ba-nav-hint,
+  .ba-nav-arrow,
+  .ba-tool-origin,
+  .ba-tool-description,
+  .ba-tool-arrow {
+    display: none;
+  }
+
   .ba-nav-item {
+    display: block;
     width: auto;
     flex: 0 0 auto;
     padding: var(--ba-space-3) var(--ba-space-4);
@@ -416,6 +496,11 @@ button {
     background: var(--ba-color-white);
   }
 
+  .ba-tool-heading {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
   .ba-tool-label {
     margin: 0;
     color: var(--ba-color-muted-ink);
@@ -430,6 +515,7 @@ button {
   }
 
   .ba-tool-item {
+    display: block;
     width: auto;
     flex: 0 0 auto;
     border-color: var(--ba-color-rule-strong);
@@ -507,6 +593,8 @@ button {
   .ba-disable-button,
   .ba-nav-item,
   .ba-tool-item,
+  .ba-nav-arrow,
+  .ba-tool-arrow,
   .ba-skip-link {
     transition: none;
   }

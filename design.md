@@ -3,7 +3,7 @@
 ## Source of truth
 
 - Status: Active — full-page redesign contract
-- Last refreshed: July 16, 2026
+- Last refreshed: July 21, 2026
 - Primary product surfaces: the authenticated Albert shell; its selected Home, Academics, Grades & Transcripts, Finances, and Personal Info workspaces; recognized deep pages; exact Class Search; and the native Other Resources navigation overlay.
 - Evidence reviewed: this file's NYU website evidence appendix, `nyu-albert-extension-plan.md`, the extension source and sanitized fixtures, and a privacy-preserving authenticated walkthrough of Albert's primary and deep hub navigation on July 16, 2026.
 
@@ -27,14 +27,14 @@ The redesign operates on original native DOM in place. Adapters may annotate sta
 
 ## Personas and jobs
 
-- Primary personas: NYU students using Albert in a Chromium browser.
-- User jobs: understand where they are, move among Albert's primary areas, scan dense native pages more comfortably, keep using official Albert controls, and disable the enhancement instantly when desired.
+- Primary personas: NYU students using Albert in a Chromium browser, with first-time students as the primary wayfinding and terminology stress case.
+- User jobs: understand where they are, discover common tasks without already knowing PeopleSoft terminology, move among Albert's primary areas, scan dense native pages more comfortably, keep using official Albert controls, and disable the enhancement instantly when desired.
 - Key contexts of use: authenticated, data-sensitive academic workflows where clarity and native-system trust matter more than decoration.
 
 ## Information architecture
 
-- Primary navigation: Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other Resources. Extension navigation delegates to matching native Albert links and never synthesizes destinations.
-- Secondary tools: show only allowlisted, currently present native destinations for the active family. Home may expose Course Search and Weekly Schedule; Academics may expose Academic Planner, Degree Progress Report, What If Report, and graduation status; Records may expose Enrollment Verification, Test Scores, unofficial transcripts, and transfer credit; Finances may expose balance, statement, and financial-aid status; Personal Info may expose read-only section entry points; Resources may expose calendars and NYU offices.
+- Primary navigation: Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other Resources. Each destination pairs the native area name with a concise task-oriented hint for students who do not yet know Albert's organization. Extension navigation delegates to matching native Albert links and never synthesizes destinations.
+- Secondary tools: present allowlisted, currently present native destinations as descriptive Quick access links rather than unexplained system labels. Home may expose Course Search and Weekly Schedule; Academics may expose Academic Planner, Degree Progress Report, What If Report, and graduation status; Records may expose Enrollment Verification, Test Scores, unofficial transcripts, and transfer credit; Finances may expose balance, statement, and financial-aid status; Personal Info may expose read-only section entry points; Resources may expose calendars and NYU offices.
 - Core routes/screens: recognized authenticated `/psp/` and `/psc/` documents on `https://sis.portal.nyu.edu/*`, plus the proven cross-origin Class Search/cart component at `https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL`; launcher, authentication, and unrelated SIS components are excluded.
 - Content hierarchy: identity and primary-navigation frame, page-family title and context, family-specific primary workspace, secondary native tools, supporting sections, then the original native transaction controls and messages.
 
