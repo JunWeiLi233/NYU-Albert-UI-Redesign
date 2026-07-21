@@ -13,6 +13,14 @@ const PREFERRED_NAVIGATION_CONTAINERS = [
   "#pthnavbc",
 ].join(",");
 
+const OTHER_RESOURCES_MENU_ID = "MENU_ID_NYU_OTHER_RESOURCES_FLDR";
+const OTHER_RESOURCES_SUBMENU_ID = "SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR";
+
+type NativeNavigationControl =
+  | HTMLAnchorElement
+  | HTMLButtonElement
+  | HTMLLIElement;
+
 function normalizeLabel(value: string | null): string {
   return value?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
 }
@@ -43,10 +51,50 @@ function findMatchingControl(
   );
 }
 
+function findOtherResourcesTrigger(
+  document: Document,
+): HTMLLIElement | undefined {
+  const candidates = Array.from(
+    document.querySelectorAll<HTMLLIElement>(
+      `li#${OTHER_RESOURCES_MENU_ID}`,
+    ),
+  ).filter((candidate) => {
+    const nativeMenu = candidate.closest("#IS_BB_HEADER_MENU");
+    const handler = candidate.getAttribute("onclick") ?? "";
+    const matchingDirectControls = Array.from(
+      candidate.querySelectorAll(":scope > a, :scope > button"),
+    ).filter(
+      (control) =>
+        normalizeLabel(
+          control.textContent ?? control.getAttribute("aria-label"),
+        ) === "other resources",
+    );
+    const matchingSubmenus =
+      nativeMenu?.querySelectorAll(
+        `:scope > #${OTHER_RESOURCES_SUBMENU_ID}`,
+      ) ?? [];
+
+    return (
+      !candidate.closest("#better-albert-header-host") &&
+      matchingDirectControls.length === 1 &&
+      matchingSubmenus.length === 1 &&
+      handler.includes("toggleMegaMenu") &&
+      handler.includes(OTHER_RESOURCES_MENU_ID) &&
+      handler.includes(OTHER_RESOURCES_SUBMENU_ID)
+    );
+  });
+
+  return candidates.length === 1 ? candidates[0] : undefined;
+}
+
 export function findNativeNavigationControl(
   document: Document,
   pageFamily: PrimaryPageFamily,
-): HTMLAnchorElement | HTMLButtonElement | undefined {
+): NativeNavigationControl | undefined {
+  if (pageFamily === "resources") {
+    return findOtherResourcesTrigger(document);
+  }
+
   const labels = PAGE_FAMILY_DEFINITIONS[pageFamily].nativeLabels;
   for (const container of document.querySelectorAll(
     PREFERRED_NAVIGATION_CONTAINERS,

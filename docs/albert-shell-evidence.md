@@ -50,6 +50,19 @@ structure counts only. Other Resources appeared as a native overlay directory
 rather than a sixth selected `.isSSS_Main` tab, so resource links remain
 delegated to the original overlay controls.
 
+The July 20, 2026 walkthrough also confirmed that Albert exposes two
+same-label “Other Resources” controls with different behavior. The overlay
+trigger is the parent list item
+`#MENU_ID_NYU_OTHER_RESOURCES_FLDR`, whose native handler calls
+`toggleMegaMenu` with `#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR`. Its child anchor
+uses a nonstandard inline parent call and is not a safe delegation target.
+Better Albert therefore activates only the verified parent trigger and treats
+missing or ambiguous matches as unavailable. The matching native directory is
+the direct child `#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR`; when Albert marks it
+`.open`, Better Albert positions only that stable outer boundary above the
+workspace while leaving its native links, destinations, handlers, and internal
+structure unchanged.
+
 ## Current detection contract
 
 The extension requires all of the following:

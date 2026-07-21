@@ -11,6 +11,18 @@ describe("native Albert navigation delegation", () => {
       <nav id="albert-native-navigation">
         <a href="#home">Home</a>
         <a href="#finances">Finances</a>
+        <a href="#generic-resources">Other Resources</a>
+      </nav>
+      <nav id="IS_BB_HEADER_MENU">
+        <ul>
+          <li
+            id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+            onclick="javascript:toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected');"
+          >
+            <a href="#" onclick="this.parent().click();">Other Resources</a>
+          </li>
+        </ul>
+        <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR"></div>
       </nav>
       <main><a href="#content-finances">Finances</a></main>
     `;
@@ -53,5 +65,47 @@ describe("native Albert navigation delegation", () => {
     expect(getAvailablePageFamilies(document)).not.toContain("finances");
     expect(navigateWithNativeAlbert(document, "finances")).toBe(false);
     expect(click).not.toHaveBeenCalled();
+  });
+
+  it("delegates Other Resources to the exact native overlay parent", () => {
+    const overlayTrigger = document.querySelector<HTMLLIElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const genericControl = document.querySelector<HTMLAnchorElement>(
+      'nav a[href="#generic-resources"]',
+    );
+    const overlayClick = vi.fn((event: Event) => {
+      event.stopImmediatePropagation();
+    });
+    const genericClick = vi.fn((event: Event) => event.preventDefault());
+    overlayTrigger?.addEventListener("click", overlayClick, true);
+    genericControl?.addEventListener("click", genericClick);
+
+    expect(getAvailablePageFamilies(document)).toContain("resources");
+    expect(navigateWithNativeAlbert(document, "resources")).toBe(true);
+    expect(overlayClick).toHaveBeenCalledOnce();
+    expect(genericClick).not.toHaveBeenCalled();
+  });
+
+  it("fails open when the exact Other Resources overlay trigger is absent", () => {
+    document.querySelector("#MENU_ID_NYU_OTHER_RESOURCES_FLDR")?.remove();
+    const genericControl = document.querySelector<HTMLAnchorElement>(
+      'nav a[href="#generic-resources"]',
+    );
+    const genericClick = vi.fn((event: Event) => event.preventDefault());
+    genericControl?.addEventListener("click", genericClick);
+
+    expect(getAvailablePageFamilies(document)).not.toContain("resources");
+    expect(navigateWithNativeAlbert(document, "resources")).toBe(false);
+    expect(genericClick).not.toHaveBeenCalled();
+  });
+
+  it("fails open when the verified Other Resources submenu is absent", () => {
+    document
+      .querySelector("#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR")
+      ?.remove();
+
+    expect(getAvailablePageFamilies(document)).not.toContain("resources");
+    expect(navigateWithNativeAlbert(document, "resources")).toBe(false);
   });
 });

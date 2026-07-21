@@ -24,8 +24,37 @@ html[data-better-albert-enabled] body {
 }
 
 html[data-better-albert-enabled][data-better-albert-compact-header]
-  :where(#NYU_ALBERT_LOGO, #IS_BB_HEADER_MENU) {
+  #NYU_ALBERT_LOGO {
   display: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_MENU {
+  position: relative !important;
+  display: block !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_MENU
+  > :not(#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR) {
+  display: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR.open {
+  position: absolute !important;
+  z-index: 80 !important;
+  inset: 0 0 auto !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-height: calc(100dvh - 58px) !important;
+  overflow: auto !important;
+  border-top: 4px solid var(--ba-native-violet) !important;
+  background: var(--ba-native-surface) !important;
+  color: var(--ba-native-ink) !important;
 }
 
 html[data-better-albert-enabled][data-better-albert-compact-header]
@@ -44,6 +73,14 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
 }
 
 @media (min-width: 900px) {
+  html[data-better-albert-enabled][data-better-albert-compact-header]
+    #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR.open {
+    position: fixed !important;
+    inset: 60px 0 0 var(--ba-native-rail) !important;
+    width: auto !important;
+    max-height: none !important;
+  }
+
   html[data-better-albert-enabled][data-better-albert-top-level] body {
     min-height: 100vh;
     padding-left: 0 !important;

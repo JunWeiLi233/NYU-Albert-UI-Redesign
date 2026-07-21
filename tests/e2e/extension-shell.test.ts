@@ -165,7 +165,29 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   );
   await expect(page.locator("#IS_BB_HEADER_WRAPPER")).toBeVisible();
   await expect(page.locator("#NYU_ALBERT_LOGO")).toHaveCSS("display", "none");
-  await expect(page.locator("#IS_BB_HEADER_MENU")).toHaveCSS("display", "none");
+  await expect(page.locator("#IS_BB_HEADER_MENU")).toHaveCSS(
+    "display",
+    "block",
+  );
+  expect(
+    await page.locator("#IS_BB_HEADER_MENU").evaluate((menu) =>
+      Math.round(menu.getBoundingClientRect().height),
+    ),
+  ).toBe(0);
+  expect(
+    await page
+      .locator(
+        "#IS_BB_HEADER_MENU > :not(#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR)",
+      )
+      .evaluateAll((children) =>
+        children.every(
+          (child) => getComputedStyle(child).display === "none",
+        ),
+      ),
+  ).toBe(true);
+  await expect(
+    page.locator("#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR"),
+  ).toBeHidden();
   expect(
     await page.locator("#ptbr_header_container, #NYU_DEFAULT_HEADER").evaluateAll(
       (elements) =>
@@ -267,6 +289,9 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(
     page.getByRole("button", { exact: true, name: "Course Search" }),
   ).toHaveCSS("color", "rgb(11, 11, 11)");
+  await expect(
+    page.getByText("Unofficial · Local only", { exact: true }),
+  ).toBeVisible();
   const extensionTargetHeights = await page
     .locator(".ba-disable-button, .ba-nav-item, .ba-tool-item")
     .evaluateAll((elements) =>
@@ -805,27 +830,26 @@ test("delegates shell navigation to the native Albert control", async () => {
 test("delegates Other Resources to Albert's native overlay trigger", async () => {
   await routeSanitizedFixture();
   await page.goto(PORTAL_URL);
-  await page.locator('a[href="/fixture-resources"]').evaluate((link) => {
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-      document.body.dataset.nativeResourceOverlay = "opened";
-      const overlay = document.createElement("section");
-      overlay.id = "sanitized-native-resource-overlay";
-      overlay.setAttribute("aria-label", "Sanitized native resources");
-      overlay.style.cssText =
-        "position:fixed;z-index:100;inset:0;background:#fff;pointer-events:auto";
-      const close = document.createElement("button");
-      close.type = "button";
-      close.textContent = "Close native resources";
-      close.style.cssText = "position:absolute;top:16px;left:300px";
-      close.addEventListener("click", () => {
-        document.body.dataset.nativeResourceOverlay = "closed";
-        overlay.remove();
+  await page
+    .locator("#MENU_ID_NYU_OTHER_RESOURCES_FLDR")
+    .evaluate((trigger) => {
+      trigger.addEventListener("click", (event) => {
+        event.preventDefault();
+        const overlay = document.querySelector<HTMLElement>(
+          "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+        );
+        const isOpening = overlay?.hasAttribute("hidden") ?? false;
+        if (overlay) {
+          overlay.toggleAttribute("hidden", !isOpening);
+          overlay.classList.toggle("open", isOpening);
+        }
+        if (isOpening) {
+          document.body.dataset.nativeResourceOverlay = "opened";
+        } else {
+          document.body.dataset.nativeResourceOverlay = "closed";
+        }
       });
-      overlay.append(close);
-      document.body.append(overlay);
     });
-  });
 
   await page
     .getByRole("button", { exact: true, name: "Other Resources" })
@@ -834,15 +858,57 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "data-native-resource-overlay",
     "opened",
   );
-  await expect(page.locator("#sanitized-native-resource-overlay")).toBeVisible();
-  expect(await page.evaluate(() => document.elementFromPoint(30, 30)?.id)).toBe(
-    "sanitized-native-resource-overlay",
+  const nativeOverlay = page.locator(
+    "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
   );
-  await page.getByRole("button", { name: "Close native resources" }).click();
+  await expect(nativeOverlay).toBeVisible();
+  await expect(nativeOverlay).toHaveCSS("position", "fixed");
+  expect(
+    await nativeOverlay.evaluate((overlay) => {
+      const bounds = overlay.getBoundingClientRect();
+      return {
+        bottom: Math.round(bounds.bottom),
+        left: Math.round(bounds.left),
+        right: Math.round(bounds.right),
+        top: Math.round(bounds.top),
+      };
+    }),
+  ).toEqual({ bottom: 800, left: 264, right: 1280, top: 60 });
+  await page
+    .getByRole("button", { exact: true, name: "Other Resources" })
+    .click();
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-resource-overlay",
     "closed",
   );
+  await expect(nativeOverlay).toBeHidden();
+
+  await page.setViewportSize({ height: 800, width: 400 });
+  await page
+    .getByRole("button", { exact: true, name: "Other Resources" })
+    .click();
+  await expect(nativeOverlay).toBeVisible();
+  await expect(nativeOverlay).toHaveCSS("position", "absolute");
+  const mobileOverlayBounds = await nativeOverlay.evaluate((overlay) => {
+    const bounds = overlay.getBoundingClientRect();
+    return {
+      bottom: Math.round(bounds.bottom),
+      documentOverflow:
+        document.documentElement.scrollWidth - window.innerWidth,
+      left: Math.round(bounds.left),
+      right: Math.round(bounds.right),
+      top: Math.round(bounds.top),
+    };
+  });
+  expect(mobileOverlayBounds.documentOverflow).toBe(0);
+  expect(mobileOverlayBounds.left).toBe(0);
+  expect(mobileOverlayBounds.right).toBe(400);
+  expect(mobileOverlayBounds.top).toBeGreaterThanOrEqual(0);
+  expect(mobileOverlayBounds.bottom).toBeLessThanOrEqual(800);
+  await page
+    .getByRole("button", { exact: true, name: "Other Resources" })
+    .click();
+  await expect(nativeOverlay).toBeHidden();
 });
 
 test("delegates the active page tool to its allowlisted native control", async () => {
