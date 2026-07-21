@@ -1,6 +1,9 @@
 const JAVASCRIPT_URL_PATTERN = /^\s*javascript:/i;
 
-export type NativeControl = HTMLAnchorElement | HTMLButtonElement;
+export type NativeControl =
+  | HTMLAnchorElement
+  | HTMLButtonElement
+  | HTMLLIElement;
 
 /**
  * Activates an existing Albert control without evaluating javascript: URLs in

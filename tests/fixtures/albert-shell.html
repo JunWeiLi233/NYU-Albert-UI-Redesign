@@ -16,6 +16,24 @@
           <div id="NYU_ALBERT_LOGO" style="height: 90px">Albert</div>
           <nav id="IS_BB_HEADER_MENU" style="height: 211px" aria-label="Legacy Albert menu">
             <a href="/fixture-students">Students</a>
+            <ul>
+              <li
+                id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+                class="megaMenuItem"
+                onclick="javascript:toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected');"
+              >
+                <a href="#" onclick="this.parent().click();">Other Resources</a>
+              </li>
+            </ul>
+            <div
+              id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR"
+              class="megaSubMenu"
+              aria-label="Sanitized native resources"
+              hidden
+            >
+              <a href="/fixture-calendar">Academic Calendar</a>
+              <a href="/fixture-registrar">University Registrar</a>
+            </div>
           </nav>
         </div>
       </div>
