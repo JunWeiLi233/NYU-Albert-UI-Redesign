@@ -63,6 +63,11 @@ the direct child `#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR`; when Albert marks it
 workspace while leaving its native links, destinations, handlers, and internal
 structure unchanged.
 
+The July 21, 2026 follow-up confirmed that the open directory has one direct
+`ul`, with each native destination represented by a direct `li > a`. Better
+Albert may arrange those exact descendants as a responsive grid, but it does
+not insert, remove, reorder, or replace any directory item or control.
+
 ## Current detection contract
 
 The extension requires all of the following:

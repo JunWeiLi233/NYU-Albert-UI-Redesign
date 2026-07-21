@@ -7,6 +7,7 @@ import {
 
 describe("native Albert navigation delegation", () => {
   beforeEach(() => {
+    document.documentElement.scrollTop = 400;
     document.body.innerHTML = `
       <nav id="albert-native-navigation">
         <a href="#home">Home</a>
@@ -37,6 +38,7 @@ describe("native Albert navigation delegation", () => {
 
     expect(getAvailablePageFamilies(document)).toContain("finances");
     expect(navigateWithNativeAlbert(document, "finances")).toBe(true);
+    expect(document.documentElement.scrollTop).toBe(0);
     expect(click).toHaveBeenCalledOnce();
   });
 
@@ -83,6 +85,7 @@ describe("native Albert navigation delegation", () => {
 
     expect(getAvailablePageFamilies(document)).toContain("resources");
     expect(navigateWithNativeAlbert(document, "resources")).toBe(true);
+    expect(document.documentElement.scrollTop).toBe(400);
     expect(overlayClick).toHaveBeenCalledOnce();
     expect(genericClick).not.toHaveBeenCalled();
   });

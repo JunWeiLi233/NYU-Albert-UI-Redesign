@@ -21,6 +21,12 @@ type NativeNavigationControl =
   | HTMLButtonElement
   | HTMLLIElement;
 
+function resetPrimaryNavigationScroll(document: Document): void {
+  const scrollRoot = document.scrollingElement ?? document.documentElement;
+  scrollRoot.scrollLeft = 0;
+  scrollRoot.scrollTop = 0;
+}
+
 function normalizeLabel(value: string | null): string {
   return value?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
 }
@@ -125,6 +131,9 @@ export function navigateWithNativeAlbert(
     return false;
   }
 
+  if (pageFamily !== "resources") {
+    resetPrimaryNavigationScroll(document);
+  }
   activateNativeControl(control);
   return true;
 }
