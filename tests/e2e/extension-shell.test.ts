@@ -401,7 +401,9 @@ test("isolates desktop workspace overflow without obscuring native overlays", as
 
   await page.mouse.move(1100, 600);
   await page.mouse.wheel(0, 500);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(0);
   expect(
     await page.locator(HEADER_HOST_SELECTOR).evaluate((host) =>
       Math.round(host.getBoundingClientRect().top),
@@ -814,8 +816,14 @@ test("delegates shell navigation to the native Albert control", async () => {
       );
     });
   });
+  await page.evaluate(() => {
+    document.body.style.minHeight = "2000px";
+    window.scrollTo(0, 500);
+  });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
 
   await page.getByRole("button", { exact: true, name: "Finances" }).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-navigation",
     "finances",
@@ -863,6 +871,32 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   );
   await expect(nativeOverlay).toBeVisible();
   await expect(nativeOverlay).toHaveCSS("position", "fixed");
+  const nativeDirectory = nativeOverlay.locator(":scope > ul");
+  await expect(nativeDirectory).toHaveCSS("display", "grid");
+  expect(
+    await nativeDirectory.evaluate((directory) =>
+      getComputedStyle(directory).gridTemplateColumns.split(" ").length,
+    ),
+  ).toBeGreaterThan(1);
+  expect(
+    await nativeDirectory.locator(":scope > li > a").evaluateAll((links) =>
+      links.every((link) => link.getBoundingClientRect().height >= 48),
+    ),
+  ).toBe(true);
+  expect(
+    await nativeDirectory
+      .locator(":scope > li")
+      .first()
+      .evaluate((item) => {
+        const link = item.querySelector(":scope > a");
+        if (!link) {
+          return false;
+        }
+        const itemWidth = item.getBoundingClientRect().width;
+        const linkWidth = link.getBoundingClientRect().width;
+        return itemWidth >= 200 && Math.abs(itemWidth - linkWidth) < 1;
+      }),
+  ).toBe(true);
   expect(
     await nativeOverlay.evaluate((overlay) => {
       const bounds = overlay.getBoundingClientRect();
@@ -889,6 +923,11 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     .click();
   await expect(nativeOverlay).toBeVisible();
   await expect(nativeOverlay).toHaveCSS("position", "absolute");
+  expect(
+    await nativeDirectory.evaluate((directory) =>
+      getComputedStyle(directory).gridTemplateColumns.split(" ").length,
+    ),
+  ).toBe(1);
   const mobileOverlayBounds = await nativeOverlay.evaluate((overlay) => {
     const bounds = overlay.getBoundingClientRect();
     return {
