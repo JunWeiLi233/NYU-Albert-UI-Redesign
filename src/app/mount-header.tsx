@@ -18,6 +18,7 @@ export const HEADER_HOST_ID = "better-albert-header-host";
 export interface ShellViewModel {
   availablePageFamilies: readonly PrimaryPageFamily[];
   availablePageTools: readonly PageToolDefinition[];
+  availableResourceTools: readonly PageToolDefinition[];
   currentPageFamily: PageFamily;
 }
 
@@ -25,6 +26,7 @@ export interface MountHeaderOptions extends ShellViewModel {
   document: Document;
   onDisable: () => Promise<void>;
   onNavigate: (pageFamily: PrimaryPageFamily) => void;
+  onOpenResource: (toolId: PageToolId) => void;
   onOpenTool: (toolId: PageToolId) => void;
   onSkipToContent: () => void;
 }
@@ -48,10 +50,12 @@ export function removeMountedHeader(document: Document): void {
 export function mountHeader({
   availablePageFamilies,
   availablePageTools,
+  availableResourceTools,
   currentPageFamily,
   document,
   onDisable,
   onNavigate,
+  onOpenResource,
   onOpenTool,
   onSkipToContent,
 }: MountHeaderOptions): MountedHeader {
@@ -89,9 +93,11 @@ export function mountHeader({
           <AppShell
             availablePageFamilies={viewModel.availablePageFamilies}
             availablePageTools={viewModel.availablePageTools}
+            availableResourceTools={viewModel.availableResourceTools}
             currentPageFamily={viewModel.currentPageFamily}
             onDisable={onDisable}
             onNavigate={onNavigate}
+            onOpenResource={onOpenResource}
             onOpenTool={onOpenTool}
             onSkipToContent={onSkipToContent}
           />,
@@ -99,7 +105,12 @@ export function mountHeader({
       });
     };
 
-    render({ availablePageFamilies, availablePageTools, currentPageFamily });
+    render({
+      availablePageFamilies,
+      availablePageTools,
+      availableResourceTools,
+      currentPageFamily,
+    });
 
     return {
       host,

@@ -1,5 +1,6 @@
 import type { PageFamily } from "./page-families";
 import { activateNativeControl } from "./native-control";
+import { findNativeOtherResourcesSubmenu } from "./native-navigation";
 
 export type PageToolId =
   | "course-search"
@@ -31,6 +32,33 @@ export interface PageToolDefinition {
   label: string;
   nativeLabels: readonly string[];
 }
+
+const RESOURCE_TOOLS: readonly PageToolDefinition[] = [
+  {
+    description: "Check NYU academic dates and deadlines",
+    id: "academic-calendar",
+    label: "Academic Calendar",
+    nativeLabels: ["Academic Calendar"],
+  },
+  {
+    description: "Open registration and records resources",
+    id: "university-registrar",
+    label: "University Registrar",
+    nativeLabels: ["University Registrar"],
+  },
+  {
+    description: "Find NYU health and wellness support",
+    id: "wellness-center",
+    label: "Wellness Center",
+    nativeLabels: ["Wellness Center"],
+  },
+  {
+    description: "Open NYU housing resources",
+    id: "housing",
+    label: "Housing",
+    nativeLabels: ["Housing"],
+  },
+];
 
 const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
   albert: [],
@@ -152,32 +180,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       nativeLabels: ["Emergency Contacts"],
     },
   ],
-  resources: [
-    {
-      description: "Check NYU academic dates and deadlines",
-      id: "academic-calendar",
-      label: "Academic Calendar",
-      nativeLabels: ["Academic Calendar"],
-    },
-    {
-      description: "Open registration and records resources",
-      id: "university-registrar",
-      label: "University Registrar",
-      nativeLabels: ["University Registrar"],
-    },
-    {
-      description: "Find NYU health and wellness support",
-      id: "wellness-center",
-      label: "Wellness Center",
-      nativeLabels: ["Wellness Center"],
-    },
-    {
-      description: "Open NYU housing resources",
-      id: "housing",
-      label: "Housing",
-      nativeLabels: ["Housing"],
-    },
-  ],
+  resources: [],
 };
 
 const VERIFIED_TOOL_CONTAINERS = [
@@ -236,6 +239,40 @@ function findToolControl(
   return undefined;
 }
 
+function findResourceToolControl(
+  document: Document,
+  definition: PageToolDefinition,
+): HTMLAnchorElement | undefined {
+  const submenu = findNativeOtherResourcesSubmenu(document);
+  if (!submenu) {
+    return undefined;
+  }
+
+  const expectedLabels = new Set(definition.nativeLabels.map(normalizeLabel));
+  const matches = Array.from(
+    submenu.querySelectorAll<HTMLAnchorElement>(":scope > ul > li > a"),
+  ).filter((anchor) =>
+    expectedLabels.has(
+      normalizeLabel(anchor.textContent ?? anchor.getAttribute("aria-label")),
+    ),
+  );
+  if (matches.length !== 1) {
+    return undefined;
+  }
+
+  const control = matches[0];
+  if (
+    !control ||
+    !control.isConnected ||
+    control.ownerDocument !== document ||
+    control.matches("[disabled], [aria-disabled='true']")
+  ) {
+    return undefined;
+  }
+
+  return control;
+}
+
 export function getAvailablePageTools(
   document: Document,
   pageFamily: PageFamily,
@@ -257,6 +294,32 @@ export function openNativePageTool(
 
   const control = findToolControl(document, definition);
   if (!control || control.matches(":disabled, [aria-disabled='true']")) {
+    return false;
+  }
+
+  activateNativeControl(control);
+  return true;
+}
+
+export function getAvailableResourceTools(
+  document: Document,
+): PageToolDefinition[] {
+  return RESOURCE_TOOLS.filter((definition) =>
+    Boolean(findResourceToolControl(document, definition)),
+  );
+}
+
+export function openNativeResourceTool(
+  document: Document,
+  toolId: PageToolId,
+): boolean {
+  const definition = RESOURCE_TOOLS.find(({ id }) => id === toolId);
+  if (!definition) {
+    return false;
+  }
+
+  const control = findResourceToolControl(document, definition);
+  if (!control) {
     return false;
   }
 

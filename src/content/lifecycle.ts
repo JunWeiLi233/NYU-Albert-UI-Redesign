@@ -13,7 +13,12 @@ import {
 } from "./native-navigation";
 import { applyNativeTheme, removeNativeTheme } from "./native-theme";
 import type { PageFamily } from "./page-families";
-import { getAvailablePageTools, openNativePageTool } from "./page-tools";
+import {
+  getAvailablePageTools,
+  getAvailableResourceTools,
+  openNativePageTool,
+  openNativeResourceTool,
+} from "./page-tools";
 import {
   classifyAlbertDocument,
   isAuthenticationDocument,
@@ -39,6 +44,7 @@ function viewModelSignature(viewModel: ShellViewModel): string {
     viewModel.currentPageFamily,
     viewModel.availablePageFamilies.join(","),
     viewModel.availablePageTools.map(({ id }) => id).join(","),
+    viewModel.availableResourceTools.map(({ id }) => id).join(","),
   ].join(":");
 }
 
@@ -214,6 +220,7 @@ export async function startContentScript({
           document,
           classification.pageFamily,
         ),
+        availableResourceTools: getAvailableResourceTools(document),
         currentPageFamily: classification.pageFamily,
       };
       activePageFamily = classification.pageFamily;
@@ -235,6 +242,9 @@ export async function startContentScript({
           },
           onNavigate: (pageFamily) => {
             navigateWithNativeAlbert(document, pageFamily);
+          },
+          onOpenResource: (toolId) => {
+            openNativeResourceTool(document, toolId);
           },
           onOpenTool: (toolId) => {
             openNativePageTool(
