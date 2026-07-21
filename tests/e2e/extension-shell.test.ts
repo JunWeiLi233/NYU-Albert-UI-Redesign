@@ -147,13 +147,17 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(
     page.getByRole("button", { exact: true, name: "Course Search" }),
   ).toBeVisible();
-  await expect(page.getByText("Student services", { exact: true })).toBeVisible();
-  await expect(page.getByText("Quick access", { exact: true })).toBeVisible();
+  await expect(page.locator(".ba-primary-label")).toHaveText("Student services");
+  await expect(page.locator(".ba-tool-label")).toHaveText("Quick access");
   await expect(
-    page.getByText("Plan classes and degree progress", { exact: true }),
+    page.locator(".ba-nav-hint", {
+      hasText: "Plan classes and degree progress",
+    }),
   ).toBeVisible();
   await expect(
-    page.getByText("Find classes for an upcoming term", { exact: true }),
+    page.locator(".ba-tool-description", {
+      hasText: "Find classes for an upcoming term",
+    }),
   ).toBeVisible();
   await expect(page.locator(".is_bb_LinkContainer")).toHaveCSS(
     "display",
@@ -334,6 +338,143 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await devtoolsSession.detach();
 });
 
+test("exposes mobile task explanations and delegates through native Albert controls", async () => {
+  await routeSanitizedFixture();
+  await page.goto(PORTAL_URL);
+
+  const taskFinderToggle = page.getByRole("button", { name: "Find a task" });
+  const taskFinder = page.getByRole("region", { name: "Find a task" });
+  const closeTaskFinder = page.getByRole("button", {
+    name: "Close task finder",
+  });
+
+  await expect(taskFinderToggle).toBeHidden();
+  await expect(taskFinder).toBeHidden();
+
+  for (const width of [899, 768, 400, 200] as const) {
+    await page.setViewportSize({ height: 800, width });
+    await expect(taskFinderToggle).toBeVisible();
+    await expect(taskFinderToggle).toHaveAttribute("aria-expanded", "false");
+    expect(
+      await taskFinderToggle.evaluate((button) =>
+        Math.round(button.getBoundingClientRect().height),
+      ),
+    ).toBeGreaterThanOrEqual(44);
+
+    await taskFinderToggle.focus();
+    await taskFinderToggle.press("Enter");
+    await expect(taskFinderToggle).toHaveAttribute("aria-expanded", "true");
+    await expect(taskFinder).toBeVisible();
+    await expect(closeTaskFinder).toBeFocused();
+    await expect(
+      taskFinder.getByText("Plan classes and degree progress", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      taskFinder.getByText("Find classes for an upcoming term", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(taskFinder.locator(".ba-task-finder-area")).toHaveCount(6);
+    await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(2);
+    expect(
+      await taskFinder
+        .locator(".ba-task-finder-item")
+        .evaluateAll((items) =>
+          Math.min(
+            ...items.map((item) => item.getBoundingClientRect().height),
+          ),
+        ),
+    ).toBeGreaterThanOrEqual(44);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      ),
+    ).toBeLessThanOrEqual(0);
+
+    await closeTaskFinder.press("Escape");
+    await expect(taskFinderToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(taskFinder).toBeHidden();
+    await expect(taskFinderToggle).toBeFocused();
+  }
+
+  await page.setViewportSize({ height: 800, width: 400 });
+  await page.locator('a[href="/fixture-academics"]').evaluate((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.body.dataset.nativeTaskFinderNavigation = "academics";
+    });
+  });
+  await page.locator('a[href="/fixture-course-search"]').evaluate((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.body.dataset.nativeTaskFinderTool = "course-search";
+    });
+  });
+
+  await taskFinderToggle.press("Enter");
+  await taskFinder
+    .getByRole("button", { exact: true, name: "Open Academics" })
+    .click();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-task-finder-navigation",
+    "academics",
+  );
+  await expect(taskFinder).toBeHidden();
+
+  await taskFinderToggle.press("Enter");
+  await taskFinder
+    .getByRole("button", { exact: true, name: "Open Course Search" })
+    .click();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-task-finder-tool",
+    "course-search",
+  );
+  await expect(taskFinder).toBeHidden();
+
+  await taskFinderToggle.press("Enter");
+  await taskFinder
+    .getByRole("button", { exact: true, name: "Open Academics" })
+    .focus();
+  await page.evaluate(() => {
+    document
+      .querySelector('[aria-current="page"]')
+      ?.removeAttribute("aria-current");
+    document
+      .querySelector('a[href="/fixture-finances"]')
+      ?.setAttribute("aria-current", "page");
+  });
+  await expect(
+    page.getByRole("button", { exact: true, name: "Finances" }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(taskFinder).toBeHidden();
+  await expect(taskFinderToggle).toBeFocused();
+
+  await taskFinderToggle.press("Enter");
+  await page.evaluate(() => {
+    const dialog = document.querySelector<HTMLElement>("#pt_modals");
+    const mask = document.querySelector<HTMLElement>("#pt_modalMaskCover");
+    const returnButton = dialog?.querySelector<HTMLButtonElement>("button");
+    dialog?.removeAttribute("hidden");
+    mask?.removeAttribute("hidden");
+    document.body.classList.add("iLightboxOpen");
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        document.body.dataset.nativeModalEscapeDefaultPrevented = String(
+          event.defaultPrevented,
+        );
+      }
+    });
+    returnButton?.focus();
+  });
+  await page.keyboard.press("Escape");
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-modal-escape-default-prevented",
+    "false",
+  );
+});
+
 test("isolates desktop workspace overflow without obscuring native overlays", async () => {
   await page.setViewportSize({ height: 800, width: 1440 });
   await routeSanitizedFixture();
@@ -493,7 +634,9 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       ).not.toHaveCount(0);
     }
     await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(1);
-    const currentArea = page.locator(HEADER_HOST_SELECTOR).locator('[aria-current="page"]');
+    const currentArea = page
+      .locator(HEADER_HOST_SELECTOR)
+      .locator('.ba-primary-nav [aria-current="page"]');
     await expect(currentArea).toHaveCount(1);
 
     for (const width of [200, 400, 600, 768, 899, 900, 1200, 1440] as const) {
