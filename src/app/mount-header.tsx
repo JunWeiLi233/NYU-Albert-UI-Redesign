@@ -8,6 +8,7 @@ import type {
 import type {
   PageToolDefinition,
   PageToolId,
+  TaskToolDefinition,
 } from "../content/page-tools";
 import headerCss from "../design-system/header.css?inline";
 import tokensCss from "../design-system/tokens.css?inline";
@@ -19,6 +20,7 @@ export interface ShellViewModel {
   availablePageFamilies: readonly PrimaryPageFamily[];
   availablePageTools: readonly PageToolDefinition[];
   availableResourceTools: readonly PageToolDefinition[];
+  availableTaskTools: readonly TaskToolDefinition[];
   currentPageFamily: PageFamily;
 }
 
@@ -51,6 +53,7 @@ export function mountHeader({
   availablePageFamilies,
   availablePageTools,
   availableResourceTools,
+  availableTaskTools,
   currentPageFamily,
   document,
   onDisable,
@@ -94,6 +97,7 @@ export function mountHeader({
             availablePageFamilies={viewModel.availablePageFamilies}
             availablePageTools={viewModel.availablePageTools}
             availableResourceTools={viewModel.availableResourceTools}
+            availableTaskTools={viewModel.availableTaskTools}
             currentPageFamily={viewModel.currentPageFamily}
             onDisable={onDisable}
             onNavigate={onNavigate}
@@ -109,6 +113,7 @@ export function mountHeader({
       availablePageFamilies,
       availablePageTools,
       availableResourceTools,
+      availableTaskTools,
       currentPageFamily,
     });
 

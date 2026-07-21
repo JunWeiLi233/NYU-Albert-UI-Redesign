@@ -1,4 +1,7 @@
-import type { PageFamily } from "./page-families";
+import type {
+  PageFamily,
+  PrimaryPageFamily,
+} from "./page-families";
 import { activateNativeControl } from "./native-control";
 import { findNativeOtherResourcesSubmenu } from "./native-navigation";
 
@@ -32,6 +35,18 @@ export interface PageToolDefinition {
   label: string;
   nativeLabels: readonly string[];
 }
+
+export interface TaskToolDefinition extends PageToolDefinition {
+  pageFamily: PrimaryPageFamily;
+}
+
+const PAGE_TOOL_FAMILIES = [
+  "home",
+  "academics",
+  "grades",
+  "finances",
+  "personal",
+] as const satisfies readonly PrimaryPageFamily[];
 
 const RESOURCE_TOOLS: readonly PageToolDefinition[] = [
   {
@@ -218,25 +233,29 @@ function findToolControl(
   definition: PageToolDefinition,
 ): HTMLAnchorElement | HTMLButtonElement | undefined {
   const expectedLabels = new Set(definition.nativeLabels.map(normalizeLabel));
+  const matches = new Set<HTMLAnchorElement | HTMLButtonElement>();
 
   for (const container of document.querySelectorAll(VERIFIED_TOOL_CONTAINERS)) {
     for (const element of container.querySelectorAll("a, button")) {
       if (
         (element instanceof HTMLAnchorElement ||
           element instanceof HTMLButtonElement) &&
+        element.isConnected &&
+        element.ownerDocument === document &&
         !isHiddenByNativePage(element, document) &&
+        !element.matches(":disabled, [disabled], [aria-disabled='true']") &&
         expectedLabels.has(
           normalizeLabel(
             element.textContent ?? element.getAttribute("aria-label"),
           ),
         )
       ) {
-        return element;
+        matches.add(element);
       }
     }
   }
 
-  return undefined;
+  return matches.size === 1 ? matches.values().next().value : undefined;
 }
 
 function findResourceToolControl(
@@ -282,18 +301,29 @@ export function getAvailablePageTools(
   );
 }
 
+export function getAvailableTaskTools(
+  document: Document,
+): TaskToolDefinition[] {
+  return PAGE_TOOL_FAMILIES.flatMap((pageFamily) =>
+    PAGE_TOOLS[pageFamily]
+      .filter((definition) => Boolean(findToolControl(document, definition)))
+      .map((definition) => ({ ...definition, pageFamily })),
+  );
+}
+
 export function openNativePageTool(
   document: Document,
-  pageFamily: PageFamily,
   toolId: PageToolId,
 ): boolean {
-  const definition = PAGE_TOOLS[pageFamily].find(({ id }) => id === toolId);
+  const definition = PAGE_TOOL_FAMILIES.flatMap(
+    (pageFamily) => PAGE_TOOLS[pageFamily],
+  ).find(({ id }) => id === toolId);
   if (!definition) {
     return false;
   }
 
   const control = findToolControl(document, definition);
-  if (!control || control.matches(":disabled, [aria-disabled='true']")) {
+  if (!control) {
     return false;
   }
 

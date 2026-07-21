@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getAvailablePageTools,
   getAvailableResourceTools,
+  getAvailableTaskTools,
   openNativePageTool,
   openNativeResourceTool,
 } from "../../src/content/page-tools";
@@ -44,7 +45,7 @@ describe("page-family native tools", () => {
     expect(getAvailablePageTools(document, "home").map(({ id }) => id)).toEqual([
       "course-search",
     ]);
-    expect(openNativePageTool(document, "home", "course-search")).toBe(true);
+    expect(openNativePageTool(document, "course-search")).toBe(true);
     expect(click).toHaveBeenCalledOnce();
   });
 
@@ -56,7 +57,7 @@ describe("page-family native tools", () => {
     });
     search?.addEventListener("click", click);
 
-    expect(openNativePageTool(document, "home", "course-search")).toBe(true);
+    expect(openNativePageTool(document, "course-search")).toBe(true);
     expect(click).toHaveBeenCalledOnce();
   });
 
@@ -67,9 +68,55 @@ describe("page-family native tools", () => {
     expect(getAvailablePageTools(document, "home").map(({ id }) => id)).not.toContain(
       "weekly-schedule",
     );
-    expect(openNativePageTool(document, "home", "weekly-schedule")).toBe(
-      false,
+    expect(openNativePageTool(document, "weekly-schedule")).toBe(false);
+  });
+
+  it("discovers and delegates unique cross-family task controls already present in the current view", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <a href="#search">Course Search</a>
+        <a href="#degree">Degree Progress Report</a>
+        <a href="#verification">Enrollment Verification</a>
+        <a href="#aid">View Financial Aid Status</a>
+        <a href="#addresses">Addresses</a>
+      </section>
+    `;
+    const financialAid = document.querySelector<HTMLAnchorElement>(
+      'a[href="#aid"]',
     );
+    const click = vi.fn((event: Event) => event.preventDefault());
+    financialAid?.addEventListener("click", click);
+
+    expect(
+      getAvailableTaskTools(document).map(({ id, pageFamily }) => ({
+        id,
+        pageFamily,
+      })),
+    ).toEqual([
+      { id: "course-search", pageFamily: "home" },
+      { id: "degree-progress", pageFamily: "academics" },
+      { id: "enrollment-verification", pageFamily: "grades" },
+      { id: "financial-aid-status", pageFamily: "finances" },
+      { id: "addresses", pageFamily: "personal" },
+    ]);
+    expect(openNativePageTool(document, "financial-aid-status")).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
+  it("omits ambiguous, disabled, and hidden cross-family task controls", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <a href="#degree-one">Degree Progress Report</a>
+        <a href="#degree-two">Degree Progress Report</a>
+        <button disabled>Addresses</button>
+        <a href="#aid" aria-hidden="true">View Financial Aid Status</a>
+      </section>
+    `;
+
+    expect(getAvailableTaskTools(document)).toEqual([]);
+    expect(openNativePageTool(document, "degree-progress")).toBe(false);
+    expect(openNativePageTool(document, "addresses")).toBe(false);
+    expect(openNativePageTool(document, "financial-aid-status")).toBe(false);
   });
 
   it("exposes Home tools from Albert's selected shopping-cart workspace", () => {

@@ -384,6 +384,11 @@ test("exposes task-first discovery at every supported width and delegates throug
       taskFinder.getByText("Available on this Albert page", {
         exact: true,
       }),
+    ).toHaveCount(0);
+    await expect(
+      taskFinder.getByText("Verified in this Albert view", {
+        exact: true,
+      }),
     ).toBeVisible();
     await expect(
       taskFinder.getByText("Verified links from Other Resources", {
@@ -411,7 +416,10 @@ test("exposes task-first discovery at every supported width and delegates throug
       }),
     ).toBeVisible();
     await expect(taskFinder.locator(".ba-task-finder-area")).toHaveCount(6);
-    await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(2);
+    await expect(taskFinder.locator(".ba-task-finder-task-group")).toHaveCount(
+      5,
+    );
+    await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(18);
     await expect(taskFinder.locator(".ba-task-finder-resource")).toHaveCount(4);
     await expect(
       taskFinder.getByText("Find NYU health and wellness support", {
@@ -548,6 +556,12 @@ test("exposes task-first discovery at every supported width and delegates throug
       document.body.dataset.nativeTaskFinderTool = "course-search";
     });
   });
+  await page.locator('a[href="/fixture-financial-aid"]').evaluate((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.body.dataset.nativeCrossFamilyTask = "financial-aid";
+    });
+  });
   await page
     .locator(
       '#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR > ul > li > a[href="/fixture-wellness"]',
@@ -584,11 +598,32 @@ test("exposes task-first discovery at every supported width and delegates throug
 
   await taskFinderToggle.press("Enter");
   await taskFinder
-    .getByRole("button", { exact: true, name: "Open Course Search" })
+    .getByRole("button", {
+      exact: true,
+      name: "Open Course Search — Find classes for an upcoming term",
+    })
     .click();
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-task-finder-tool",
     "course-search",
+  );
+  await expect(taskFinder).toBeHidden();
+
+  await taskFinderToggle.press("Enter");
+  const financialAidTask = taskFinder.getByRole("button", {
+    exact: true,
+    name: "Open Financial Aid Status — Review aid status and requirements",
+  });
+  await expect(financialAidTask.locator("strong")).toHaveText(
+    "Review aid status and requirements",
+  );
+  await expect(
+    financialAidTask.locator(".ba-task-finder-item-copy > span"),
+  ).toHaveText("Financial Aid Status · Finances");
+  await financialAidTask.click();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-cross-family-task",
+    "financial-aid",
   );
   await expect(taskFinder).toBeHidden();
 

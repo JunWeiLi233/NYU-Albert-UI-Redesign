@@ -6,15 +6,16 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.2 includes:
+Version 0.5.3 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - one isolated Shadow DOM application frame: a fixed violet rail on desktop and
   a compact responsive workspace header below 900px;
 - task-first discovery cards at every supported width that explain what
   students can do before identifying Albert's original area name;
-- an NYU-style full-workspace desktop task panel that consolidates verified
-  Albert destinations and NYU resources without inventing links;
+- an NYU-style full-workspace desktop task panel that groups every uniquely
+  verified task already present in the current Albert view by its native area,
+  alongside verified NYU resources and without inventing links;
 - compact-height containment for Albert's native skip link, which stays
   keyboard-accessible without covering task or NYU resource cards;
 - Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other
@@ -88,7 +89,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.2` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.3` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 
