@@ -109,6 +109,17 @@ describe("content-script lifecycle", () => {
         shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
       ).map((button) => button.getAttribute("aria-label")),
     ).toEqual(["Course Search", "Weekly Schedule"]);
+    expect(
+      Array.from(
+        shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-resource-item") ??
+          [],
+      ).map((button) => button.getAttribute("aria-label")),
+    ).toEqual([
+      "Academic Calendar",
+      "University Registrar",
+      "Wellness Center",
+      "Housing",
+    ]);
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       true,
     );
@@ -175,6 +186,32 @@ describe("content-script lifecycle", () => {
     ).find((button) => button.getAttribute("aria-label") === "Course Search");
 
     courseSearchButton?.click();
+    expect(nativeClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
+  it("delegates a universal resource shortcut to the original hidden native link", async () => {
+    const nativeWellness = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-wellness"]',
+    );
+    const nativeClick = vi.fn((event: Event) => event.preventDefault());
+    nativeWellness?.addEventListener("click", nativeClick);
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const wellnessButton = Array.from(
+      document
+        .getElementById(HEADER_HOST_ID)
+        ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(
+          ".ba-resource-item",
+        ) ?? [],
+    ).find((button) => button.getAttribute("aria-label") === "Wellness Center");
+
+    wellnessButton?.click();
     expect(nativeClick).toHaveBeenCalledOnce();
     lifecycle.stop();
   });
@@ -448,7 +485,7 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
-  it("adapts the native-tool strip for all six navigation contexts", async () => {
+  it("adapts current-area tools without duplicating universal resources", async () => {
     const lifecycle = await startContentScript({
       document,
       location: portalUrl,
@@ -461,7 +498,7 @@ describe("content-script lifecycle", () => {
       ["/fixture-grades", "Enrollment Verification"],
       ["/fixture-finances", "Bursar Balance"],
       ["/fixture-personal", "Demographic Information"],
-      ["/fixture-resources", "Academic Calendar"],
+      ["/fixture-resources", undefined],
     ] as const;
 
     for (const [href, expectedTool] of expectations) {
@@ -480,8 +517,58 @@ describe("content-script lifecycle", () => {
           ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ??
           [],
       ).map((button) => button.getAttribute("aria-label"));
-      expect(toolLabels).toContain(expectedTool);
+      if (expectedTool) {
+        expect(toolLabels).toContain(expectedTool);
+      } else {
+        expect(toolLabels).toEqual([]);
+      }
+      expect(
+        Array.from(
+          document
+            .getElementById(HEADER_HOST_ID)
+            ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(
+              ".ba-resource-item",
+            ) ?? [],
+        ).map((button) => button.getAttribute("aria-label")),
+      ).toEqual([
+        "Academic Calendar",
+        "University Registrar",
+        "Wellness Center",
+        "Housing",
+      ]);
     }
+
+    lifecycle.stop();
+  });
+
+  it("reconciles resource shortcuts when the native submenu changes", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const resourceLabels = (): Array<string | null> =>
+      Array.from(
+        document
+          .getElementById(HEADER_HOST_ID)
+          ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(
+            ".ba-resource-item",
+          ) ?? [],
+      ).map((button) => button.getAttribute("aria-label"));
+
+    document.querySelector('a[href="/fixture-wellness"]')?.remove();
+    await settleLifecycle();
+    expect(resourceLabels()).not.toContain("Wellness Center");
+
+    const submenuList = document.querySelector(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR > ul",
+    );
+    const wellnessItem = document.createElement("li");
+    wellnessItem.innerHTML = '<a href="/fixture-wellness-replacement">Wellness Center</a>';
+    submenuList?.append(wellnessItem);
+    await settleLifecycle();
+    expect(resourceLabels()).toContain("Wellness Center");
 
     lifecycle.stop();
   });

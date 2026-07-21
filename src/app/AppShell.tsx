@@ -20,9 +20,11 @@ import type {
 export interface AppShellProps {
   availablePageFamilies: readonly PrimaryPageFamily[];
   availablePageTools: readonly PageToolDefinition[];
+  availableResourceTools: readonly PageToolDefinition[];
   currentPageFamily: PageFamily;
   onDisable: () => Promise<void>;
   onNavigate: (pageFamily: PrimaryPageFamily) => void;
+  onOpenResource: (toolId: PageToolId) => void;
   onOpenTool: (toolId: PageToolId) => void;
   onSkipToContent: () => void;
 }
@@ -30,9 +32,11 @@ export interface AppShellProps {
 export function AppShell({
   availablePageFamilies,
   availablePageTools,
+  availableResourceTools,
   currentPageFamily,
   onDisable,
   onNavigate,
+  onOpenResource,
   onOpenTool,
   onSkipToContent,
 }: AppShellProps) {
@@ -47,11 +51,14 @@ export function AppShell({
     availablePageFamilies.includes(pageFamily),
   );
   const hasTaskFinderContent =
-    availableTaskFamilies.length > 0 || availablePageTools.length > 0;
+    availableTaskFamilies.length > 0 ||
+    availablePageTools.length > 0 ||
+    availableResourceTools.length > 0;
   const taskFinderViewSignature = [
     currentPageFamily,
     availableTaskFamilies.join(","),
     availablePageTools.map(({ id }) => id).join(","),
+    availableResourceTools.map(({ id }) => id).join(","),
   ].join(":");
   const previousTaskFinderViewSignature = useRef(taskFinderViewSignature);
 
@@ -108,6 +115,11 @@ export function AppShell({
   const handleTaskFinderTool = (toolId: PageToolId): void => {
     closeTaskFinder(true);
     onOpenTool(toolId);
+  };
+
+  const handleTaskFinderResource = (toolId: PageToolId): void => {
+    closeTaskFinder(true);
+    onOpenResource(toolId);
   };
 
   const handleTaskFinderKeyDown = (
@@ -313,6 +325,40 @@ export function AppShell({
                   </div>
                 </section>
               )}
+
+              {availableResourceTools.length > 0 && (
+                <section
+                  className="ba-task-finder-section"
+                  aria-labelledby={`${taskFinderId}-resources`}
+                >
+                  <div className="ba-task-finder-section-heading">
+                    <h2 id={`${taskFinderId}-resources`}>NYU resources</h2>
+                    <span>Native Other Resources links</span>
+                  </div>
+                  <div className="ba-task-finder-list">
+                    {availableResourceTools.map((tool) => {
+                      const descriptionId = `${taskFinderId}-resource-${tool.id}`;
+
+                      return (
+                        <button
+                          className="ba-task-finder-item ba-task-finder-resource"
+                          type="button"
+                          aria-describedby={descriptionId}
+                          aria-label={`Open ${tool.label}`}
+                          key={tool.id}
+                          onClick={() => handleTaskFinderResource(tool.id)}
+                        >
+                          <span className="ba-task-finder-item-copy">
+                            <strong>{tool.label}</strong>
+                            <span id={descriptionId}>{tool.description}</span>
+                          </span>
+                          <span aria-hidden="true">›</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
             </div>
           </section>
         </>
@@ -336,6 +382,41 @@ export function AppShell({
                   aria-label={tool.label}
                   key={tool.id}
                   onClick={() => onOpenTool(tool.id)}
+                >
+                  <span className="ba-tool-copy">
+                    <span className="ba-tool-name">{tool.label}</span>
+                    <span className="ba-tool-description" id={descriptionId}>
+                      {tool.description}
+                    </span>
+                  </span>
+                  <span className="ba-tool-arrow" aria-hidden="true">
+                    ›
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
+
+      {availableResourceTools.length > 0 && (
+        <nav className="ba-resource-nav" aria-label="NYU resources">
+          <div className="ba-tool-heading">
+            <span className="ba-tool-label">NYU resources</span>
+            <span className="ba-tool-origin">Native Other Resources links</span>
+          </div>
+          <div className="ba-tool-list">
+            {availableResourceTools.map((tool) => {
+              const descriptionId = `ba-resource-description-${tool.id}`;
+
+              return (
+                <button
+                  className="ba-resource-item"
+                  type="button"
+                  aria-describedby={descriptionId}
+                  aria-label={tool.label}
+                  key={tool.id}
+                  onClick={() => onOpenResource(tool.id)}
                 >
                   <span className="ba-tool-copy">
                     <span className="ba-tool-name">{tool.label}</span>

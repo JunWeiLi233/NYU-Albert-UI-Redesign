@@ -21,6 +21,11 @@ type NativeNavigationControl =
   | HTMLButtonElement
   | HTMLLIElement;
 
+interface OtherResourcesNavigation {
+  submenu: HTMLElement;
+  trigger: HTMLLIElement;
+}
+
 function resetPrimaryNavigationScroll(document: Document): void {
   const scrollRoot = document.scrollingElement ?? document.documentElement;
   scrollRoot.scrollLeft = 0;
@@ -57,9 +62,21 @@ function findMatchingControl(
   );
 }
 
-function findOtherResourcesTrigger(
+function findOtherResourcesNavigation(
   document: Document,
-): HTMLLIElement | undefined {
+): OtherResourcesNavigation | undefined {
+  const submenus = document.querySelectorAll<HTMLElement>(
+    `[id="${OTHER_RESOURCES_SUBMENU_ID}"]`,
+  );
+  if (submenus.length !== 1) {
+    return undefined;
+  }
+
+  const submenu = submenus[0];
+  if (!submenu) {
+    return undefined;
+  }
+
   const candidates = Array.from(
     document.querySelectorAll<HTMLLIElement>(
       `li#${OTHER_RESOURCES_MENU_ID}`,
@@ -84,13 +101,27 @@ function findOtherResourcesTrigger(
       !candidate.closest("#better-albert-header-host") &&
       matchingDirectControls.length === 1 &&
       matchingSubmenus.length === 1 &&
+      matchingSubmenus[0] === submenu &&
       handler.includes("toggleMegaMenu") &&
       handler.includes(OTHER_RESOURCES_MENU_ID) &&
       handler.includes(OTHER_RESOURCES_SUBMENU_ID)
     );
   });
 
-  return candidates.length === 1 ? candidates[0] : undefined;
+  const trigger = candidates.length === 1 ? candidates[0] : undefined;
+  return trigger ? { submenu, trigger } : undefined;
+}
+
+function findOtherResourcesTrigger(
+  document: Document,
+): HTMLLIElement | undefined {
+  return findOtherResourcesNavigation(document)?.trigger;
+}
+
+export function findNativeOtherResourcesSubmenu(
+  document: Document,
+): HTMLElement | undefined {
+  return findOtherResourcesNavigation(document)?.submenu;
 }
 
 export function findNativeNavigationControl(

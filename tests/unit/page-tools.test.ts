@@ -2,8 +2,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   getAvailablePageTools,
+  getAvailableResourceTools,
   openNativePageTool,
+  openNativeResourceTool,
 } from "../../src/content/page-tools";
+
+function nativeResourceMenu(items: string): string {
+  return `
+    <nav id="IS_BB_HEADER_MENU">
+      <ul>
+        <li
+          id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+          onclick="toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected')"
+        >
+          <a href="#">Other Resources</a>
+        </li>
+      </ul>
+      <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR" hidden>
+        <ul>${items}</ul>
+      </div>
+    </nav>
+  `;
+}
 
 describe("page-family native tools", () => {
   beforeEach(() => {
@@ -91,5 +111,98 @@ describe("page-family native tools", () => {
   it("ignores tools hidden by the native page", () => {
     document.querySelector(".is_bb_LinkContainer")?.setAttribute("hidden", "");
     expect(getAvailablePageTools(document, "home")).toEqual([]);
+  });
+
+  it("exposes hidden native resource links and delegates to the exact anchor", () => {
+    document.body.innerHTML = nativeResourceMenu(`
+      <li><a href="#calendar">Academic Calendar</a></li>
+      <li><a href="#registrar">University Registrar</a></li>
+      <li><a href="#wellness">Wellness Center</a></li>
+      <li><a href="#housing">Housing</a></li>
+    `);
+    const wellness = document.querySelector<HTMLAnchorElement>(
+      'a[href="#wellness"]',
+    );
+    const click = vi.fn((event: Event) => event.preventDefault());
+    wellness?.addEventListener("click", click);
+
+    expect(getAvailableResourceTools(document).map(({ id }) => id)).toEqual([
+      "academic-calendar",
+      "university-registrar",
+      "wellness-center",
+      "housing",
+    ]);
+    expect(openNativeResourceTool(document, "wellness-center")).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
+  it("ignores resource lookalikes outside the exact direct submenu boundary", () => {
+    document.body.innerHTML = `
+      <a href="#outside">Academic Calendar</a>
+      ${nativeResourceMenu(`
+        <li><div><a href="#nested">University Registrar</a></div></li>
+        <li><a href="#housing">Housing</a></li>
+      `)}
+    `;
+
+    expect(getAvailableResourceTools(document).map(({ id }) => id)).toEqual([
+      "housing",
+    ]);
+    expect(openNativeResourceTool(document, "academic-calendar")).toBe(false);
+    expect(openNativeResourceTool(document, "university-registrar")).toBe(
+      false,
+    );
+  });
+
+  it("omits ambiguous or disabled resource controls", () => {
+    document.body.innerHTML = nativeResourceMenu(`
+      <li><a href="#calendar-one">Academic Calendar</a></li>
+      <li><a href="#calendar-two">Academic Calendar</a></li>
+      <li><a href="#wellness" aria-disabled="true">Wellness Center</a></li>
+      <li><a href="#housing">Housing</a></li>
+    `);
+
+    expect(getAvailableResourceTools(document).map(({ id }) => id)).toEqual([
+      "housing",
+    ]);
+    expect(openNativeResourceTool(document, "academic-calendar")).toBe(false);
+    expect(openNativeResourceTool(document, "wellness-center")).toBe(false);
+  });
+
+  it("fails open when the exact resource submenu is missing or duplicated", () => {
+    document.body.innerHTML = `${nativeResourceMenu(
+      '<li><a href="#housing-one">Housing</a></li>',
+    )}
+      <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR"><ul><li><a href="#housing-two">Housing</a></li></ul></div>
+    `;
+
+    expect(getAvailableResourceTools(document)).toEqual([]);
+    expect(openNativeResourceTool(document, "housing")).toBe(false);
+
+    document.body.innerHTML = "<main>Native Albert remains available</main>";
+    expect(getAvailableResourceTools(document)).toEqual([]);
+  });
+
+  it("rejects a singleton resource submenu outside the verified native menu", () => {
+    document.body.innerHTML = `
+      <nav id="IS_BB_HEADER_MENU">
+        <ul>
+          <li
+            id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+            onclick="toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected')"
+          >
+            <a href="#">Other Resources</a>
+          </li>
+        </ul>
+      </nav>
+      <main>
+        <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
+          <ul><li><a href="#housing-lookalike">Housing</a></li></ul>
+        </div>
+      </main>
+    `;
+
+    expect(getAvailableResourceTools(document)).toEqual([]);
+    expect(openNativeResourceTool(document, "housing")).toBe(false);
   });
 });

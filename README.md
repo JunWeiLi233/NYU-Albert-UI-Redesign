@@ -6,13 +6,16 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.4.8 includes:
+Version 0.5.0 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - one isolated Shadow DOM application frame: a fixed violet rail on desktop and
   a compact responsive workspace header below 900px;
 - Home, Academics, Grades & Transcripts, Finances, Personal Info, and Other
   Resources context and navigation delegated to existing native Albert links;
+- universal Academic Calendar, University Registrar, Wellness Center, and
+  Housing shortcuts that appear only when Albert's exact native Other Resources
+  submenu contains one matching link;
 - reversible structure-aware layouts for the five observed selected Albert
   workspaces, with Other Resources delegated to Albert's native overlay;
 - live PeopleSoft response-wrapper adaptation that selects the one rendered
@@ -79,7 +82,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.4.9` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.0` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

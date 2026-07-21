@@ -147,8 +147,16 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(
     page.getByRole("button", { exact: true, name: "Course Search" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("button", { exact: true, name: "Academic Calendar" }),
+  ).toBeVisible();
   await expect(page.locator(".ba-primary-label")).toHaveText("Student services");
-  await expect(page.locator(".ba-tool-label")).toHaveText("Quick access");
+  await expect(page.locator(".ba-tool-nav .ba-tool-label")).toHaveText(
+    "Quick access",
+  );
+  await expect(page.locator(".ba-resource-nav .ba-tool-label")).toHaveText(
+    "NYU resources",
+  );
   await expect(
     page.locator(".ba-nav-hint", {
       hasText: "Plan classes and degree progress",
@@ -378,6 +386,12 @@ test("exposes mobile task explanations and delegates through native Albert contr
     ).toBeVisible();
     await expect(taskFinder.locator(".ba-task-finder-area")).toHaveCount(6);
     await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(2);
+    await expect(taskFinder.locator(".ba-task-finder-resource")).toHaveCount(4);
+    await expect(
+      taskFinder.getByText("Find NYU health and wellness support", {
+        exact: true,
+      }),
+    ).toBeVisible();
     expect(
       await taskFinder
         .locator(".ba-task-finder-item")
@@ -412,6 +426,16 @@ test("exposes mobile task explanations and delegates through native Albert contr
       document.body.dataset.nativeTaskFinderTool = "course-search";
     });
   });
+  await page
+    .locator(
+      '#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR > ul > li > a[href="/fixture-wellness"]',
+    )
+    .evaluate((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        document.body.dataset.nativeTaskFinderResource = "wellness";
+      });
+    });
 
   await taskFinderToggle.press("Enter");
   await taskFinder
@@ -420,6 +444,16 @@ test("exposes mobile task explanations and delegates through native Albert contr
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-task-finder-navigation",
     "academics",
+  );
+  await expect(taskFinder).toBeHidden();
+
+  await taskFinderToggle.press("Enter");
+  await taskFinder
+    .getByRole("button", { exact: true, name: "Open Wellness Center" })
+    .click();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-task-finder-resource",
+    "wellness",
   );
   await expect(taskFinder).toBeHidden();
 
@@ -634,6 +668,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       ).not.toHaveCount(0);
     }
     await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(1);
+    await expect(page.locator(".ba-resource-item")).toHaveCount(4);
     const currentArea = page
       .locator(HEADER_HOST_SELECTOR)
       .locator('.ba-primary-nav [aria-current="page"]');
@@ -815,9 +850,9 @@ test("keeps every tool-heavy rail control reachable at a short desktop height", 
   ).toEqual({ hostHeight: 420, shellHeight: 420, viewportHeight: 420 });
 
   const controls = page.locator(
-    ".ba-disable-button, .ba-nav-item:not(:disabled), .ba-tool-item",
+    ".ba-disable-button, .ba-nav-item:not(:disabled), .ba-tool-item, .ba-resource-item",
   );
-  expect(await controls.count()).toBe(12);
+  expect(await controls.count()).toBe(16);
   for (const control of await controls.all()) {
     await control.evaluate((element) =>
       element.scrollIntoView({ block: "center", inline: "nearest" }),
