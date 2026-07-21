@@ -217,7 +217,7 @@ export function AppShell({
           >
             <span className="ba-task-finder-toggle-copy">
               <strong>Find a task</strong>
-              <span>Browse areas and verified Albert links</span>
+              <span>Browse tasks and verified Albert links</span>
             </span>
             <span className="ba-task-finder-toggle-arrow" aria-hidden="true">
               ⌄
@@ -235,9 +235,9 @@ export function AppShell({
             <div className="ba-task-finder-heading">
               <div className="ba-task-finder-intro">
                 <span className="ba-task-finder-eyebrow">Find a task</span>
-                <strong>Where do you want to go?</strong>
+                <strong>What do you need to do?</strong>
                 <span>
-                  Choose an area or an original Albert link. Better Albert
+                  Choose a task or an original Albert link. Better Albert
                   never invents destinations.
                 </span>
               </div>
@@ -271,17 +271,16 @@ export function AppShell({
                           aria-current={
                             currentPageFamily === pageFamily ? "page" : undefined
                           }
-                          aria-describedby={descriptionId}
-                          aria-label={`Open ${definition.label}`}
+                          aria-label={`Open ${definition.label} — ${definition.navigationHint}`}
                           key={pageFamily}
                           onClick={() =>
                             handleTaskFinderNavigation(pageFamily)
                           }
                         >
                           <span className="ba-task-finder-item-copy">
-                            <strong>{definition.label}</strong>
+                            <strong>{definition.navigationHint}</strong>
                             <span id={descriptionId}>
-                              {definition.navigationHint}
+                              {definition.label} · Albert area
                             </span>
                           </span>
                           <span aria-hidden="true">›</span>

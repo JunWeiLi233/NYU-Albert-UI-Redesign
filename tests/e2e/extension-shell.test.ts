@@ -379,6 +379,16 @@ test("exposes mobile task explanations and delegates through native Albert contr
         exact: true,
       }),
     ).toBeVisible();
+    const academicsTask = taskFinder.getByRole("button", {
+      exact: true,
+      name: "Open Academics — Plan classes and degree progress",
+    });
+    await expect(academicsTask.locator("strong")).toHaveText(
+      "Plan classes and degree progress",
+    );
+    await expect(
+      academicsTask.locator(".ba-task-finder-item-copy > span"),
+    ).toHaveText("Academics · Albert area");
     await expect(
       taskFinder.getByText("Find classes for an upcoming term", {
         exact: true,
@@ -413,6 +423,60 @@ test("exposes mobile task explanations and delegates through native Albert contr
     await expect(taskFinderToggle).toBeFocused();
   }
 
+  await page.setViewportSize({ height: 376, width: 400 });
+  const nativeSkipWrapper = page.locator("#skiptocontent");
+  const nativeSkip = page.locator('#skiptocontent > a[href="#jumptomaincontent"]');
+  const expectNativeSkipClipped = async (): Promise<void> => {
+    expect(
+      await nativeSkipWrapper.evaluate((wrapper) => {
+        const bounds = wrapper.getBoundingClientRect();
+        const style = getComputedStyle(wrapper);
+        return {
+          clipPath: style.clipPath,
+          height: Math.round(bounds.height),
+          overflow: style.overflow,
+          width: Math.round(bounds.width),
+        };
+      }),
+    ).toEqual({
+      clipPath: "inset(50%)",
+      height: 1,
+      overflow: "hidden",
+      width: 1,
+    });
+  };
+  await expectNativeSkipClipped();
+
+  await taskFinderToggle.press("Enter");
+  const housingTask = taskFinder.getByRole("button", {
+    exact: true,
+    name: "Open Housing",
+  });
+  await housingTask.scrollIntoViewIfNeeded();
+  await expect(housingTask).toBeVisible();
+  await expectNativeSkipClipped();
+  await closeTaskFinder.press("Escape");
+
+  await nativeSkip.evaluate((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.body.dataset.nativeSkipActivated = "true";
+    });
+  });
+  await nativeSkip.focus();
+  await expect(nativeSkip).toBeFocused();
+  await expect(nativeSkip).toBeVisible();
+  expect(
+    await nativeSkip.evaluate((link) =>
+      Math.round(link.getBoundingClientRect().height),
+    ),
+  ).toBeGreaterThanOrEqual(44);
+  await nativeSkip.press("Enter");
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-skip-activated",
+    "true",
+  );
+
   await page.setViewportSize({ height: 800, width: 400 });
   await page.locator('a[href="/fixture-academics"]').evaluate((link) => {
     link.addEventListener("click", (event) => {
@@ -439,7 +503,10 @@ test("exposes mobile task explanations and delegates through native Albert contr
 
   await taskFinderToggle.press("Enter");
   await taskFinder
-    .getByRole("button", { exact: true, name: "Open Academics" })
+    .getByRole("button", {
+      exact: true,
+      name: "Open Academics — Plan classes and degree progress",
+    })
     .click();
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-task-finder-navigation",
@@ -469,7 +536,10 @@ test("exposes mobile task explanations and delegates through native Albert contr
 
   await taskFinderToggle.press("Enter");
   await taskFinder
-    .getByRole("button", { exact: true, name: "Open Academics" })
+    .getByRole("button", {
+      exact: true,
+      name: "Open Academics — Plan classes and degree progress",
+    })
     .focus();
   await page.evaluate(() => {
     document

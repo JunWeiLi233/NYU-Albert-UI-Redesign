@@ -44,6 +44,52 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
 }
 
 html[data-better-albert-enabled][data-better-albert-compact-header]
+  #skiptocontent {
+  position: absolute !important;
+  z-index: 120 !important;
+  inset: 0 auto auto 0 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #skiptocontent:not(:focus-within) {
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #skiptocontent:focus-within {
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  clip-path: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #skiptocontent
+  > a {
+  display: inline-flex !important;
+  min-height: 44px !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  padding: 8px 12px !important;
+  border: 2px solid var(--ba-native-violet) !important;
+  background: var(--ba-native-surface) !important;
+  color: var(--ba-native-violet) !important;
+  font-family: var(--ba-native-font) !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
   #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR.open {
   position: absolute !important;
   z-index: 80 !important;
