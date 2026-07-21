@@ -52,6 +52,42 @@ describe("page-family native tools", () => {
     );
   });
 
+  it("exposes Home tools from Albert's selected shopping-cart workspace", () => {
+    document.body.innerHTML = `
+      <main class="isSSS_Main selected">
+        <span id="IS_AC_RESPONSE">
+          <section class="isSSS_FullW isSSS_ShopCart selected">
+            <div class="isSSS_ShCtLnkWrp">
+              <a href="#weekly">Weekly Schedule</a>
+            </div>
+            <div class="isSSS_ShCtEmpWrp">
+              <p><a href="#search">Course Search</a></p>
+            </div>
+          </section>
+        </span>
+      </main>
+    `;
+
+    expect(getAvailablePageTools(document, "home").map(({ id }) => id)).toEqual([
+      "course-search",
+      "weekly-schedule",
+    ]);
+  });
+
+  it("ignores Home shopping-cart tools outside the selected workspace", () => {
+    document.body.innerHTML = `
+      <main class="isSSS_Main">
+        <span id="IS_AC_RESPONSE">
+          <section class="isSSS_FullW isSSS_ShopCart selected">
+            <a href="#weekly">Weekly Schedule</a>
+          </section>
+        </span>
+      </main>
+    `;
+
+    expect(getAvailablePageTools(document, "home")).toEqual([]);
+  });
+
   it("ignores tools hidden by the native page", () => {
     document.querySelector(".is_bb_LinkContainer")?.setAttribute("hidden", "");
     expect(getAvailablePageTools(document, "home")).toEqual([]);

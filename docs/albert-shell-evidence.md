@@ -68,6 +68,13 @@ The July 21, 2026 follow-up confirmed that the open directory has one direct
 Albert may arrange those exact descendants as a responsive grid, but it does
 not insert, remove, reorder, or replace any directory item or control.
 
+The same walkthrough confirmed a newer Home variant where `Weekly Schedule`
+and `Course Search` are no longer inside `.is_bb_LinkContainer`. Both controls
+remain inside the selected `.isSSS_Main`, the rendered `#IS_AC_RESPONSE`, and
+the selected `.isSSS_FullW.isSSS_ShopCart` workspace. Better Albert treats
+that exact active structure as a verified tool container; matching labels in
+inactive or unrelated page content remain unavailable.
+
 ## Current detection contract
 
 The extension requires all of the following:

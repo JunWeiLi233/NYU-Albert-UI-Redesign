@@ -72,15 +72,19 @@ export function AppShell({
         </div>
 
         <nav className="ba-primary-nav" aria-label="Better Albert areas">
+          <span className="ba-primary-label">Student services</span>
           {PRIMARY_PAGE_FAMILIES.map((pageFamily) => {
             const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
             const isAvailable = availablePageFamilies.includes(pageFamily);
             const isCurrent = currentPageFamily === pageFamily;
+            const descriptionId = `ba-nav-description-${pageFamily}`;
 
             return (
               <button
                 className="ba-nav-item"
                 type="button"
+                aria-describedby={descriptionId}
+                aria-label={definition.label}
                 aria-current={isCurrent ? "page" : undefined}
                 disabled={!isAvailable}
                 key={pageFamily}
@@ -91,7 +95,15 @@ export function AppShell({
                 }
                 onClick={() => onNavigate(pageFamily)}
               >
-                {definition.label}
+                <span className="ba-nav-copy">
+                  <span className="ba-nav-label-text">{definition.label}</span>
+                  <span className="ba-nav-hint" id={descriptionId}>
+                    {definition.navigationHint}
+                  </span>
+                </span>
+                <span className="ba-nav-arrow" aria-hidden="true">
+                  ›
+                </span>
               </button>
             );
           })}
@@ -100,18 +112,35 @@ export function AppShell({
 
       {availablePageTools.length > 0 && (
         <nav className="ba-tool-nav" aria-label={`${currentPage.label} tools`}>
-          <span className="ba-tool-label">Native tools</span>
+          <div className="ba-tool-heading">
+            <span className="ba-tool-label">Quick access</span>
+            <span className="ba-tool-origin">Original Albert links</span>
+          </div>
           <div className="ba-tool-list">
-            {availablePageTools.map((tool) => (
-              <button
-                className="ba-tool-item"
-                type="button"
-                key={tool.id}
-                onClick={() => onOpenTool(tool.id)}
-              >
-                {tool.label}
-              </button>
-            ))}
+            {availablePageTools.map((tool) => {
+              const descriptionId = `ba-tool-description-${tool.id}`;
+
+              return (
+                <button
+                  className="ba-tool-item"
+                  type="button"
+                  aria-describedby={descriptionId}
+                  aria-label={tool.label}
+                  key={tool.id}
+                  onClick={() => onOpenTool(tool.id)}
+                >
+                  <span className="ba-tool-copy">
+                    <span className="ba-tool-name">{tool.label}</span>
+                    <span className="ba-tool-description" id={descriptionId}>
+                      {tool.description}
+                    </span>
+                  </span>
+                  <span className="ba-tool-arrow" aria-hidden="true">
+                    ›
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </nav>
       )}

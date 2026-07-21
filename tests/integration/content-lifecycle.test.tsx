@@ -100,12 +100,14 @@ describe("content-script lifecycle", () => {
       "Better Albert",
     );
     expect(
-      shadowRoot?.querySelector('[aria-current="page"]')?.textContent,
+      shadowRoot?.querySelector('[aria-current="page"]')?.getAttribute(
+        "aria-label",
+      ),
     ).toBe("Home");
     expect(
       Array.from(
         shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
-      ).map((button) => button.textContent),
+      ).map((button) => button.getAttribute("aria-label")),
     ).toEqual(["Course Search", "Weekly Schedule"]);
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       true,
@@ -146,7 +148,7 @@ describe("content-script lifecycle", () => {
       document
         .getElementById(HEADER_HOST_ID)
         ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-nav-item") ?? [],
-    ).find((button) => button.textContent === "Finances");
+    ).find((button) => button.getAttribute("aria-label") === "Finances");
 
     financesButton?.click();
     expect(nativeClick).toHaveBeenCalledOnce();
@@ -170,7 +172,7 @@ describe("content-script lifecycle", () => {
       document
         .getElementById(HEADER_HOST_ID)
         ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
-    ).find((button) => button.textContent === "Course Search");
+    ).find((button) => button.getAttribute("aria-label") === "Course Search");
 
     courseSearchButton?.click();
     expect(nativeClick).toHaveBeenCalledOnce();
@@ -430,7 +432,9 @@ describe("content-script lifecycle", () => {
     expect(
       document
         .getElementById(HEADER_HOST_ID)
-        ?.shadowRoot?.querySelector('[aria-current="page"]')?.textContent,
+        ?.shadowRoot?.querySelector('[aria-current="page"]')?.getAttribute(
+          "aria-label",
+        ),
     ).toBe("Finances");
     expect(document.documentElement.dataset.betterAlbertPage).toBe("finances");
     expect(
@@ -439,7 +443,7 @@ describe("content-script lifecycle", () => {
           .getElementById(HEADER_HOST_ID)
           ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ??
           [],
-      ).map((button) => button.textContent),
+      ).map((button) => button.getAttribute("aria-label")),
     ).toEqual(["Bursar Balance", "Account Statement", "Financial Aid Status"]);
     lifecycle.stop();
   });
@@ -475,7 +479,7 @@ describe("content-script lifecycle", () => {
           .getElementById(HEADER_HOST_ID)
           ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ??
           [],
-      ).map((button) => button.textContent);
+      ).map((button) => button.getAttribute("aria-label"));
       expect(toolLabels).toContain(expectedTool);
     }
 

@@ -147,6 +147,14 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(
     page.getByRole("button", { exact: true, name: "Course Search" }),
   ).toBeVisible();
+  await expect(page.getByText("Student services", { exact: true })).toBeVisible();
+  await expect(page.getByText("Quick access", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Plan classes and degree progress", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Find classes for an upcoming term", { exact: true }),
+  ).toBeVisible();
   await expect(page.locator(".is_bb_LinkContainer")).toHaveCSS(
     "display",
     "grid",
@@ -289,6 +297,9 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(
     page.getByRole("button", { exact: true, name: "Course Search" }),
   ).toHaveCSS("color", "rgb(11, 11, 11)");
+  await expect(page.locator(".ba-primary-label")).toBeHidden();
+  await expect(page.locator(".ba-nav-hint").first()).toBeHidden();
+  await expect(page.locator(".ba-tool-description").first()).toBeHidden();
   await expect(
     page.getByText("Unofficial · Local only", { exact: true }),
   ).toBeVisible();
