@@ -94,10 +94,144 @@ describe("structural adapter manager", () => {
       )) {
         expect(metadata.hasAttribute("data-better-albert-region")).toBe(false);
       }
-      if (pageFamily === "finances") {
+      if (pageFamily === "home") {
+        const holdsTarget = document.querySelector(
+          '[data-better-albert-region="holds-status"]',
+        );
+        const registrationTarget = document.querySelector(
+          '[data-better-albert-region="registration-time"]',
+        );
+        const todoTarget = document.querySelector(
+          '[data-better-albert-region="todo-status"]',
+        );
+        expect(holdsTarget?.textContent).toContain("Holds");
+        expect(holdsTarget?.getAttribute("tabindex")).toBe("-1");
+        expect(registrationTarget?.textContent).toContain("Enrollment Dates");
+        expect(registrationTarget?.getAttribute("tabindex")).toBe("-1");
+        expect(todoTarget?.textContent).toContain("To Do");
+        expect(todoTarget?.getAttribute("tabindex")).toBe("-1");
+      } else if (pageFamily === "finances") {
+        const bursarDirectory = document.querySelector("#NYUBursarLinks");
+        const financialAidTarget = document.querySelector(
+          '[data-better-albert-region="aid-section"]',
+        );
         expect(
           document.querySelectorAll('[data-better-albert-region="directory"]'),
-        ).toHaveLength(0);
+        ).toHaveLength(1);
+        expect(bursarDirectory?.getAttribute("data-better-albert-region")).toBe(
+          "directory",
+        );
+        expect(bursarDirectory?.getAttribute("inert")).toBe("");
+        expect(
+          document.querySelector('[data-better-albert-region="payment-action"]'),
+        ).toBe(nativeForm);
+        expect(nativeForm?.getAttribute("aria-label")).toBe(
+          "Official Albert payment step",
+        );
+        expect(nativeForm?.getAttribute("aria-description")).toBe(
+          "Payment processing remains outside Better Albert.",
+        );
+        expect(financialAidTarget?.getAttribute("tabindex")).toBe("-1");
+        expect(
+          financialAidTarget?.getAttribute(
+            "data-better-albert-focus-target",
+          ),
+        ).toBe("");
+      } else if (pageFamily === "academics") {
+        expect(
+          nativeForm?.getAttribute("data-better-albert-region"),
+        ).toBe("enrollment-action");
+        expect(nativeForm?.getAttribute("aria-label")).toBe(
+          "Official Albert enrollment step",
+        );
+        expect(nativeForm?.getAttribute("aria-description")).toBe(
+          "Review your selections in Albert before submitting.",
+        );
+        const academicJourney = Array.from(
+          document.querySelectorAll("[data-better-albert-academic-step]"),
+        );
+        expect(
+          academicJourney.map((section) =>
+            section.getAttribute("data-better-albert-academic-step"),
+          ),
+        ).toEqual([
+          "Step 1 of 5 · Plan your path",
+          "Step 2 of 5 · Check requirements",
+          "Step 3 of 5 · Meet your advisor",
+          "Step 4 of 5 · Review enrollment",
+          "Step 5 of 5 · Track completion",
+        ]);
+        for (const section of academicJourney) {
+          expect(section.getAttribute("role")).toBe("region");
+          expect(section.getAttribute("aria-label")).toBe(
+            section.getAttribute("data-better-albert-academic-step"),
+          );
+        }
+        const advisingTarget = document.querySelector(
+          '[data-better-albert-region="advising-section"]',
+        );
+        expect(advisingTarget?.getAttribute("tabindex")).toBe("-1");
+        expect(
+          advisingTarget?.hasAttribute("data-better-albert-focus-target"),
+        ).toBe(true);
+      } else if (pageFamily === "grades") {
+        const recordsDirectory = document.querySelector("#nyuGradesLinks");
+        const gradeViewerTarget = document.querySelector(
+          '[data-better-albert-region="grade-viewer"]',
+        );
+        expect(
+          recordsDirectory?.getAttribute(
+            "data-better-albert-records-guidance",
+          ),
+        ).toContain("Choose an academic career and term");
+        expect(recordsDirectory?.getAttribute("aria-description")).toContain(
+          "Quick access shows the transcript and enrollment-record options",
+        );
+        expect(gradeViewerTarget?.matches("select")).toBe(true);
+        expect(
+          gradeViewerTarget?.getAttribute(
+            "data-better-albert-focus-target",
+          ),
+        ).toBe("");
+        expect(gradeViewerTarget?.hasAttribute("tabindex")).toBe(false);
+      } else if (pageFamily === "personal") {
+        expect(
+          Array.from(
+            document.querySelectorAll(
+              "[data-better-albert-personal-group]",
+            ),
+          ).map((section) => [
+            section.getAttribute("data-better-albert-region"),
+            section.getAttribute("data-better-albert-personal-group"),
+          ]),
+        ).toEqual([
+          ["profile-directory", "Official details"],
+          ["address-section", "Contact information"],
+          ["missing-person-section", "Safety contact"],
+          ["citizenship-section", "Official records"],
+        ]);
+        for (const region of [
+          "missing-person-section",
+          "citizenship-section",
+          "identifier-section",
+        ]) {
+          const focusTarget = document.querySelector(
+            `[data-better-albert-region="${region}"]`,
+          );
+          expect(focusTarget?.getAttribute("tabindex")).toBe("-1");
+          expect(
+            focusTarget?.getAttribute("data-better-albert-focus-target"),
+          ).toBe("");
+        }
+        expect(
+          nativeForm?.getAttribute("data-better-albert-region"),
+        ).toBe("personal-edit-form");
+        expect(nativeForm?.getAttribute("aria-label")).toBe(
+          "Official Albert personal information form",
+        );
+        expect(nativeForm?.getAttribute("aria-description")).toBe(
+          "Albert saves these changes. Better Albert does not store this information.",
+        );
       } else {
         expect(
           document.querySelectorAll('[data-better-albert-region="directory"]'),
@@ -117,6 +251,59 @@ describe("structural adapter manager", () => {
       expect(document.documentElement.outerHTML).toBe(before);
     },
   );
+
+  it("omits an ambiguous count-suffixed Home Holds card", () => {
+    const document = fixture("tests/fixtures/albert-shell.html");
+    const nativeHolds = document.querySelector(".native-hold-error");
+    nativeHolds?.after(nativeHolds.cloneNode(true));
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("family-home");
+    expect(
+      document.querySelector('[data-better-albert-region="holds-status"]'),
+    ).toBeNull();
+    expect(
+      document.querySelector('[data-better-albert-region="registration-time"]'),
+    ).not.toBeNull();
+  });
+
+  it("preserves an active verified destination across reconciliation", () => {
+    const source = fixture("tests/fixtures/families/personal.html");
+    const previousMarkup = document.documentElement.innerHTML;
+    document.head.innerHTML = source.head.innerHTML;
+    document.body.innerHTML = source.body.innerHTML;
+    const manager = new AdapterManager();
+    const context = {
+      document,
+      location: PORTAL_LOCATION,
+      pageFamily: "personal" as const,
+      topLevel: true,
+    };
+
+    try {
+      expect(manager.reconcile(context)).toBe("family-personal");
+      const identifierSection = document.querySelector<HTMLElement>(
+        '[data-better-albert-region="identifier-section"]',
+      );
+      expect(identifierSection).toBeTruthy();
+
+      identifierSection?.focus();
+      expect(document.activeElement).toBe(identifierSection);
+
+      expect(manager.reconcile(context)).toBe("family-personal");
+      expect(document.activeElement).toBe(identifierSection);
+    } finally {
+      manager.rollback();
+      document.documentElement.innerHTML = previousMarkup;
+    }
+  });
 
   it("creates a deep PeopleSoft workspace without changing native form ownership", () => {
     const document = fixture("tests/fixtures/albert-deep-page.html");
@@ -170,6 +357,20 @@ describe("structural adapter manager", () => {
     );
     expect(document.querySelector('[data-better-albert-region="filter"]')).not.toBeNull();
     expect(document.querySelector('[data-better-albert-region="results"]')).not.toBeNull();
+    expect(
+      document.querySelector('[data-better-albert-search-mode="subject"]'),
+    ).toBe(document.querySelector(".ps_box-page"));
+    expect(document.querySelector("#subject")?.getAttribute("placeholder")).toBe(
+      "Enter a subject",
+    );
+    expect(
+      document.querySelector("#subject")?.getAttribute("aria-description"),
+    ).toBe("Enter a department or subject, then use Search.");
+    expect(
+      document.querySelectorAll(
+        '[data-better-albert-region="primary-search-action"]',
+      ),
+    ).toHaveLength(1);
     expect(addToCart?.closest("form")).toBe(form);
     expect(enroll?.closest("form")).toBe(form);
   });
@@ -199,12 +400,43 @@ describe("structural adapter manager", () => {
     expect(
       document.querySelector('[data-better-albert-layout="class-search-legacy"]'),
     ).toBe(document.querySelector("#PT_WRAPPER"));
-    expect(document.querySelectorAll('[data-better-albert-region="group"]')).toHaveLength(2);
+    expect(document.querySelectorAll('[data-better-albert-region="group"]')).toHaveLength(0);
     expect(document.querySelectorAll('[data-better-albert-region="filter"]')).toHaveLength(1);
     expect(document.querySelectorAll('[data-better-albert-region="results"]')).toHaveLength(1);
     expect(
+      document.querySelectorAll(
+        '[data-better-albert-region="result-actions"]',
+      ),
+    ).toHaveLength(1);
+    expect(
+      document.querySelector('[data-better-albert-region="primary-search-input"]'),
+    ).toBe(document.querySelector("#subject"));
+    expect(document.querySelector("#subject")?.getAttribute("aria-label")).toBe(
+      "Find a class by subject, course number, title, or instructor",
+    );
+    expect(document.querySelector("#subject")?.getAttribute("placeholder")).toBe(
+      "Subject, course, title, or instructor",
+    );
+    expect(
+      document.querySelector("#subject")?.getAttribute("aria-description"),
+    ).toBe(
+      "Use one field for subject, course number, title, or instructor.",
+    );
+    expect(
+      document.querySelector('[data-better-albert-region="primary-search-label"]')
+        ?.textContent,
+    ).toContain("Subject, Catalog Number");
+    expect(
+      document.querySelectorAll(
+        '[data-better-albert-region="primary-search-action"]',
+      ),
+    ).toHaveLength(1);
+    expect(
       document.querySelector('[data-better-albert-layout="class-search-body"]'),
     ).toBe(document.querySelector("#legacy-main"));
+    expect(
+      document.querySelector('[data-better-albert-search-mode="combined"]'),
+    ).toBe(document.querySelector("#PT_WRAPPER"));
     expect(submit?.closest("form")).toBe(form);
     expect(form?.getAttribute("action")).toBe(formContract.action);
     expect(form?.getAttribute("method")).toBe(formContract.method);
@@ -214,6 +446,49 @@ describe("structural adapter manager", () => {
 
     manager.rollback();
     expect(document.documentElement.outerHTML).toBe(before);
+  });
+
+  it("adapts the exact Class Search browse state before a results grid exists", () => {
+    const document = new DOMParser().parseFromString(
+      `<!doctype html><title>Course Search</title>
+      <form id="NYU_CLS_SRCH" class="PSForm" action="/native/class-search">
+        <div id="PT_WRAPPER" class="ps_wrapper">
+          <section class="ps_box-group">
+            <span>Subject, Catalog Number, Title &amp; Instructor Names</span>
+            <input id="combined-query" type="text">
+            <button type="button">Search</button>
+          </section>
+          <section class="ps_box-group">
+            <label for="description-query">Course Description</label>
+            <input id="description-query" type="text">
+            <button type="button">Search</button>
+          </section>
+        </div>
+      </form>`,
+      "text/html",
+    );
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: CLASS_SEARCH_LOCATION,
+        pageFamily: "academics",
+        topLevel: false,
+      }),
+    ).toBe("class-search");
+    expect(
+      document.querySelector('[data-better-albert-layout="class-search-legacy"]'),
+    ).toBe(document.querySelector("#PT_WRAPPER"));
+    expect(
+      document.querySelector('[data-better-albert-region="primary-search-input"]'),
+    ).toBe(document.querySelector("#combined-query"));
+    expect(
+      document.querySelectorAll('[data-better-albert-region="results"]'),
+    ).toHaveLength(0);
+    expect(
+      document.querySelectorAll('[data-better-albert-region="group"]'),
+    ).toHaveLength(0);
   });
 
   it("fails open when the legacy Class Search root is missing or ambiguous", () => {
@@ -237,12 +512,48 @@ describe("structural adapter manager", () => {
     expect(document.documentElement.outerHTML).toBe(before);
   });
 
+  it("does not promote an unverified text field as universal Class Search", () => {
+    const document = new DOMParser().parseFromString(
+      `<!doctype html><title>Class Search</title>
+      <main class="ps_box-page">
+        <h1 class="ps_box-pagetitle">Class Search</h1>
+        <section class="ps_box-search">
+          <label for="keyword">Keywords</label>
+          <input id="keyword" type="text">
+          <button type="button">Search</button>
+        </section>
+        <section class="ps_grid-flex" aria-label="Search results"></section>
+      </main>`,
+      "text/html",
+    );
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: CLASS_SEARCH_LOCATION,
+        pageFamily: "academics",
+        topLevel: false,
+      }),
+    ).toBe("class-search");
+    expect(
+      document.querySelector("[data-better-albert-search-mode]"),
+    ).toBeNull();
+    expect(
+      document.querySelector('[data-better-albert-region="primary-search-input"]'),
+    ).toBeNull();
+    expect(document.querySelector("#keyword")?.hasAttribute("placeholder")).toBe(
+      false,
+    );
+  });
+
   it.each([
     "tests/fixtures/albert-class-search-empty.html",
     "tests/fixtures/albert-class-search-error.html",
   ])("keeps Class Search empty and validation states inside the exact layout for %s", (path) => {
     const document = fixture(path);
     const manager = new AdapterManager();
+    const before = document.documentElement.outerHTML;
     const nativeStatus = document.querySelector('[role="status"]');
     const nativeAlert = document.querySelector('[role="alert"]');
 
@@ -257,8 +568,39 @@ describe("structural adapter manager", () => {
     expect(nativeStatus?.closest('[data-better-albert-region="results"]')).not.toBeNull();
     if (nativeAlert) {
       expect(nativeAlert.closest('[data-better-albert-region="filter"]')).not.toBeNull();
-      expect(document.querySelector('[aria-describedby="search-error"]')).not.toBeNull();
+      expect(nativeAlert.getAttribute("data-better-albert-region")).toBe(
+        "validation-alert",
+      );
+      const invalidControl = document.querySelector(
+        '[aria-describedby="search-error"]',
+      );
+      expect(invalidControl?.getAttribute("data-better-albert-region")).toBe(
+        "validation-control",
+      );
+      expect(invalidControl?.getAttribute("aria-invalid")).toBe("true");
+      expect(invalidControl?.hasAttribute("aria-description")).toBe(false);
     }
+    manager.rollback();
+    expect(document.documentElement.outerHTML).toBe(before);
+  });
+
+  it("preserves native Class Search guidance instead of replacing it", () => {
+    const document = fixture("tests/fixtures/albert-class-search.html");
+    const manager = new AdapterManager();
+    const input = document.querySelector("#subject");
+    input?.setAttribute("aria-description", "Native subject guidance");
+
+    expect(
+      manager.reconcile({
+        document,
+        location: CLASS_SEARCH_LOCATION,
+        pageFamily: "academics",
+        topLevel: false,
+      }),
+    ).toBe("class-search");
+    expect(input?.getAttribute("aria-description")).toBe(
+      "Native subject guidance",
+    );
   });
 
   it("falls back to a conservative workspace when family hub anchors are incomplete", () => {
@@ -363,7 +705,7 @@ describe("structural adapter manager", () => {
     ).toBeNull();
   });
 
-  it("adapts the verified live Finances structure without a directory container", () => {
+  it("adapts the verified live Finances structure without a PeopleSoft directory container", () => {
     const document = fixture("tests/fixtures/families/finances.html");
     document.querySelector(".is_bb_LinkContainer")?.remove();
     const manager = new AdapterManager();
@@ -384,7 +726,249 @@ describe("structural adapter manager", () => {
     ).not.toBeNull();
     expect(
       document.querySelectorAll('[data-better-albert-region="directory"]'),
+    ).toHaveLength(1);
+    expect(
+      document.querySelector("#NYUBursarLinks")?.getAttribute("inert"),
+    ).toBe("");
+  });
+
+  it("keeps an incomplete Finances link boundary visible", () => {
+    const document = fixture("tests/fixtures/families/finances.html");
+    const bursarLinks = document.querySelector("#NYUBursarLinks");
+    bursarLinks?.insertAdjacentHTML(
+      "beforeend",
+      '<a href="#unknown-account-action">Review another account action</a>',
+    );
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "finances",
+        topLevel: true,
+      }),
+    ).toBe("family-finances");
+    expect(bursarLinks?.hasAttribute("inert")).toBe(false);
+    expect(
+      bursarLinks?.hasAttribute("data-better-albert-region"),
+    ).toBe(false);
+  });
+
+  it("keeps an ambiguous Finances link boundary visible", () => {
+    const document = fixture("tests/fixtures/families/finances.html");
+    const bursarLinks = document.querySelector("#NYUBursarLinks");
+    bursarLinks?.insertAdjacentHTML(
+      "beforeend",
+      '<a href="#duplicate-balance">View Bursar Balance</a>',
+    );
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "finances",
+        topLevel: true,
+      }),
+    ).toBe("family-finances");
+    expect(bursarLinks?.hasAttribute("inert")).toBe(false);
+    expect(
+      bursarLinks?.hasAttribute("data-better-albert-region"),
+    ).toBe(false);
+  });
+
+  it("does not label an ambiguous Finances payment boundary", () => {
+    const document = fixture("tests/fixtures/families/finances.html");
+    const account = document.querySelector("#NYUBursarDisplay");
+    const originalForm = account?.querySelector("form");
+    if (originalForm) {
+      account?.append(originalForm.cloneNode(true));
+    }
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "finances",
+        topLevel: true,
+      }),
+    ).toBe("family-finances");
+    expect(
+      document.querySelectorAll('[data-better-albert-region="payment-action"]'),
     ).toHaveLength(0);
+    for (const form of document.querySelectorAll("#NYUBursarDisplay form")) {
+      expect(form.hasAttribute("aria-label")).toBe(false);
+    }
+  });
+
+  it("does not label an ambiguous Academics enrollment boundary", () => {
+    const document = fixture("tests/fixtures/families/academics.html");
+    const enrollment = document.querySelector(
+      '[data-albert-section="enrollment"]',
+    );
+    const originalForm = enrollment?.querySelector("form");
+    if (originalForm) {
+      enrollment?.append(originalForm.cloneNode(true));
+    }
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "academics",
+        topLevel: true,
+      }),
+    ).toBe("family-academics");
+    expect(
+      document.querySelectorAll(
+        '[data-better-albert-region="enrollment-action"]',
+      ),
+    ).toHaveLength(0);
+    for (const form of document.querySelectorAll(
+      '[data-albert-section="enrollment"] form',
+    )) {
+      expect(form.hasAttribute("aria-label")).toBe(false);
+    }
+  });
+
+  it.each([
+    ["aria-description", "Native Albert enrollment guidance"],
+    ["aria-describedby", "native-enrollment-help"],
+  ])("preserves native enrollment guidance from %s", (attribute, value) => {
+    const document = fixture("tests/fixtures/families/academics.html");
+    const form = document.querySelector('form[action="/native/enrollment"]');
+    form?.setAttribute(attribute, value);
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "academics",
+        topLevel: true,
+      }),
+    ).toBe("family-academics");
+    expect(form?.getAttribute(attribute)).toBe(value);
+    if (attribute === "aria-describedby") {
+      expect(form?.hasAttribute("aria-description")).toBe(false);
+    }
+  });
+
+  it("does not label an incomplete Academics journey", () => {
+    const document = fixture("tests/fixtures/families/academics.html");
+    const manager = new AdapterManager();
+    document
+      .querySelector('[data-albert-section="graduation"]')
+      ?.remove();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "academics",
+        topLevel: true,
+      }),
+    ).toBe("family-academics");
+    expect(
+      document.querySelectorAll("[data-better-albert-academic-step]"),
+    ).toHaveLength(0);
+    expect(document.querySelectorAll('[role="region"]')).toHaveLength(0);
+  });
+
+  it.each([
+    ["aria-description", "Native Albert records guidance"],
+    ["aria-describedby", "native-records-help"],
+  ])("preserves native records guidance from %s", (attribute, value) => {
+    const document = fixture("tests/fixtures/families/grades.html");
+    const recordsDirectory = document.querySelector("#nyuGradesLinks");
+    recordsDirectory?.setAttribute(attribute, value);
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "grades",
+        topLevel: true,
+      }),
+    ).toBe("family-grades");
+    expect(recordsDirectory?.getAttribute(attribute)).toBe(value);
+    if (attribute === "aria-describedby") {
+      expect(recordsDirectory?.hasAttribute("aria-description")).toBe(false);
+    }
+    expect(
+      recordsDirectory?.getAttribute("data-better-albert-records-guidance"),
+    ).toContain("Quick access shows the transcript");
+  });
+
+  it("does not label a Personal Info form without an exact Save and Cancel boundary", () => {
+    const document = fixture("tests/fixtures/families/personal.html");
+    document
+      .querySelector('form[action="/native/profile"] button[type="button"]')
+      ?.remove();
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "personal",
+        topLevel: true,
+      }),
+    ).toBe("family-personal");
+    const form = document.querySelector('form[action="/native/profile"]');
+    expect(form?.hasAttribute("data-better-albert-region")).toBe(false);
+    expect(form?.hasAttribute("aria-label")).toBe(false);
+    expect(form?.hasAttribute("aria-description")).toBe(false);
+  });
+
+  it.each([
+    ["aria-description", "Native Albert guidance"],
+    ["aria-describedby", "native-personal-help"],
+  ])("preserves native Personal Info form guidance from %s", (attribute, value) => {
+    const document = fixture("tests/fixtures/families/personal.html");
+    const form = document.querySelector('form[action="/native/profile"]');
+    form?.setAttribute(attribute, value);
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "personal",
+        topLevel: true,
+      }),
+    ).toBe("family-personal");
+    expect(form?.getAttribute(attribute)).toBe(value);
+    if (attribute === "aria-describedby") {
+      expect(form?.hasAttribute("aria-description")).toBe(false);
+    }
+  });
+
+  it.each([
+    ["aria-description", "Native Albert payment guidance"],
+    ["aria-describedby", "native-payment-help"],
+  ])("preserves native payment guidance from %s", (attribute, value) => {
+    const document = fixture("tests/fixtures/families/finances.html");
+    const form = document.querySelector('form[action="/native/payment-provider"]');
+    form?.setAttribute(attribute, value);
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "finances",
+        topLevel: true,
+      }),
+    ).toBe("family-finances");
+    expect(form?.getAttribute(attribute)).toBe(value);
+    if (attribute === "aria-describedby") {
+      expect(form?.hasAttribute("aria-description")).toBe(false);
+    }
   });
 
   it("restores pre-existing attribute values in reverse order", () => {

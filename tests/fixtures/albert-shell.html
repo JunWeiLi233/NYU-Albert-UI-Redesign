@@ -4,7 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Albert</title>
-    <style>body { height: 100vh; overflow-x: auto; overflow-y: scroll; }</style>
+    <style>
+      body { height: 100vh; overflow-x: auto; overflow-y: scroll; }
+      .native-todo-warning { color: rgb(138, 75, 8); background: rgb(255, 247, 230); }
+      .native-hold-error { color: rgb(180, 35, 24); background: rgb(255, 241, 240); }
+      .native-registration-info { color: rgb(0, 83, 155); background: rgb(234, 244, 255); }
+    </style>
   </head>
   <body class="PSPAGE container-fluid isEdBody nyuStuBody">
     <header id="ptbr_header_container" style="height: 361px">
@@ -38,8 +43,47 @@
                 <li class="megaMenuItem" id="NYU_ACADEMIC_CALENDAR">
                   <a href="/fixture-calendar">Academic Calendar</a>
                 </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-course-feedback">Course Feedback Results</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-ferpa">FERPA</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-replacement-diploma">Replacement Diploma</a>
+                </li>
                 <li class="megaMenuItem" id="NYU_UNIVERSITY_REGISTRAR">
                   <a href="/fixture-registrar">University Registrar</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-brightspace">NYU Brightspace</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-connect">NYU Connect</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-summer">NYU Summer</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-wasserman">Wasserman</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-financial-aid-resources">Financial Aid</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-card-center">NYU Card Center</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-ogs">OGS</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-global-programs">Office of Global Programs</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-law-housing">Law Housing</a>
+                </li>
+                <li class="megaMenuItem">
+                  <a href="/fixture-campus-safety">Campus Safety</a>
                 </li>
                 <li class="megaMenuItem" id="NYU_WELLNESS_CENTER">
                   <a href="/fixture-wellness">Wellness Center</a>
@@ -90,7 +134,11 @@
           </section>
           <section class="isSSS_Attention" aria-labelledby="attention-title">
             <h2 id="attention-title">Attention</h2>
-            <div role="status">Sanitized registration reminder.</div>
+            <div class="NYU_same_height_width">
+              <div class="nyuSSS_ThirdW native-todo-warning"><h3>To Do (3)</h3><div role="status">Sanitized registration reminder.</div></div>
+              <div class="nyuSSS_ThirdW native-hold-error"><h3>Holds (2)</h3><p>Sanitized hold status.</p></div>
+              <div class="nyuSSS_ThirdW native-registration-info"><h3>Enrollment Dates</h3><p>Sanitized appointment status.</p></div>
+            </div>
           </section>
           <section class="isSSS_EnrollmentDates" aria-labelledby="enrollment-title">
             <h2 id="enrollment-title">Enrollment dates</h2>
@@ -126,10 +174,10 @@
             </div>
             <div class="is_bb_LinkColumn">
               <div class="is_bb_LinkItem"><a href="/fixture-demographics">Demographic Information</a></div>
-              <div class="is_bb_LinkItem"><a href="/fixture-addresses">Addresses</a></div>
-              <div class="is_bb_LinkItem"><a href="/fixture-phone">Phone Numbers</a></div>
-              <div class="is_bb_LinkItem"><a href="/fixture-email">Email Addresses</a></div>
-              <div class="is_bb_LinkItem"><a href="/fixture-emergency">Emergency Contacts</a></div>
+              <div class="is_bb_LinkItem"><a href="/fixture-addresses">Edit Addresses</a></div>
+              <div class="is_bb_LinkItem"><a href="/fixture-phone">Edit Phone Numbers</a></div>
+              <div class="is_bb_LinkItem"><a href="/fixture-email">Edit Email Addresses</a></div>
+              <div class="is_bb_LinkItem"><a href="/fixture-emergency">Edit Emergency Contacts</a></div>
               <div class="is_bb_LinkItem"><a href="/fixture-calendar">Academic Calendar</a></div>
               <div class="is_bb_LinkItem"><a href="/fixture-registrar">University Registrar</a></div>
               <div class="is_bb_LinkItem"><a href="/fixture-wellness">Wellness Center</a></div>

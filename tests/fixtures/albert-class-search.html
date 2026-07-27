@@ -1,5 +1,9 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Class Search</title></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Class Search</title><style>
+  .native-status-open { color: rgb(0, 107, 84); background: rgb(231, 246, 242); }
+  .native-status-closed { color: rgb(180, 35, 24); background: rgb(255, 241, 240); }
+  .native-status-waitlist { color: rgb(138, 75, 8); background: rgb(255, 247, 230); }
+</style></head>
 <body><main class="ps_box-page" aria-label="Sanitized Class Search">
   <h1 class="ps_box-pagetitle">Class Search</h1>
   <section class="ps_box-search" aria-label="Search criteria">
@@ -10,7 +14,9 @@
   </section>
   <section class="ps_grid-flex" aria-label="Sanitized search results">
     <div class="ps_grid-header" role="row"><span role="columnheader">Course</span><span role="columnheader">Status</span><span role="columnheader">Meeting</span></div>
-    <div role="row"><span role="cell">TEST-UA 000</span><span role="cell">Open</span><span role="cell">[meeting details removed]</span></div>
+    <div role="row"><span role="cell">TEST-UA 000</span><span class="native-status-open" role="cell">Open</span><span role="cell">[meeting details removed]</span></div>
+    <div role="row"><span role="cell">TEST-UA 001</span><span class="native-status-closed" role="cell">Closed</span><span role="cell">[meeting details removed]</span></div>
+    <div role="row"><span role="cell">TEST-UA 002</span><span class="native-status-waitlist" role="cell">Waitlist</span><span role="cell">[meeting details removed]</span></div>
   </section>
   <form class="ps_box-actions" action="/native/enrollment" method="post">
     <input type="hidden" name="native_token" value="synthetic-token">

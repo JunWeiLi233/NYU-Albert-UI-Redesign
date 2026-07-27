@@ -27,10 +27,13 @@ export function markFocusTarget(
   journal: DomPatchJournal,
   element: Element,
 ): void {
+  journal.setAttribute(element, FOCUS_TARGET_ATTRIBUTE);
+  if (element.matches("a[href], button, input, select, textarea")) {
+    return;
+  }
   if (element.hasAttribute("tabindex")) {
     return;
   }
-  journal.setAttribute(element, FOCUS_TARGET_ATTRIBUTE);
   journal.setAttribute(element, "tabindex", "-1");
 }
 

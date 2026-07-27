@@ -3,6 +3,7 @@ const JAVASCRIPT_URL_PATTERN = /^\s*javascript:/i;
 export type NativeControl =
   | HTMLAnchorElement
   | HTMLButtonElement
+  | HTMLInputElement
   | HTMLLIElement;
 
 /**
@@ -12,7 +13,7 @@ export type NativeControl =
  */
 export function activateNativeControl(control: NativeControl): void {
   if (
-    !(control instanceof HTMLAnchorElement) ||
+    control.tagName !== "A" ||
     !JAVASCRIPT_URL_PATTERN.test(control.getAttribute("href") ?? "")
   ) {
     control.click();

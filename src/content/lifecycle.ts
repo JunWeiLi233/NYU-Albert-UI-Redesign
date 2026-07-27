@@ -11,6 +11,10 @@ import {
   getAvailablePageFamilies,
   navigateWithNativeAlbert,
 } from "./native-navigation";
+import {
+  createCourseSearchFrameHandoff,
+  type CourseSearchFrameHandoff,
+} from "./course-search-handoff";
 import { applyNativeTheme, removeNativeTheme } from "./native-theme";
 import {
   getAvailablePageTools,
@@ -49,6 +53,118 @@ function viewModelSignature(viewModel: ShellViewModel): string {
   ].join(":");
 }
 
+function createShellViewModel(
+  document: Document,
+  currentPageFamily: ShellViewModel["currentPageFamily"],
+): ShellViewModel {
+  return {
+    availablePageFamilies: getAvailablePageFamilies(document),
+    availablePageTools: getAvailablePageTools(
+      document,
+      currentPageFamily,
+    ),
+    availableResourceTools: getAvailableResourceTools(document),
+    availableTaskTools: getAvailableTaskTools(document),
+    currentPageFamily,
+  };
+}
+
+function normalizeDestinationLabel(value: string | null | undefined): string {
+  return value?.replace(/\s+/g, " ").trim().toLocaleLowerCase() ?? "";
+}
+
+function omitCurrentDeepPageDestination(
+  viewModel: ShellViewModel,
+  currentDocument: Document,
+): ShellViewModel {
+  const pageTitles = Array.from(
+    currentDocument.querySelectorAll<HTMLElement>(
+      '[data-better-albert-region="page-title"]',
+    ),
+  ).filter(
+    (title) =>
+      title.isConnected &&
+      title.ownerDocument === currentDocument &&
+      normalizeDestinationLabel(title.textContent).length > 0,
+  );
+  if (pageTitles.length !== 1) {
+    return viewModel;
+  }
+
+  const currentTitle = normalizeDestinationLabel(pageTitles[0]?.textContent);
+  const toolsById = new Map(
+    [...viewModel.availablePageTools, ...viewModel.availableTaskTools].map(
+      (tool) => [tool.id, tool],
+    ),
+  );
+  const matchingToolIds = Array.from(toolsById.values())
+    .filter((tool) =>
+      tool.nativeLabels.some(
+        (nativeLabel) =>
+          normalizeDestinationLabel(nativeLabel) === currentTitle,
+      ),
+    )
+    .map(({ id }) => id);
+  if (matchingToolIds.length !== 1) {
+    return viewModel;
+  }
+
+  const [currentToolId] = matchingToolIds;
+  return {
+    ...viewModel,
+    availablePageTools: viewModel.availablePageTools.filter(
+      ({ id }) => id !== currentToolId,
+    ),
+    availableTaskTools: viewModel.availableTaskTools.filter(
+      ({ id }) => id !== currentToolId,
+    ),
+  };
+}
+
+function isTrustedRelatedControlDocument(
+  currentDocument: Document,
+  relatedDocument: Document | undefined,
+): relatedDocument is Document {
+  if (
+    !relatedDocument ||
+    relatedDocument === currentDocument ||
+    !relatedDocument.documentElement.isConnected
+  ) {
+    return false;
+  }
+
+  try {
+    const relatedWindow = relatedDocument.defaultView;
+    const currentOrigin = currentDocument.defaultView?.location.origin;
+    return Boolean(
+      relatedWindow &&
+        !relatedWindow.closed &&
+        currentOrigin &&
+        relatedWindow.location.origin === currentOrigin &&
+        relatedWindow.location.hostname === "sis.portal.nyu.edu" &&
+        isPotentialAlbertLocation(relatedWindow.location) &&
+        !isAuthenticationDocument(relatedDocument),
+    );
+  } catch {
+    return false;
+  }
+}
+
+function focusNativeControlDocument(
+  currentDocument: Document,
+  nativeControlDocument: Document,
+): void {
+  if (nativeControlDocument === currentDocument) {
+    return;
+  }
+
+  try {
+    nativeControlDocument.defaultView?.focus();
+  } catch {
+    // Activation still reached the original native control.
+  }
+}
+
 export async function startContentScript({
   document,
   getRelatedAlbertContext,
@@ -61,6 +177,8 @@ export async function startContentScript({
 }: ContentScriptOptions): Promise<ContentScriptLifecycle> {
   let enabled = false;
   let mountedHeader: MountedHeader | undefined;
+  let mountedNativeControlDocument: Document | undefined;
+  let courseSearchFrameHandoff: CourseSearchFrameHandoff | undefined;
   let mutationObserver: MutationObserver | undefined;
   let relatedContextObserver: MutationObserver | undefined;
   let lastViewModelSignature = "";
@@ -79,6 +197,9 @@ export async function startContentScript({
       // Native Albert must remain usable even when extension cleanup fails.
     }
     mountedHeader = undefined;
+    mountedNativeControlDocument = undefined;
+    courseSearchFrameHandoff?.stop();
+    courseSearchFrameHandoff = undefined;
     lastViewModelSignature = "";
     removeMountedHeader(document);
   };
@@ -214,22 +335,43 @@ export async function startContentScript({
         lastViewModelSignature = "";
       }
 
-      const viewModel: ShellViewModel = {
-        availablePageFamilies: getAvailablePageFamilies(document),
-        availablePageTools: getAvailablePageTools(
-          document,
+      let nativeControlDocument = document;
+      let viewModel = createShellViewModel(
+        document,
+        classification.pageFamily,
+      );
+      if (
+        viewModel.availablePageFamilies.length === 0 &&
+        isTrustedRelatedControlDocument(document, relatedContextDocument)
+      ) {
+        const relatedViewModel = createShellViewModel(
+          relatedContextDocument,
           classification.pageFamily,
-        ),
-        availableResourceTools: getAvailableResourceTools(document),
-        availableTaskTools: getAvailableTaskTools(document),
-        currentPageFamily: classification.pageFamily,
-      };
+        );
+        if (relatedViewModel.availablePageFamilies.length > 0) {
+          nativeControlDocument = relatedContextDocument;
+          viewModel = omitCurrentDeepPageDestination(
+            relatedViewModel,
+            document,
+          );
+        }
+      }
       const nextSignature = viewModelSignature(viewModel);
 
+      if (
+        mountedHeader &&
+        mountedNativeControlDocument !== nativeControlDocument
+      ) {
+        safeUnmount();
+      }
+
       if (!mountedHeader) {
+        courseSearchFrameHandoff =
+          createCourseSearchFrameHandoff(nativeControlDocument);
         mountedHeader = mountHeader({
           ...viewModel,
           document,
+          nativeControlDocument,
           onDisable: async () => {
             enabled = false;
             disconnectObserver();
@@ -241,13 +383,40 @@ export async function startContentScript({
             }
           },
           onNavigate: (pageFamily) => {
-            navigateWithNativeAlbert(document, pageFamily);
+            if (
+              navigateWithNativeAlbert(nativeControlDocument, pageFamily)
+            ) {
+              focusNativeControlDocument(
+                document,
+                nativeControlDocument,
+              );
+            }
           },
           onOpenResource: (toolId) => {
-            openNativeResourceTool(document, toolId);
+            if (openNativeResourceTool(nativeControlDocument, toolId)) {
+              focusNativeControlDocument(
+                document,
+                nativeControlDocument,
+              );
+            }
           },
           onOpenTool: (toolId) => {
-            openNativePageTool(document, toolId);
+            const openTool = (): void => {
+              if (openNativePageTool(nativeControlDocument, toolId)) {
+                focusNativeControlDocument(
+                  document,
+                  nativeControlDocument,
+                );
+              }
+            };
+
+            if (toolId !== "course-search") {
+              openTool();
+              return;
+            }
+
+            courseSearchFrameHandoff?.request();
+            openTool();
           },
           onSkipToContent: () => {
             const workspace = document.querySelector<HTMLElement>(
@@ -259,6 +428,7 @@ export async function startContentScript({
             workspace.focus({ preventScroll: false });
           },
         });
+        mountedNativeControlDocument = nativeControlDocument;
         lastViewModelSignature = nextSignature;
         return;
       }

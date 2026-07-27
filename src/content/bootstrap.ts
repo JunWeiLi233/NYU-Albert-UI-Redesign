@@ -1,5 +1,9 @@
 import { removeMountedHeader } from "../app/mount-header";
 import { chromePreferenceStore } from "../storage/preferences";
+import {
+  startCourseSearchFrameReceiver,
+  startCourseSearchFrameRelay,
+} from "./course-search-handoff";
 import { startContentScript } from "./lifecycle";
 import { removeNativeTheme } from "./native-theme";
 import {
@@ -11,6 +15,8 @@ import {
 
 const topLevel = window.top === window;
 let relatedContextDocument: Document | undefined;
+startCourseSearchFrameReceiver(document);
+startCourseSearchFrameRelay(document);
 
 function isPositiveAlbertWindow(candidate: Window): boolean {
   return (

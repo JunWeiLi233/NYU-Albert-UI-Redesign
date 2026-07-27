@@ -14,8 +14,8 @@ async function syncActionState(enabled: boolean): Promise<void> {
     }),
     chrome.action.setTitle({
       title: enabled
-        ? "Better Albert is on — click to disable"
-        : "Better Albert is off — click to enable",
+        ? "Better Albert is on — click to turn it off"
+        : "Better Albert is off — click to turn it on",
     }),
   ]);
 }

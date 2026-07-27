@@ -2,6 +2,7 @@ html[data-better-albert-enabled] {
   color-scheme: light;
   --ba-native-violet: #57068c;
   --ba-native-violet-dark: #400066;
+  --ba-native-focus: #8900e1;
   --ba-native-pale-violet: #eee6f3;
   --ba-native-ink: #0b0b0b;
   --ba-native-muted: #5c5c5c;
@@ -9,6 +10,8 @@ html[data-better-albert-enabled] {
   --ba-native-surface: #ffffff;
   --ba-native-rule: #e4e4e4;
   --ba-native-rule-strong: #c9c5cc;
+  --ba-native-danger: #b42318;
+  --ba-native-danger-surface: #fff1f0;
   --ba-native-rail: 264px;
   --ba-native-font: "NYU Perstare", NYUPerstare, "Helvetica Neue", Helvetica,
     Cantarell, Ubuntu, Roboto, Noto, Arial, sans-serif;
@@ -90,13 +93,13 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
 }
 
 html[data-better-albert-enabled][data-better-albert-compact-header]
-  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR.open {
-  position: absolute !important;
-  z-index: 80 !important;
-  inset: 0 0 auto !important;
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open] {
+  position: fixed !important;
+  z-index: 2147483646 !important;
+  inset: var(--ba-native-shell-height, 0px) 0 0 !important;
   box-sizing: border-box !important;
   width: 100% !important;
-  max-height: calc(100dvh - 58px) !important;
+  max-height: none !important;
   padding: 16px !important;
   overflow: auto !important;
   border-top: 4px solid var(--ba-native-violet) !important;
@@ -104,8 +107,48 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
   color: var(--ba-native-ink) !important;
 }
 
+/*
+ * Resource search is modal navigation. Keep Albert's original directory open
+ * as the authority, but pause its duplicate visual list and scrolling until
+ * the search surface closes.
+ */
+html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header],
+html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header]
+  body {
+  overflow: hidden !important;
+}
+
+html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header]
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open] {
+  overflow: hidden !important;
+}
+
+html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header]
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]::before,
+html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header]
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
+  > ul {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 html[data-better-albert-enabled][data-better-albert-compact-header]
-  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR.open
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory][data-better-albert-resource-directory-open]::before {
+  content: "NYU Resources";
+  display: block;
+  box-sizing: border-box;
+  width: min(100%, 1200px);
+  margin: 0 auto 8px;
+  color: var(--ba-native-ink);
+  font-family: var(--ba-native-font);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
   > ul {
   display: grid !important;
   grid-template-columns: repeat(
@@ -123,7 +166,23 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
 }
 
 html[data-better-albert-enabled][data-better-albert-compact-header]
-  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR.open
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory][data-better-albert-resource-directory-open]
+  > ul::before {
+  content: "Choose an official NYU service, or use Search NYU resources above. Every link keeps its original NYU destination.";
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+  padding: 8px 16px 16px;
+  border-bottom: 1px solid var(--ba-native-rule);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-muted);
+  font-family: var(--ba-native-font);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
   > ul
   > li {
   float: none !important;
@@ -137,7 +196,14 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
 }
 
 html[data-better-albert-enabled][data-better-albert-compact-header]
-  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR.open
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
+  > ul
+  > li[data-better-albert-resource-category-start] {
+  grid-column: 1 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
   > ul
   > li
   > a {
@@ -157,7 +223,31 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
 }
 
 html[data-better-albert-enabled][data-better-albert-compact-header]
-  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR.open
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
+  > ul
+  > li[data-better-albert-resource-category-start]
+  > a {
+  display: grid !important;
+  align-content: center !important;
+  gap: 4px !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
+  > ul
+  > li[data-better-albert-resource-category-start]
+  > a::before {
+  content: attr(data-better-albert-resource-category-label);
+  color: var(--ba-native-muted);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
   > ul
   > li
   > a:hover {
@@ -179,14 +269,81 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
   margin-left: 0 !important;
 }
 
+/*
+ * Keep Albert's own utility controls available as a quiet official-system
+ * toolbar. The extension shell already explains where official data lives, so
+ * repeating a large system-oriented heading here only delays student content.
+ * Native destinations, labels, listeners, and focus order remain unchanged.
+ */
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_WRAPPER {
+  display: flex !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  height: auto !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  padding: 2px 16px !important;
+  overflow-x: auto !important;
+  border-bottom: 1px solid var(--ba-native-rule) !important;
+  background: var(--ba-native-surface) !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_WRAPPER
+  :where(a, button) {
+  display: inline-flex !important;
+  box-sizing: border-box !important;
+  min-height: 44px !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  padding: 8px 12px !important;
+  border: 1px solid var(--ba-native-rule-strong) !important;
+  border-radius: 3px !important;
+  background: var(--ba-native-surface) !important;
+  color: var(--ba-native-violet) !important;
+  font-family: var(--ba-native-font) !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  text-underline-offset: 3px !important;
+  white-space: nowrap !important;
+}
+
 @media (min-width: 900px) {
   html[data-better-albert-enabled][data-better-albert-compact-header]
-    #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR.open {
+    #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open] {
     position: fixed !important;
     inset: 60px 0 0 var(--ba-native-rail) !important;
     width: auto !important;
     max-height: none !important;
     padding: 32px !important;
+  }
+
+  /*
+   * Give each service category a real desktop section lead instead of
+   * pinning its first link to column one and leaving irregular empty cells.
+   * The category lead remains the original clickable first anchor.
+   */
+  html[data-better-albert-enabled][data-better-albert-compact-header]
+    #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
+    > ul
+    > li[data-better-albert-resource-category-start] {
+    grid-column: 1 / -1 !important;
+    background: var(--ba-native-page) !important;
+    box-shadow:
+      inset 4px 0 0 var(--ba-native-violet),
+      inset 0 0 0 1px var(--ba-native-rule) !important;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-compact-header]
+    #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]
+    > ul
+    > li[data-better-albert-resource-category-start]
+    > a {
+    grid-template-columns: minmax(12rem, 0.35fr) minmax(0, 1fr);
+    align-items: center !important;
   }
 
   html[data-better-albert-enabled][data-better-albert-top-level] body {
@@ -246,7 +403,12 @@ html[data-better-albert-enabled] body :where(button, input, select, textarea) {
   font-family: var(--ba-native-font);
 }
 
-html[data-better-albert-enabled] body :where(button, input, select, textarea, a):focus-visible {
+html[data-better-albert-enabled]
+  body
+  :where(button, input, select, textarea, a):focus-visible,
+html[data-better-albert-enabled]
+  body
+  [data-better-albert-focus-target]:focus {
   outline: 3px solid var(--ba-native-violet);
   outline-offset: 2px;
 }
@@ -259,7 +421,25 @@ html[data-better-albert-enabled] [data-better-albert-layout="portal-workspace"] 
   padding: 24px 32px 48px;
 }
 
-html[data-better-albert-enabled] [data-better-albert-region="native-navigation"] {
+/*
+ * The top-level Better Albert shell mirrors every verified family destination
+ * and delegates activation back to these original controls. Keeping the native
+ * family strip visible directly below the shell creates two competing primary
+ * navigations, especially on phones. Hide only its presentation on recognized
+ * top-level family pages; the original nodes remain connected and clickable for
+ * delegation, and removing the extension theme restores the strip immediately.
+ * Child-frame and generic/deep navigation remains visible because those
+ * documents do not own the Better Albert shell.
+ */
+html[data-better-albert-enabled][data-better-albert-top-level][data-better-albert-adapter^="family-"]
+  [data-better-albert-region="native-navigation"] {
+  display: none !important;
+}
+
+html[data-better-albert-enabled]:not([data-better-albert-top-level])
+  [data-better-albert-region="native-navigation"],
+html[data-better-albert-enabled][data-better-albert-top-level]:not([data-better-albert-adapter^="family-"])
+  [data-better-albert-region="native-navigation"] {
   display: flex;
   min-height: 48px;
   align-items: center;
@@ -396,6 +576,11 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-layout="family-content"] {
+  grid-template-columns: minmax(0, 0.8fr) minmax(280px, 1.2fr);
+}
+
 html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
   [data-better-albert-layout="family-content"],
 html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
@@ -405,7 +590,7 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
   [data-better-albert-layout="family-content"] {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
@@ -426,6 +611,116 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
 }
 
 /*
+ * Enrollment actions stay native and retain their original semantic colors,
+ * form ownership, and behavior. Only replace the tiny legacy hit area with a
+ * dependable touch target on the Home and Academics family workspaces.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="enrollment-section"]
+  :where(button, input[type="button"], input[type="submit"]),
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  [data-better-albert-region="enrollment-section"]
+  :where(button, input[type="button"], input[type="submit"]) {
+  box-sizing: border-box;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 10px 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+/*
+ * Enrollment is a native transaction, not a Quick access shortcut. Mark only
+ * an unambiguous Albert form with one submit control labeled Enroll, then make
+ * that boundary explicit without changing the control, listener, or form.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  [data-better-albert-region="enrollment-action"] {
+  display: grid;
+  box-sizing: border-box;
+  max-width: 100%;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--ba-native-rule);
+  border-left: 5px solid var(--ba-native-violet);
+  background: var(--ba-native-page);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  [data-better-albert-region="enrollment-action"]::before {
+  color: var(--ba-native-ink);
+  content: "Official Albert enrollment step";
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  [data-better-albert-region="enrollment-action"]::after {
+  color: var(--ba-native-muted);
+  content: "Review your selections in Albert before submitting.";
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  [data-better-albert-region="enrollment-action"]
+  :where(button, input[type="submit"]) {
+  justify-self: start;
+}
+
+/*
+ * Home's native cross-family directory is the source for 18 verified task
+ * controls, while its four resource links are also sourced from the exact
+ * Other Resources submenu. Better Albert exposes all of them through the task
+ * finder, so presenting the original 22-link PeopleSoft directory again turns
+ * the student overview into a long duplicate sitemap. Keep the original
+ * section connected for discovery and delegated .click() calls, but remove it
+ * from the top-level visual and keyboard flow. The adapter journals `inert`,
+ * and this reversible visual collapse avoids native `hidden`, `display:none`,
+ * or `visibility:hidden`, which would incorrectly make the controls look
+ * unavailable to verified-tool discovery.
+ */
+html[data-better-albert-enabled][data-better-albert-top-level][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="home-tools"][inert] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+/*
+ * A page-specific PeopleSoft link directory may repeat Quick access only when
+ * every actionable control maps uniquely to a verified tool definition. The
+ * adapter marks only those complete mirrors inert. Collapse their presentation
+ * while keeping the original nodes connected for delegated .click() calls.
+ * Directories containing unknown, ambiguous, or transaction-changing controls
+ * never receive inert and remain visible.
+ */
+html[data-better-albert-enabled][data-better-albert-top-level][data-better-albert-adapter^="family-"]
+  [data-better-albert-region="directory"][inert] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+/*
  * Contain the Home attention panels (To Do / Holds / Enrollment Dates).
  * PeopleSoft lays these out as three .nyuSSS_ThirdW float:left boxes pinned
  * to ~80px inside an .NYU_same_height_width flex row; their content (e.g.
@@ -437,19 +732,67 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
 html[data-better-albert-enabled]
   [data-better-albert-region="attention-section"]
   .NYU_same_height_width {
-  display: block !important;
+  display: grid !important;
   width: 100% !important;
   max-width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 12px;
 }
 
 html[data-better-albert-enabled]
   [data-better-albert-region="attention-section"]
   .nyuSSS_ThirdW {
+  display: grid;
   box-sizing: border-box;
   width: 100% !important;
   max-width: 100%;
+  min-height: 112px;
+  align-content: start;
+  gap: 8px;
   float: none !important;
   margin: 0 !important;
+  padding: 16px;
+  border: 1px solid var(--ba-native-rule);
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="attention-section"]
+  .nyuSSS_ThirdW
+  > :where(h2, h3, p, [role="status"]) {
+  margin-block: 0;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="attention-section"]
+  .nyuSSS_ThirdW
+  > :where(h2, h3) {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+html[data-better-albert-enabled]
+  :where(
+    [data-better-albert-region="holds-status"],
+    [data-better-albert-region="registration-time"],
+    [data-better-albert-region="todo-status"]
+  ):focus {
+  outline: 3px solid var(--ba-native-violet);
+  outline-offset: 3px;
+  scroll-margin-block: 24px;
+}
+
+@media (min-width: 401px) and (max-width: 599px) {
+  html[data-better-albert-enabled]
+    [data-better-albert-region="attention-section"]
+    .NYU_same_height_width {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html[data-better-albert-enabled]
+    [data-better-albert-region="attention-section"]
+    .nyuSSS_ThirdW:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
@@ -458,20 +801,52 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
     [data-better-albert-region="home-tools"]
   ),
 html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
-  :where(
-    [data-better-albert-region="enrollment-section"],
-    [data-better-albert-region="graduation-section"]
-  ),
+  [data-better-albert-region="advising-section"],
 html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
   :where(
     [data-better-albert-region="reports-directory"],
-    [data-better-albert-region="term-selector"],
-    [data-better-albert-region="term-navigation"],
     [data-better-albert-region="record-section"]
   ),
 html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
   [data-better-albert-region="profile-directory"] {
   grid-column: 1 / -1;
+}
+
+/*
+ * Academics is easiest to learn as one five-stage journey. Only when the
+ * adapter verifies exactly one Planning, Degree, Advising, Enrollment, and
+ * Graduation section does it publish these reversible stage labels. The
+ * native sections remain in source order; this adds orientation and a compact
+ * desktop finish row without changing any Albert content or action.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  [data-better-albert-academic-step] {
+  border: 1px solid var(--ba-native-rule);
+  border-left: 5px solid var(--ba-native-violet);
+  background: var(--ba-native-page);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  [data-better-albert-academic-step]::before {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--ba-native-violet);
+  content: attr(data-better-albert-academic-step);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.055em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  [data-better-albert-region="enrollment-section"] {
+  grid-column: 1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+  [data-better-albert-region="graduation-section"] {
+  grid-column: 2;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
@@ -486,7 +861,7 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
   #NYUBursarDisplay
-  > :where(#NYU_SSS_BURSAR_AMOUNTS, #NYUBursarLinks),
+  > :where(#NYU_SSS_BURSAR_AMOUNTS, #NYUBursarLinks:not([inert])),
 html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
   #NYUBursarLinks
   > .nyuSSS_Bursar {
@@ -516,6 +891,57 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
   font-weight: 800;
   line-height: 1.35;
   text-underline-offset: 3px;
+}
+
+/*
+ * Payment remains a native transaction: Better Albert does not restyle its
+ * semantic colors, replace its submit control, or intercept its form. Give the
+ * existing button the same dependable touch geometry as the rest of the page
+ * so it is not a tiny legacy target below the account table.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  [data-better-albert-region="payment-action"] {
+  display: grid;
+  box-sizing: border-box;
+  max-width: 100%;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--ba-native-rule);
+  border-left: 5px solid var(--ba-native-violet);
+  background: var(--ba-native-page);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  [data-better-albert-region="payment-action"]::before {
+  content: "Official Albert payment step";
+  color: var(--ba-native-ink);
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  [data-better-albert-region="payment-action"]::after {
+  content: "Payment processing remains outside Better Albert.";
+  color: var(--ba-native-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
+  [data-better-albert-region="account-section"]
+  form
+  :where(button, input[type="submit"]) {
+  box-sizing: border-box;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 10px 14px;
+  font-weight: 700;
+  justify-self: start;
+  line-height: 1.35;
+  white-space: normal;
 }
 
 /*
@@ -626,6 +1052,7 @@ html[data-better-albert-enabled]
     [data-better-albert-region="attention-section"],
     [data-better-albert-region="enrollment-section"],
     [data-better-albert-region="planning-section"],
+    [data-better-albert-region="advising-section"],
     [data-better-albert-region="degree-section"],
     [data-better-albert-region="graduation-section"],
     [data-better-albert-region="reports-directory"],
@@ -684,40 +1111,195 @@ html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
   color: var(--ba-native-ink);
 }
 
+/*
+ * Career and term are one grade-view choice, not two unrelated full-width
+ * sections. Keep their native labels and selects in source order, but present
+ * them as a compact filter pair on desktop and dependable stacked controls on
+ * phones. No grade values are read or copied.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  [data-better-albert-layout="family-content"]
+  :where(
+    [data-better-albert-region="term-selector"],
+    [data-better-albert-region="term-navigation"]
+  ) {
+  border: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-pale-violet);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  [data-better-albert-records-guidance]::after {
+  display: block;
+  max-width: 52rem;
+  margin-top: 8px;
+  color: var(--ba-native-muted);
+  content: attr(data-better-albert-records-guidance);
+  line-height: 1.45;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  [data-better-albert-region="term-selector"]::before,
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  [data-better-albert-region="term-navigation"]::before {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ba-native-violet);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  [data-better-albert-region="term-selector"]::before {
+  content: "Step 1";
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  [data-better-albert-region="term-navigation"]::before {
+  content: "Step 2";
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  [data-better-albert-layout="family-content"]
+  :where(
+    [data-better-albert-region="term-selector"],
+    [data-better-albert-region="term-navigation"]
+  )
+  label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  flex-wrap: wrap;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+  [data-better-albert-layout="family-content"]
+  :where(
+    [data-better-albert-region="term-selector"],
+    [data-better-albert-region="term-navigation"]
+  )
+  select {
+  min-height: 44px;
+}
+
 html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
   [data-better-albert-layout="family-content"]
   :where([role="alert"], [role="status"], .PSERROR, .PSMESSAGE) {
   max-width: 100%;
   padding: 12px 16px;
   border-left: 5px solid currentcolor;
-  background: var(--ba-native-page);
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
   [data-better-albert-layout="family-content"]
-  form {
+  [data-better-albert-region="personal-edit-form"] {
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(8rem, 0.4fr) minmax(0, 1fr);
   gap: 12px 16px;
   align-items: center;
   margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--ba-native-rule);
+  padding: 16px;
+  border: 1px solid var(--ba-native-rule-strong);
+  border-left: 5px solid var(--ba-native-violet);
+  background: var(--ba-native-pale-violet);
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
   [data-better-albert-layout="family-content"]
-  form
+  > [data-better-albert-region]:has(
+    [data-better-albert-region="personal-edit-form"]
+  ) {
+  grid-column: 1 / -1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-personal-group]::before {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--ba-native-violet);
+  content: attr(data-better-albert-personal-group);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region="personal-edit-form"]::before,
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region="personal-edit-form"]::after {
+  grid-column: 1 / -1;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region="personal-edit-form"]::before {
+  color: var(--ba-native-violet);
+  content: "Official Albert edit form";
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region="personal-edit-form"]::after {
+  color: var(--ba-native-muted);
+  content: "Albert saves these changes. Better Albert does not store this information.";
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-layout="family-content"]
+  [data-better-albert-region="personal-edit-form"]
   > :where(label, input:not([type="hidden"]), select, textarea) {
   min-width: 0;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-region="personal-edit-form"]
+  > :where(input:not([type="hidden"]), select, textarea) {
+  width: 100%;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
   [data-better-albert-layout="family-content"]
-  form
+  [data-better-albert-region="personal-edit-form"]
   > :where([role="alert"], .PSERROR, .PSMESSAGE) {
   grid-column: 1 / -1;
+}
+
+/*
+ * Personal Info edit links and form actions are native identity-data controls.
+ * Preserve their labels, colors, form ownership, validation, and listeners,
+ * while replacing the legacy inline/tiny hit areas with reliable touch
+ * geometry. Quick access still delegates to these exact edit links.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-layout="family-content"]
+  [data-better-albert-region]
+  a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
+  [data-better-albert-layout="family-content"]
+  [data-better-albert-region="personal-edit-form"]
+  :where(button, input[type="button"], input[type="submit"]) {
+  box-sizing: border-box;
+  min-height: 44px;
+  max-width: 100%;
+  padding-block: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: normal;
 }
 
 /*
@@ -892,6 +1474,9 @@ html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
 
 html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
   [data-better-albert-region="breadcrumbs"] a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: var(--ba-native-violet);
   font-weight: 800;
 }
@@ -926,7 +1511,7 @@ html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
   ) {
   box-sizing: border-box;
   min-width: 0;
-  min-height: 42px;
+  min-height: 44px;
   max-width: 100%;
   grid-column: 2;
   border-color: var(--ba-native-rule-strong);
@@ -945,6 +1530,24 @@ html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
   > :where(button, .PSPUSHBUTTON) {
   grid-column: 2;
   justify-self: start;
+}
+
+/*
+ * Deep pages mix navigation, read-only utilities, and transactional actions.
+ * Preserve every native semantic color, label, listener, and form relationship
+ * while replacing PeopleSoft's tiny default hit areas with dependable touch
+ * geometry across groups, forms, and the native action area.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
+  [data-better-albert-layout="peoplesoft-page"]
+  :where(button, input[type="button"], input[type="submit"], .PSPUSHBUTTON) {
+  box-sizing: border-box;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 10px 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: normal;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
@@ -973,6 +1576,45 @@ html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
   background: var(--ba-native-pale-violet);
   color: var(--ba-native-ink);
   font-weight: 900;
+}
+
+/*
+ * Class Search includes PeopleSoft's first/last keyboard sentinels as raw
+ * document links. Keep both original anchors in the focus order and preserve
+ * their targets, but reveal them only while focused so they do not become an
+ * unexplained permanent row above the task-first search workspace.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  a.ps-anchor {
+  position: fixed;
+  z-index: 2147483647;
+  inset: 8px auto auto 8px;
+  display: inline-flex;
+  box-sizing: border-box;
+  min-height: 44px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 2px solid var(--ba-native-violet);
+  border-radius: 3px;
+  background: var(--ba-native-surface);
+  color: var(--ba-native-violet);
+  font-family: var(--ba-native-font);
+  font-weight: 800;
+  line-height: 1.25;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(calc(-100% - 16px));
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  a.ps-anchor:focus,
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  a.ps-anchor:focus-visible {
+  opacity: 1;
+  outline: 3px solid var(--ba-native-ultraviolet);
+  outline-offset: 2px;
+  pointer-events: auto;
+  transform: none;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
@@ -1011,6 +1653,50 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   background: var(--ba-native-page);
 }
 
+/*
+ * Fluid Class Search exposes its criteria as a flat sequence of native labels
+ * and controls. Give that sequence a dependable reading order and touch
+ * geometry instead of leaving term, subject, and career compressed onto
+ * browser-default inline rows.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search"]
+  [data-better-albert-region="filter"] {
+  display: grid;
+  gap: 8px;
+  align-items: start;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search"]
+  [data-better-albert-region="filter"]
+  :where(label, .ps-label, .ps_box-label) {
+  color: var(--ba-native-ink);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search"]
+  [data-better-albert-region="filter"]
+  :where(
+    input:not([type]),
+    input[type="text"],
+    input[type="search"],
+    select,
+    textarea
+  ) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+  font: inherit;
+}
+
 html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   [data-better-albert-region="results"] {
   grid-column: 2;
@@ -1037,6 +1723,29 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
     [data-better-albert-region="results"]
   ) {
   grid-column: 2;
+}
+
+/*
+ * On desktop the filter column spans the results and their native transaction
+ * row. This lets Add to Cart / Enroll follow the result immediately instead
+ * of waiting below the taller filter card.
+ */
+@media (min-width: 900px) {
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search"]:has(
+      > [data-better-albert-region="page-title"]
+    )
+    > [data-better-albert-region="filter"] {
+    grid-row: 2 / span 2;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search"]:has(
+      > [data-better-albert-region="page-title"]
+    )
+    > [data-better-albert-region="results"] {
+    align-self: stretch;
+  }
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
@@ -1128,6 +1837,411 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   font-weight: 800;
 }
 
+/*
+ * Classic Class Search exposes the safest verified path as two native
+ * selectors followed by one exact Search action. Present that small sequence
+ * as a deliberate task instead of browser-default fragments. The selects and
+ * button remain Albert-owned and keep their original values, listeners, and
+ * form ownership.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-search-mode="selectors"]
+  [data-better-albert-region="filter"] {
+  display: grid;
+  gap: 8px;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-search-mode="selectors"]
+  [data-better-albert-region="filter"]::before {
+  content: "Choose a subject";
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ba-native-violet-dark);
+  font-size: 1.125rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-search-mode="selectors"]
+  [data-better-albert-region="selector-search-control"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+  font: inherit;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-search-mode="selectors"]
+  [data-better-albert-region="selector-search-control"]:focus {
+  outline: 3px solid var(--ba-native-focus);
+  outline-offset: 2px;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="validation-alert"] {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 14px;
+  border-left: 5px solid var(--ba-native-danger);
+  background: var(--ba-native-danger-surface);
+  color: var(--ba-native-ink);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="validation-control"] {
+  border-color: var(--ba-native-danger) !important;
+  box-shadow: 0 0 0 1px var(--ba-native-danger);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="validation-control"]:focus {
+  outline: 3px solid var(--ba-native-focus);
+  outline-offset: 2px;
+}
+
+/*
+ * A single native no-results status remains the authoritative message. Add a
+ * neutral recovery cue without replacing the live-region text or introducing
+ * another control: the student changes one native criterion and uses the same
+ * verified Search action again.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="empty-status"] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 24px;
+  color: var(--ba-native-ink);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="empty-status"]::after {
+  content: "Adjust your search, then use Search again.";
+  display: block;
+  margin-top: 8px;
+  color: var(--ba-native-muted);
+  font-weight: 500;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-search-mode="selectors"]
+  [data-better-albert-region="filter"]
+  .ps_box-button {
+  display: grid;
+  margin-top: 8px;
+}
+
+/*
+ * Albert's verified combined query searches subject, catalog number, title,
+ * and instructor in one submission. Make that native field the obvious
+ * starting point while leaving the slower description search and every
+ * advanced filter available in their original DOM and form.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="primary-search-label"] {
+  display: block;
+  color: var(--ba-native-violet-dark);
+  font-size: 0;
+  font-weight: 900;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="primary-search-label"]::before {
+  content: "Find a class";
+  display: block;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="primary-search-label"]::after {
+  content: "Use one field for subject, course number, title, or instructor.";
+  display: block;
+  margin-top: 4px;
+  color: var(--ba-native-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/*
+ * Some verified fluid pages expose a subject-only field rather than Albert's
+ * combined query. Keep the same strong starting hierarchy, but describe only
+ * the capability the original native control actually provides.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-search-mode="subject"]
+  [data-better-albert-region="primary-search-label"]::before {
+  content: "Search by subject";
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-search-mode="subject"]
+  [data-better-albert-region="primary-search-label"]::after {
+  content: "Enter a department or subject, then use Search.";
+}
+
+/*
+ * Treat the verified combined field and its original Search button as one
+ * coherent starting action. This changes only layout: the native input,
+ * listener, button, and form remain in place.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  .ps_box-row:has([data-better-albert-region="primary-search-input"]) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ba-native-rule);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  .ps_box-row:has([data-better-albert-region="primary-search-input"])
+  > :where(.ps_box-label, .ps_box-value, .ps_box-button) {
+  min-width: 0;
+  margin: 0;
+}
+
+/*
+ * The legacy combined search sometimes follows the primary field with a
+ * slower description query and native advanced criteria. Keep all of them
+ * visible, but render them as a quiet secondary section so a first-semester
+ * student does not mistake them for prerequisites to the one-step search.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="filter"]
+  .ps_box-row:not(:has([data-better-albert-region="primary-search-input"])) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--ba-native-rule);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="filter"]
+  .ps_box-row:not(
+    :has([data-better-albert-region="primary-search-input"])
+  )::before {
+  content: "More search options";
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ba-native-muted);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="filter"]
+  .ps_box-row:not(:has([data-better-albert-region="primary-search-input"]))
+  > :where(.ps_box-label, .ps_box-value, .ps_box-button) {
+  min-width: 0;
+  margin: 0;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="filter"]
+  .ps_box-row:not(:has([data-better-albert-region="primary-search-input"]))
+  :where(input[type="text"], input[type="search"], button) {
+  width: 100%;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="filter"]
+  > .ps_box-value {
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="filter"]
+  > .ps_box-value
+  :where(input[type="checkbox"], input[type="radio"]) {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--ba-native-violet);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="filter"]
+  > .ps_box-value:has(input[type="file"]) {
+  display: grid;
+  align-items: start;
+  padding-top: 8px;
+  border-top: 1px solid var(--ba-native-rule);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="filter"]
+  input[type="file"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  color: var(--ba-native-muted);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="filter"]
+  input[type="file"]::file-selector-button {
+  min-height: 44px;
+  margin-right: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+  font: inherit;
+  font-weight: 800;
+}
+
+/*
+ * Preserve every native Class Search action while replacing legacy browser
+ * button sizing with a dependable touch target. The combined-query action
+ * below remains the only violet primary action.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  :where(button, input[type="button"], input[type="submit"], a[role="button"]) {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 9px 16px;
+  border: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+  font: inherit;
+  font-weight: 800;
+}
+
+/*
+ * Fluid result actions remain Albert-owned transactions. Only normalize their
+ * hit area and wrapping, and present the native action group as a clear next
+ * step after results; do not recolor Add to Cart or Enroll as primary.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search"]
+  :where(button, input[type="button"], input[type="submit"], a[role="button"]) {
+  box-sizing: border-box;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 9px 16px;
+  font: inherit;
+  font-weight: 800;
+  white-space: normal;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search"]
+  > [data-better-albert-region="result-actions"] {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--ba-native-rule);
+  background: var(--ba-native-page);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="result-actions"]::before {
+  content: "Official Albert next step";
+  flex-basis: 100%;
+  color: var(--ba-native-muted);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="result-actions"] {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--ba-native-rule);
+  background: var(--ba-native-page);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="primary-search-input"] {
+  width: 100%;
+  min-height: 52px !important;
+  padding-inline: 14px;
+  border: 2px solid var(--ba-native-violet) !important;
+  background: var(--ba-native-surface) !important;
+  font-size: 1rem;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="primary-search-input"]:focus {
+  outline: 3px solid var(--ba-native-focus);
+  outline-offset: 2px;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="primary-search-action"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 24px;
+  border: 2px solid var(--ba-native-violet) !important;
+  background: var(--ba-native-violet) !important;
+  color: #fff !important;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="primary-search-action"]:hover {
+  background: var(--ba-native-violet-dark) !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="primary-search-action"]:focus-visible {
+  outline: 3px solid var(--ba-native-focus);
+  outline-offset: 3px;
+}
+
 html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   [data-better-albert-layout="class-search-legacy"]
   :where(
@@ -1192,6 +2306,8 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   [data-better-albert-region="result-row"] {
   display: grid;
   box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   grid-template-columns: minmax(0, 2fr) minmax(96px, auto);
   align-items: start;
   gap: 8px 20px;
@@ -1199,6 +2315,22 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   border: 0;
   border-bottom: 1px solid var(--ba-native-rule);
   background: var(--ba-native-surface);
+}
+
+/*
+ * Real Class Search rows can nest long descriptions inside fixed-width
+ * PeopleSoft wrappers. Keep every text-bearing wrapper inside the verified
+ * card boundary so course notes remain readable without a hidden horizontal
+ * pan. This changes wrapping only; native text and link identity stay intact.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="result-row"]
+  :where(td, [role="cell"], div, span, p, a) {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
@@ -1217,11 +2349,10 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
 }
 
 /*
- * Status pill: the second cell of each result row (the Open/Closed/Waitlist
- * column) becomes a right-aligned, high-contrast pill so students can scan seat
- * availability at a glance. The pill background is a neutral pale surface; the
- * native status text and any native color are preserved, so semantic meaning
- * still comes from Albert's own wording.
+ * Status badge: the second cell of each result row (the Open/Closed/Waitlist
+ * column) becomes a right-aligned badge so students can scan availability at a
+ * glance. Border, text, and background inherit Albert's native semantic status
+ * presentation instead of forcing every outcome into the same violet state.
  */
 html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   [data-better-albert-region="result-row"]
@@ -1232,14 +2363,10 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   box-sizing: border-box;
   min-width: 96px;
   padding: 8px 14px;
-  border: 1px solid var(--ba-native-rule-strong);
+  border: 1px solid currentcolor;
   border-radius: 3px;
-  background: var(--ba-native-pale-violet);
-  color: var(--ba-native-violet-dark);
   font-weight: 900;
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   line-height: 1.2;
 }
 
@@ -1268,11 +2395,26 @@ html[data-better-albert-enabled][data-better-albert-readonly-modal-open]
 html[data-better-albert-enabled][data-better-albert-readonly-modal-open]
   body
   .ps_modalmask {
+  position: fixed !important;
+  z-index: 2147483645 !important;
+  inset: 0 !important;
   background: rgb(11 11 11 / 62%);
 }
 
 html[data-better-albert-enabled] body #pt_modals.PSMODAL[data-better-albert-readonly-modal] {
-  max-width: min(92vw, 1040px);
+  position: fixed !important;
+  z-index: 2147483646 !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50% !important;
+  box-sizing: border-box;
+  width: min(calc(100vw - 32px), 1040px) !important;
+  max-width: calc(100vw - 32px) !important;
+  max-height: calc(100dvh - 32px);
+  margin: 0 !important;
+  overflow: hidden;
+  transform: translate(-50%, -50%) !important;
   border: 1px solid var(--ba-native-violet);
   border-radius: 3px;
   background: var(--ba-native-surface);
@@ -1307,6 +2449,16 @@ html[data-better-albert-enabled]
   padding: 24px;
   background: var(--ba-native-surface);
   color: var(--ba-native-ink);
+}
+
+html[data-better-albert-enabled]
+  body
+  #pt_modals.PSMODAL[data-better-albert-readonly-modal]
+  :where(button, input[type="button"], input[type="submit"], input[type="reset"]) {
+  box-sizing: border-box;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 16px;
 }
 
 @media (max-width: 399px) {
@@ -1376,6 +2528,25 @@ html[data-better-albert-enabled]
   html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
     [data-better-albert-layout="family-content"] {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /*
+   * Career and term form one two-step grade-view choice. Join the two native
+   * sections into a single compact panel on phones instead of forcing students
+   * through a full card gap between the controls.
+   */
+  html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+    [data-better-albert-region="term-selector"] {
+    padding-bottom: 10px;
+    border-bottom: 0;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-grades"]
+    [data-better-albert-layout="family-content"]
+    > [data-better-albert-region="term-navigation"] {
+    margin-top: -24px !important;
+    padding-top: 10px;
+    border-top: 1px solid var(--ba-native-rule);
   }
 
   html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
@@ -1512,13 +2683,13 @@ html[data-better-albert-enabled]
 
   html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
     [data-better-albert-layout="family-content"]
-    form {
+    [data-better-albert-region="personal-edit-form"] {
     grid-template-columns: minmax(0, 1fr);
   }
 
   html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
     [data-better-albert-layout="family-content"]
-    form
+    [data-better-albert-region="personal-edit-form"]
     > * {
     grid-column: 1;
   }

@@ -30,6 +30,11 @@ export class AdapterManager {
   ) {}
 
   reconcile(context: AdapterContext): string | undefined {
+    const focusedTarget = context.document.activeElement?.hasAttribute(
+      FOCUS_TARGET_ATTRIBUTE,
+    )
+      ? context.document.activeElement
+      : undefined;
     this.rollback();
     this.activeDocument = context.document;
 
@@ -40,6 +45,14 @@ export class AdapterManager {
           continue;
         }
         this.activeSession = adapter.apply(context, plan);
+        if (
+          focusedTarget?.isConnected &&
+          focusedTarget.ownerDocument === context.document &&
+          focusedTarget.hasAttribute(FOCUS_TARGET_ATTRIBUTE) &&
+          typeof (focusedTarget as HTMLElement).focus === "function"
+        ) {
+          (focusedTarget as HTMLElement).focus({ preventScroll: true });
+        }
         return this.activeSession.id;
       } catch {
         this.rollback();
