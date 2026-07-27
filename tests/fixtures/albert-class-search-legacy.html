@@ -15,12 +15,19 @@
       </header>
       <main id="legacy-main">
         <section id="sanitized-search" class="ps_box-group">
-          <div class="ps_box-label"><label class="ps-label" for="subject">Subject</label></div>
-          <div class="ps_box-value"><input id="subject" name="subject" type="text"></div>
+          <div class="ps_box-row">
+            <div class="ps_box-label"><span class="ps-label">Subject, Catalog Number, Title &amp; Instructor Names</span></div>
+            <div class="ps_box-value"><input id="subject" name="subject" type="text"></div>
+            <div class="ps_box-button"><button class="ps-button" type="button">Search</button></div>
+          </div>
+          <div class="ps_box-row">
+            <div class="ps_box-label"><label class="ps-label" for="description">Course Description</label></div>
+            <div class="ps_box-value"><input id="description" name="description" type="text"></div>
+            <div class="ps_box-button"><button class="ps-button" type="button">Search</button></div>
+          </div>
           <div class="ps_box-value"><label><input id="open-only" name="open-only" type="checkbox"> Open only</label></div>
           <div class="ps_box-value"><label><input id="delivery-in-person" name="delivery" type="radio"> In person</label></div>
           <div class="ps_box-value"><label for="synthetic-file">Synthetic attachment</label><input id="synthetic-file" name="synthetic-file" type="file"></div>
-          <div class="ps_box-button"><button class="ps-button" type="button">Search</button></div>
         </section>
         <section id="sanitized-results" class="ps_box-group">
           <table aria-label="Sanitized class search results">

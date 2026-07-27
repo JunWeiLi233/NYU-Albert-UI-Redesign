@@ -1,5 +1,12 @@
 import type { PageFamily } from "./page-families";
-import { getAvailablePageFamilies } from "./native-navigation";
+import {
+  findNativeOtherResourcesSubmenu,
+  getAvailablePageFamilies,
+} from "./native-navigation";
+import {
+  RESOURCE_CATEGORY_DEFINITIONS,
+  getAvailableResourceTools,
+} from "./page-tools";
 
 export const THEME_ENABLED_ATTRIBUTE = "data-better-albert-enabled";
 export const THEME_PAGE_ATTRIBUTE = "data-better-albert-page";
@@ -9,10 +16,121 @@ export const NATIVE_MODAL_OPEN_ATTRIBUTE = "data-better-albert-native-modal-open
 export const READ_ONLY_MODAL_OPEN_ATTRIBUTE =
   "data-better-albert-readonly-modal-open";
 const READ_ONLY_MODAL_ATTRIBUTE = "data-better-albert-readonly-modal";
+const RESOURCE_DIRECTORY_ATTRIBUTE =
+  "data-better-albert-resource-directory";
+const RESOURCE_CATEGORY_ATTRIBUTE =
+  "data-better-albert-resource-category";
+const RESOURCE_CATEGORY_START_ATTRIBUTE =
+  "data-better-albert-resource-category-start";
+const RESOURCE_CATEGORY_LABEL_ATTRIBUTE =
+  "data-better-albert-resource-category-label";
+const RESOURCE_ARIA_LABEL_ADDED_ATTRIBUTE =
+  "data-better-albert-resource-aria-label-added";
+const RESOURCE_ROLE_ADDED_ATTRIBUTE =
+  "data-better-albert-resource-role-added";
+const UTILITY_ARIA_LABEL_ADDED_ATTRIBUTE =
+  "data-better-albert-utility-aria-label-added";
+const UTILITY_ROLE_ADDED_ATTRIBUTE =
+  "data-better-albert-utility-role-added";
 const READ_ONLY_MODAL_TITLES = new Set([
   "degree progress report",
   "my degree progress report",
 ]);
+
+function normalizedText(value: string | null | undefined): string {
+  return value?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
+}
+
+function updateNativeResourceMarkers(document: Document): void {
+  for (const element of document.querySelectorAll(
+    `[${RESOURCE_DIRECTORY_ATTRIBUTE}], [${RESOURCE_CATEGORY_ATTRIBUTE}], [${RESOURCE_CATEGORY_START_ATTRIBUTE}], [${RESOURCE_CATEGORY_LABEL_ATTRIBUTE}]`,
+  )) {
+    element.removeAttribute(RESOURCE_DIRECTORY_ATTRIBUTE);
+    element.removeAttribute(RESOURCE_CATEGORY_ATTRIBUTE);
+    element.removeAttribute(RESOURCE_CATEGORY_START_ATTRIBUTE);
+    element.removeAttribute(RESOURCE_CATEGORY_LABEL_ATTRIBUTE);
+  }
+
+  const submenu = findNativeOtherResourcesSubmenu(document);
+  if (!submenu) {
+    return;
+  }
+
+  submenu.setAttribute(RESOURCE_DIRECTORY_ATTRIBUTE, "");
+  if (!submenu.hasAttribute("role")) {
+    submenu.setAttribute("role", "navigation");
+    submenu.setAttribute(RESOURCE_ROLE_ADDED_ATTRIBUTE, "");
+  }
+  if (!submenu.hasAttribute("aria-label")) {
+    submenu.setAttribute("aria-label", "NYU Resources");
+    submenu.setAttribute(RESOURCE_ARIA_LABEL_ADDED_ATTRIBUTE, "");
+  }
+
+  const definitions = getAvailableResourceTools(document);
+  const seenCategories = new Set<string>();
+  for (const item of submenu.querySelectorAll<HTMLElement>(
+    ":scope > ul > li",
+  )) {
+    const anchor = item.querySelector<HTMLAnchorElement>(":scope > a");
+    const label = normalizedText(
+      anchor?.textContent ?? anchor?.getAttribute("aria-label"),
+    );
+    const matchingDefinitions = definitions.filter((definition) =>
+      definition.nativeLabels.some(
+        (nativeLabel) => normalizedText(nativeLabel) === label,
+      ),
+    );
+    const definition =
+      matchingDefinitions.length === 1 ? matchingDefinitions[0] : undefined;
+    if (!anchor || !definition) {
+      continue;
+    }
+
+    item.setAttribute(RESOURCE_CATEGORY_ATTRIBUTE, definition.category);
+    if (!seenCategories.has(definition.category)) {
+      seenCategories.add(definition.category);
+      item.setAttribute(RESOURCE_CATEGORY_START_ATTRIBUTE, "");
+      anchor.setAttribute(
+        RESOURCE_CATEGORY_LABEL_ATTRIBUTE,
+        RESOURCE_CATEGORY_DEFINITIONS[definition.category].label,
+      );
+    }
+  }
+}
+
+function updateNativeUtilityMarkers(
+  document: Document,
+  hasCompactHeader: boolean,
+): void {
+  for (const utility of document.querySelectorAll(
+    `[${UTILITY_ARIA_LABEL_ADDED_ATTRIBUTE}], [${UTILITY_ROLE_ADDED_ATTRIBUTE}]`,
+  )) {
+    if (utility.hasAttribute(UTILITY_ARIA_LABEL_ADDED_ATTRIBUTE)) {
+      utility.removeAttribute("aria-label");
+      utility.removeAttribute(UTILITY_ARIA_LABEL_ADDED_ATTRIBUTE);
+    }
+    if (utility.hasAttribute(UTILITY_ROLE_ADDED_ATTRIBUTE)) {
+      utility.removeAttribute("role");
+      utility.removeAttribute(UTILITY_ROLE_ADDED_ATTRIBUTE);
+    }
+  }
+
+  if (!hasCompactHeader) {
+    return;
+  }
+  const utility = document.querySelector("#IS_BB_HEADER_WRAPPER");
+  if (!utility) {
+    return;
+  }
+  if (!utility.hasAttribute("role")) {
+    utility.setAttribute("role", "navigation");
+    utility.setAttribute(UTILITY_ROLE_ADDED_ATTRIBUTE, "");
+  }
+  if (!utility.hasAttribute("aria-label")) {
+    utility.setAttribute("aria-label", "Official Albert tools");
+    utility.setAttribute(UTILITY_ARIA_LABEL_ADDED_ATTRIBUTE, "");
+  }
+}
 
 function isPotentiallyVisible(element: HTMLElement, document: Document): boolean {
   for (let current: HTMLElement | null = element; current; current = current.parentElement) {
@@ -102,13 +220,17 @@ export function applyNativeTheme(
   pageFamily: PageFamily,
   topLevel: boolean,
 ): void {
+  const hasCompactHeader =
+    topLevel && hasVerifiedCompactHeader(document);
   document.documentElement.setAttribute(THEME_ENABLED_ATTRIBUTE, "");
   document.documentElement.setAttribute(THEME_PAGE_ATTRIBUTE, pageFamily);
   document.documentElement.toggleAttribute(THEME_TOP_LEVEL_ATTRIBUTE, topLevel);
   document.documentElement.toggleAttribute(
     COMPACT_HEADER_ATTRIBUTE,
-    topLevel && hasVerifiedCompactHeader(document),
+    hasCompactHeader,
   );
+  updateNativeUtilityMarkers(document, hasCompactHeader);
+  updateNativeResourceMarkers(document);
   updateReadOnlyModalMarkers(document);
 }
 
@@ -123,5 +245,37 @@ export function removeNativeTheme(document: Document): void {
     `[${READ_ONLY_MODAL_ATTRIBUTE}]`,
   )) {
     modal.removeAttribute(READ_ONLY_MODAL_ATTRIBUTE);
+  }
+  for (const element of document.querySelectorAll(
+    `[${RESOURCE_DIRECTORY_ATTRIBUTE}], [${RESOURCE_CATEGORY_ATTRIBUTE}], [${RESOURCE_CATEGORY_START_ATTRIBUTE}], [${RESOURCE_CATEGORY_LABEL_ATTRIBUTE}]`,
+  )) {
+    element.removeAttribute(RESOURCE_DIRECTORY_ATTRIBUTE);
+    element.removeAttribute(RESOURCE_CATEGORY_ATTRIBUTE);
+    element.removeAttribute(RESOURCE_CATEGORY_START_ATTRIBUTE);
+    element.removeAttribute(RESOURCE_CATEGORY_LABEL_ATTRIBUTE);
+  }
+  for (const submenu of document.querySelectorAll(
+    `[${RESOURCE_ARIA_LABEL_ADDED_ATTRIBUTE}], [${RESOURCE_ROLE_ADDED_ATTRIBUTE}]`,
+  )) {
+    if (submenu.hasAttribute(RESOURCE_ARIA_LABEL_ADDED_ATTRIBUTE)) {
+      submenu.removeAttribute("aria-label");
+      submenu.removeAttribute(RESOURCE_ARIA_LABEL_ADDED_ATTRIBUTE);
+    }
+    if (submenu.hasAttribute(RESOURCE_ROLE_ADDED_ATTRIBUTE)) {
+      submenu.removeAttribute("role");
+      submenu.removeAttribute(RESOURCE_ROLE_ADDED_ATTRIBUTE);
+    }
+  }
+  for (const utility of document.querySelectorAll(
+    `[${UTILITY_ARIA_LABEL_ADDED_ATTRIBUTE}], [${UTILITY_ROLE_ADDED_ATTRIBUTE}]`,
+  )) {
+    if (utility.hasAttribute(UTILITY_ARIA_LABEL_ADDED_ATTRIBUTE)) {
+      utility.removeAttribute("aria-label");
+      utility.removeAttribute(UTILITY_ARIA_LABEL_ADDED_ATTRIBUTE);
+    }
+    if (utility.hasAttribute(UTILITY_ROLE_ADDED_ATTRIBUTE)) {
+      utility.removeAttribute("role");
+      utility.removeAttribute(UTILITY_ROLE_ADDED_ATTRIBUTE);
+    }
   }
 }

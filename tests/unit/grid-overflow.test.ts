@@ -58,25 +58,42 @@ describe("Grid overflow containment contract", () => {
     expect(block).toContain("overflow-x: auto");
   });
 
-  it("stacks Home attention panels (To Do / Holds / Enrollment) full width", () => {
+  it("lays out Home attention panels in an overflow-safe responsive grid", () => {
     // PeopleSoft lays these out as three ~80px float boxes in a flex row, which
-    // overflowed the narrow attention column. The extension must neutralize both
-    // the flex row and the fixed-width thirds.
+    // overflowed the native attention column. The extension must replace that
+    // row with an auto-fitting card grid and neutralize the fixed-width thirds.
     const shwIdx = THEME_CSS.indexOf(
       '[data-better-albert-region="attention-section"] .NYU_same_height_width',
     );
     expect(shwIdx).toBeGreaterThan(-1);
-    expect(THEME_CSS.slice(shwIdx, shwIdx + 160)).toContain(
-      "display: block !important",
+    const attentionBlock = THEME_CSS.slice(shwIdx, shwIdx + 280);
+    expect(attentionBlock).toContain("display: grid !important");
+    expect(attentionBlock).toContain(
+      "grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr))",
     );
 
     const thirdIdx = THEME_CSS.indexOf(
       '[data-better-albert-region="attention-section"] .nyuSSS_ThirdW',
     );
     expect(thirdIdx).toBeGreaterThan(-1);
-    expect(THEME_CSS.slice(thirdIdx, thirdIdx + 160)).toContain(
-      "width: 100% !important",
+    const cardBlock = THEME_CSS.slice(thirdIdx, thirdIdx + 420);
+    expect(cardBlock).toContain("width: 100% !important");
+    expect(cardBlock).toContain("min-height: 112px");
+    expect(cardBlock).toContain("border: 1px solid var(--ba-native-rule)");
+    expect(cardBlock).not.toContain("background:");
+
+    const compactGridIdx = THEME_CSS.indexOf(
+      "@media (min-width: 401px) and (max-width: 599px)",
     );
+    expect(compactGridIdx).toBeGreaterThan(-1);
+    const compactGridBlock = THEME_CSS.slice(
+      compactGridIdx,
+      compactGridIdx + 620,
+    );
+    expect(compactGridBlock).toContain(
+      "grid-template-columns: repeat(2, minmax(0, 1fr))",
+    );
+    expect(compactGridBlock).toContain("grid-column: 1 / -1");
   });
 
   it("lets the Finances bursar button size to its label instead of 350px", () => {

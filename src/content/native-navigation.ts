@@ -39,10 +39,7 @@ function normalizeLabel(value: string | null): string {
 function isNativeControl(
   element: Element,
 ): element is HTMLAnchorElement | HTMLButtonElement {
-  return (
-    element instanceof HTMLAnchorElement ||
-    element instanceof HTMLButtonElement
-  );
+  return element.tagName === "A" || element.tagName === "BUTTON";
 }
 
 function findMatchingControl(
@@ -122,6 +119,38 @@ export function findNativeOtherResourcesSubmenu(
   document: Document,
 ): HTMLElement | undefined {
   return findOtherResourcesNavigation(document)?.submenu;
+}
+
+function findToggleSelectedClass(trigger: HTMLLIElement): string | undefined {
+  const handler = trigger.getAttribute("onclick") ?? "";
+  const match = handler.match(
+    /toggleMegaMenu\(\s*['"][^'"]+['"]\s*,\s*['"][^'"]+['"]\s*,\s*['"]([^'"]+)['"]\s*\)/,
+  );
+  return match?.[1];
+}
+
+export function isNativeOtherResourcesOpen(document: Document): boolean {
+  const navigation = findOtherResourcesNavigation(document);
+  if (!navigation || navigation.submenu.hasAttribute("hidden")) {
+    return false;
+  }
+
+  const ariaExpanded = navigation.trigger.getAttribute("aria-expanded");
+  if (ariaExpanded !== null) {
+    return ariaExpanded === "true";
+  }
+
+  const ariaHidden = navigation.submenu.getAttribute("aria-hidden");
+  if (ariaHidden !== null) {
+    return ariaHidden === "false";
+  }
+
+  const selectedClass = findToggleSelectedClass(navigation.trigger);
+  if (selectedClass) {
+    return navigation.trigger.classList.contains(selectedClass);
+  }
+
+  return true;
 }
 
 export function findNativeNavigationControl(

@@ -4,7 +4,10 @@ import { resolve } from "node:path";
 import { act } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { HEADER_HOST_ID } from "../../src/app/mount-header";
+import {
+  HEADER_HOST_ID,
+  TASK_FINDER_OPEN_ATTRIBUTE,
+} from "../../src/app/mount-header";
 import {
   startContentScript,
   type HeaderMount,
@@ -108,7 +111,13 @@ describe("content-script lifecycle", () => {
       Array.from(
         shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
       ).map((button) => button.getAttribute("aria-label")),
-    ).toEqual(["Course Search", "Weekly Schedule"]);
+    ).toEqual([
+      "Find Classes",
+      "Check Holds",
+      "When Can I Register?",
+      "Weekly Schedule",
+      "Browse NYU resources",
+    ]);
     expect(
       Array.from(
         shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-resource-item") ??
@@ -133,13 +142,159 @@ describe("content-script lifecycle", () => {
     expect(nativeContent?.getAttribute("data-better-albert-region")).toBe(
       "workspace",
     );
+    const resourceDirectory = document.querySelector(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    expect(
+      resourceDirectory?.hasAttribute(
+        "data-better-albert-resource-directory",
+      ),
+    ).toBe(true);
+    expect(
+      resourceDirectory?.querySelectorAll(
+        "[data-better-albert-resource-category]",
+      ),
+    ).toHaveLength(21);
+    expect(
+      Array.from(
+        resourceDirectory?.querySelectorAll(
+          "[data-better-albert-resource-category-start] > a",
+        ) ?? [],
+      ).map((anchor) =>
+        anchor.getAttribute("data-better-albert-resource-category-label"),
+      ),
+    ).toEqual([
+      "Academic & records",
+      "Learning & career",
+      "Money & campus services",
+      "Global opportunities",
+      "Wellbeing & campus life",
+    ]);
 
     store.emit(true);
     await settleLifecycle();
     expect(document.querySelectorAll(`#${HEADER_HOST_ID}`)).toHaveLength(1);
 
+    document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLButtonElement>(".ba-task-finder-toggle")
+      ?.click();
+    await settleLifecycle();
+    expect(
+      document.documentElement.hasAttribute(TASK_FINDER_OPEN_ATTRIBUTE),
+    ).toBe(true);
+
     lifecycle.stop();
+    expect(
+      document.documentElement.hasAttribute(TASK_FINDER_OPEN_ATTRIBUTE),
+    ).toBe(false);
     expect(nativeMarkup()).toBe(before);
+    expect(
+      document.querySelector("[data-better-albert-resource-directory]"),
+    ).toBeNull();
+    expect(
+      document.querySelector("[data-better-albert-resource-category]"),
+    ).toBeNull();
+  });
+
+  it("keeps task discovery visible while Albert's connected resource submenu is closed", async () => {
+    const resourceMenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const resourceTrigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    resourceMenu?.removeAttribute("hidden");
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-nav-item-resources",
+      )?.getAttribute("aria-label"),
+    ).toBe("Other Resources");
+    expect(
+      shadowRoot?.querySelector('[aria-label="Home tools"]'),
+    ).not.toBeNull();
+    expect(
+      resourceMenu?.hasAttribute(
+        "data-better-albert-resource-directory-open",
+      ),
+    ).toBe(false);
+
+    resourceTrigger?.classList.add("megaMenuSelected");
+    await settleLifecycle();
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-nav-item-resources",
+      )?.getAttribute("aria-label"),
+    ).toBe("Close Other Resources");
+    expect(
+      shadowRoot?.querySelector('[aria-label="Home tools"]'),
+    ).toBeNull();
+    expect(
+      resourceMenu?.hasAttribute(
+        "data-better-albert-resource-directory-open",
+      ),
+    ).toBe(true);
+
+    resourceTrigger?.classList.remove("megaMenuSelected");
+    await settleLifecycle();
+    expect(
+      shadowRoot?.querySelector('[aria-label="Home tools"]'),
+    ).not.toBeNull();
+    expect(
+      resourceMenu?.hasAttribute(
+        "data-better-albert-resource-directory-open",
+      ),
+    ).toBe(false);
+
+    lifecycle.stop();
+  });
+
+  it("reopens task discovery at the top without changing Albert page scroll", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const taskFinder =
+      shadowRoot?.querySelector<HTMLElement>(".ba-task-finder");
+    const toggle =
+      shadowRoot?.querySelector<HTMLButtonElement>(".ba-task-finder-toggle");
+    const close = shadowRoot?.querySelector<HTMLButtonElement>(
+      ".ba-task-finder-heading-close",
+    );
+
+    document.documentElement.scrollTop = 240;
+    toggle?.click();
+    await settleLifecycle();
+    expect(taskFinder?.hidden).toBe(false);
+
+    if (taskFinder) {
+      taskFinder.scrollTop = 480;
+    }
+    expect(taskFinder?.scrollTop).toBe(480);
+
+    close?.click();
+    await settleLifecycle();
+    expect(taskFinder?.hidden).toBe(true);
+
+    toggle?.click();
+    await settleLifecycle();
+    expect(taskFinder?.hidden).toBe(false);
+    expect(taskFinder?.scrollTop).toBe(0);
+    expect(document.documentElement.scrollTop).toBe(240);
+
+    lifecycle.stop();
   });
 
   it("delegates primary navigation to the matching native Albert link", async () => {
@@ -183,9 +338,80 @@ describe("content-script lifecycle", () => {
       document
         .getElementById(HEADER_HOST_ID)
         ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
-    ).find((button) => button.getAttribute("aria-label") === "Course Search");
+    ).find((button) => button.getAttribute("aria-label") === "Find Classes");
 
     courseSearchButton?.click();
+    await settleLifecycle();
+    expect(nativeClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
+  it("keeps exact Course Search one action away outside Home", async () => {
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-home"]')
+      ?.removeAttribute("aria-current");
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-academics"]')
+      ?.setAttribute("aria-current", "page");
+    const nativeCourseSearch = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-course-search"]',
+    );
+    const nativeClick = vi.fn((event: Event) => event.preventDefault());
+    nativeCourseSearch?.addEventListener("click", nativeClick);
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shortcut = document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-course-search-shortcut",
+      );
+
+    expect(shortcut?.dataset.courseSearchMode).toBe("direct");
+    expect(shortcut?.textContent).toContain(
+      "Open the original Course Search",
+    );
+    shortcut?.click();
+    await settleLifecycle();
+    expect(nativeClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
+  it("uses Home as the shortest honest Course Search path when the direct control is unavailable", async () => {
+    const nativeHome = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-home"]',
+    );
+    nativeHome?.removeAttribute("aria-current");
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-academics"]')
+      ?.setAttribute("aria-current", "page");
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-course-search"]')
+      ?.remove();
+    const nativeClick = vi.fn((event: Event) => event.preventDefault());
+    nativeHome?.addEventListener("click", nativeClick);
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shortcut = document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-course-search-shortcut",
+      );
+
+    expect(shortcut?.dataset.courseSearchMode).toBe("home");
+    expect(shortcut?.textContent).toContain(
+      "Go to Home for Course Search",
+    );
+    shortcut?.click();
     expect(nativeClick).toHaveBeenCalledOnce();
     lifecycle.stop();
   });
@@ -234,6 +460,14 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute("data-better-albert-adapter")).toBe(
       false,
     );
+    expect(
+      document.querySelector("#IS_BB_HEADER_WRAPPER")?.hasAttribute("role"),
+    ).toBe(false);
+    expect(
+      document
+        .querySelector("#IS_BB_HEADER_WRAPPER")
+        ?.hasAttribute("aria-label"),
+    ).toBe(false);
     expect(document.querySelector("[data-better-albert-region]")).toBeNull();
     disabledLifecycle.stop();
 
@@ -247,6 +481,9 @@ describe("content-script lifecycle", () => {
     const disableButton = document
       .getElementById(HEADER_HOST_ID)
       ?.shadowRoot?.querySelector<HTMLButtonElement>(".ba-disable-button");
+    const utility = document.querySelector("#IS_BB_HEADER_WRAPPER");
+    expect(utility?.getAttribute("role")).toBe("navigation");
+    expect(utility?.getAttribute("aria-label")).toBe("Official Albert tools");
 
     await act(async () => {
       disableButton?.click();
@@ -262,6 +499,8 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute("data-better-albert-adapter")).toBe(
       false,
     );
+    expect(utility?.hasAttribute("role")).toBe(false);
+    expect(utility?.hasAttribute("aria-label")).toBe(false);
     expect(document.querySelector("[data-better-albert-region]")).toBeNull();
     expect(await enabledStore.getEnabled()).toBe(false);
     enabledLifecycle.stop();
@@ -481,7 +720,11 @@ describe("content-script lifecycle", () => {
           ?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ??
           [],
       ).map((button) => button.getAttribute("aria-label")),
-    ).toEqual(["Bursar Balance", "Account Statement", "Financial Aid Status"]);
+    ).toEqual([
+      "Check Account Balance",
+      "Get Account Statement",
+      "Check Financial Aid Status",
+    ]);
     lifecycle.stop();
   });
 
@@ -493,11 +736,11 @@ describe("content-script lifecycle", () => {
       topLevel: true,
     });
     const expectations = [
-      ["/fixture-home", "Course Search"],
-      ["/fixture-academics", "Academic Planner"],
-      ["/fixture-grades", "Enrollment Verification"],
-      ["/fixture-finances", "Bursar Balance"],
-      ["/fixture-personal", "Demographic Information"],
+      ["/fixture-home", "Find Classes"],
+      ["/fixture-academics", "Plan Future Courses"],
+      ["/fixture-grades", "Proof of Enrollment"],
+      ["/fixture-finances", "Check Account Balance"],
+      ["/fixture-personal", "Review Personal Details"],
       ["/fixture-resources", undefined],
     ] as const;
 

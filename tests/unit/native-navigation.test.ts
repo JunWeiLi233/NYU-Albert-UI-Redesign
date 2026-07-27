@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   getAvailablePageFamilies,
+  isNativeOtherResourcesOpen,
   navigateWithNativeAlbert,
 } from "../../src/content/native-navigation";
 
@@ -88,6 +89,44 @@ describe("native Albert navigation delegation", () => {
     expect(document.documentElement.scrollTop).toBe(400);
     expect(overlayClick).toHaveBeenCalledOnce();
     expect(genericClick).not.toHaveBeenCalled();
+  });
+
+  it("uses the selected class named by Albert's toggle handler as open-state authority", () => {
+    const submenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const trigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+
+    expect(submenu?.hasAttribute("hidden")).toBe(false);
+    expect(isNativeOtherResourcesOpen(document)).toBe(false);
+
+    trigger?.classList.add("megaMenuSelected");
+    expect(isNativeOtherResourcesOpen(document)).toBe(true);
+
+    submenu?.setAttribute("hidden", "");
+    expect(isNativeOtherResourcesOpen(document)).toBe(false);
+  });
+
+  it("prefers explicit ARIA resource-menu state over the selected class", () => {
+    const submenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const trigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    trigger?.classList.add("megaMenuSelected");
+    trigger?.setAttribute("aria-expanded", "false");
+
+    expect(isNativeOtherResourcesOpen(document)).toBe(false);
+
+    trigger?.removeAttribute("aria-expanded");
+    submenu?.setAttribute("aria-hidden", "false");
+    expect(isNativeOtherResourcesOpen(document)).toBe(true);
+
+    submenu?.setAttribute("aria-hidden", "true");
+    expect(isNativeOtherResourcesOpen(document)).toBe(false);
   });
 
   it("fails open when the exact Other Resources overlay trigger is absent", () => {
