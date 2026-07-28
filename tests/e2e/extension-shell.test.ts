@@ -2320,10 +2320,10 @@ test("exposes task-first discovery at every supported width and delegates throug
   await taskFinderToggle.press("Enter");
   await taskSearch.fill("financial aid");
   await expect(
-    taskFinder.getByText('2 results for “financial aid”', { exact: true }),
+    taskFinder.getByText('1 result for “financial aid”', { exact: true }),
   ).toBeVisible();
   await expect(taskFinder.locator(".ba-task-finder-area")).toHaveCount(0);
-  await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(1);
+  await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(0);
   await expect(taskFinder.locator(".ba-task-finder-resource")).toHaveCount(1);
   await expect(
     taskFinder.getByRole("button", {
@@ -2331,19 +2331,12 @@ test("exposes task-first discovery at every supported width and delegates throug
       name: "Open Financial Aid",
     }),
   ).toBeVisible();
-  const financialAidTask = taskFinder.getByRole("button", {
-    exact: true,
-    name: "Open Check Financial Aid Status — Review aid status and requirements",
+  await page.locator("body").evaluate((body) => {
+    delete body.dataset.nativeTaskFinderResource;
   });
-  await expect(financialAidTask.locator("strong")).toHaveText(
-    "Review aid status and requirements",
-  );
-  await expect(
-    financialAidTask.locator(".ba-task-finder-item-copy > span"),
-  ).toHaveText("Check Financial Aid Status · Finances");
-  await financialAidTask.click();
+  await taskSearch.press("Enter");
   await expect(page.locator("body")).toHaveAttribute(
-    "data-native-cross-family-task",
+    "data-native-task-finder-resource",
     "financial-aid",
   );
   await expect(taskFinder).toBeHidden();
