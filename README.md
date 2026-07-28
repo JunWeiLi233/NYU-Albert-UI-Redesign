@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.98 includes:
+Version 0.5.99 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an inline verified-destination cue for single search matches, so Enter
@@ -64,6 +64,9 @@ Version 0.5.98 includes:
 - Home status starters appear only when their native status card is verified,
   or when another workspace can hand the student to Home, so missing holds,
   registration, schedule, and to-do controls never become no-op shortcuts;
+- unmatched task searches now name the visible “Show all” recovery action,
+  making the complete verified-destination list an obvious next step without
+  broadening the search beyond the current Albert view;
 - conservative orientation disambiguation that sends generic orientation
   requests to Albert's resource directory while preserving international and
   pre-arrival orientation matches for OGS;

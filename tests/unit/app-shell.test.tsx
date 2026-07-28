@@ -187,6 +187,52 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("explains the verified Show all recovery for an unmatched task query", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "not a verified destination",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      "choose “Show all” above to browse every verified destination available in this Albert view",
+    );
+  });
+
   it("opens Course Search from a course query while the current area is Academics", async () => {
     const onNavigate = vi.fn();
     const onNavigateToCourseSearch = vi.fn();

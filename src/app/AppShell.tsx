@@ -1996,7 +1996,7 @@ export function AppShell({
                   <span>
                     {isResourceSearchMode
                       ? "No exact link is available here. Use “View Albert resource directory” below to browse Albert’s official list."
-                      : "Try a broader term. Better Albert only searches links already available in this Albert view."}
+                      : "Try a broader term, or choose “Show all” above to browse every verified destination available in this Albert view. Better Albert never invents destinations."}
                   </span>
                 </div>
               )}
