@@ -484,7 +484,10 @@ export function AppShell({
       );
       const meaningfulQuery = getTaskSearchWords(searchQuery, true).join(" ");
       const exactResourceTools = matchingResourceTools.filter(
-        (tool) => normalizeTaskSearchValue(tool.label) === meaningfulQuery,
+        (tool) =>
+          [tool.label, ...tool.keywords].some(
+            (value) => normalizeTaskSearchValue(value) === meaningfulQuery,
+          ),
       );
       const resourceTools =
         exactResourceTools.length > 0

@@ -1684,6 +1684,7 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Proof of Enrollment — Request proof through National Student Clearinghouse",
     ],
     ["I lost my NYU ID card", "Open NYU Card Center"],
+    ["student id", "Open NYU Card Center"],
     [
       "Where do I see my tuition bill",
       "Open Finances — Check balances, pay tuition, view bills, and manage financial aid",
