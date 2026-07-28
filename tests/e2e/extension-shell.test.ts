@@ -4455,6 +4455,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "NYU Engage",
     "student government",
     "service opportunities",
+    "service opportunities and civic engagement",
     "multicultural education and programs",
     "veteran services",
     "global spiritual life",
@@ -4652,6 +4653,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   ).toHaveCount(0);
 
   for (const query of [
+    "intramural and club sports",
     "commuter student",
     "LGBTQ center",
     "spiritual life",
@@ -4733,6 +4735,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "campus map",
     "student centers and spaces",
     "gyms and campus recreation",
+    "student tech guide",
     "student tech centers",
     "shuttle",
     "accessibility and accommodations",

@@ -829,10 +829,20 @@ describe("page-family native tools", () => {
       expect.arrayContaining([
         "student centers and spaces",
         "gyms and campus recreation",
+        "student tech guide",
         "student tech centers",
       ]),
     );
     expect(openNativeResourceTool(document, "wellness-center")).toBe(true);
+    const studentLife = getAvailableResourceTools(document).find(
+      ({ id }) => id === "student-life",
+    );
+    expect(studentLife?.keywords).toEqual(
+      expect.arrayContaining([
+        "intramural and club sports",
+        "service opportunities and civic engagement",
+      ]),
+    );
     expect(click).toHaveBeenCalledOnce();
   });
 
