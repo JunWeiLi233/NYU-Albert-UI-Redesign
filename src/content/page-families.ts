@@ -175,6 +175,8 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "school id",
       "student id",
       "student id card",
+      "student link",
+      "studentlink",
       "student support",
       "student services",
       "student tech guide",

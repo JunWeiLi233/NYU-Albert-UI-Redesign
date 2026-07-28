@@ -84,7 +84,13 @@ describe("page-family task vocabulary", () => {
 
   it("keeps student ID requests aligned with the native Card Center resource", () => {
     expect(PAGE_FAMILY_DEFINITIONS.resources.keywords).toEqual(
-      expect.arrayContaining(["student id", "student id card", "school id"]),
+      expect.arrayContaining([
+        "student id",
+        "student id card",
+        "school id",
+        "student link",
+        "studentlink",
+      ]),
     );
   });
 });

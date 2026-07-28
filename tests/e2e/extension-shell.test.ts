@@ -1702,6 +1702,10 @@ test("exposes task-first discovery at every supported width and delegates throug
     ],
     ["I lost my NYU ID card", "Open NYU Card Center"],
     ["student id", "Open NYU Card Center"],
+    [
+      "studentlink",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
     ["browse the course catalog", "Open Find Classes — Search by subject, course number, title, or instructor"],
     [
       "new student",
