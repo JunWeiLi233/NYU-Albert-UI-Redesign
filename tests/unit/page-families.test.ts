@@ -153,6 +153,13 @@ describe("page-family task vocabulary", () => {
         "wellbeing across nyu",
         "get inspired",
         "watch a video",
+        "commuter students",
+        "graduate students",
+        "lgbtq students",
+        "military students and vets",
+        "students with disabilities",
+        "students with children",
+        "students of color",
       ]),
     );
   });

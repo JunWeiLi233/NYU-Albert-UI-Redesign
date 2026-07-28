@@ -853,6 +853,11 @@ describe("page-family native tools", () => {
         "clubs and organizations",
         "leadership opportunities",
         "volunteer service",
+        "commuter students",
+        "graduate students",
+        "lgbtq students",
+        "military students and vets",
+        "students with children",
       ]),
     );
     expect(
