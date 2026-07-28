@@ -297,6 +297,8 @@ function getMeaningfulTaskSearchValue(value: string): string {
 // Other Resources area instead of surfacing a longer, unrelated alias (for
 // example OGS's “international student services” for “student services”).
 const EXACT_RESOURCE_INTENTS = new Map<string, PageToolId>([
+  ["scholarship", "financial-aid-resources"],
+  ["scholarships", "financial-aid-resources"],
   ["student services", "student-services"],
   ["student support", "student-services"],
   ["tech wifi", "campus-resources"],

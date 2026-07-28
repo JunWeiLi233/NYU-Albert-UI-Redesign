@@ -6,8 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.109 includes:
+Version 0.5.110 includes:
 
+- “major planning” and “student clubs” now reach their verified Academics or
+  Other Resources workspace instead of returning no destination;
+- a generic “scholarship” query prefers the verified Financial Aid resource
+  over a broader career-scholarship match;
 - major-change wording now opens the verified Academics workspace as an
   honest planning handoff, without implying that Better Albert changes a
   student's academic program;
