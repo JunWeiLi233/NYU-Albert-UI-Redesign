@@ -1895,6 +1895,15 @@ test("exposes task-first discovery at every supported width and delegates throug
       "new student",
       "Open Other Resources — NYU services, offices, and support",
     ],
+    [
+      "orientation",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "new student orientation",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    ["pre orientation events", "Open OGS"],
     ["student support", "Open Student Services"],
     [
       "your academic advisor",
