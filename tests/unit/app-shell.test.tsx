@@ -16,6 +16,36 @@ describe("AppShell cross-area task handoffs", () => {
     document.body.innerHTML = "";
   });
 
+  it("describes the original-Albert escape hatch as an immediate switch", () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const disableButton = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Use original Albert"]',
+    );
+    expect(disableButton?.title).toBe(
+      "Switches to original Albert now. Use the browser extension icon to turn Better Albert back on.",
+    );
+    expect(
+      shadowRoot?.getElementById("ba-original-albert-help")?.textContent,
+    ).toBe(
+      "Switches to original Albert now. Use the browser extension icon to turn Better Albert back on.",
+    );
+  });
+
   it("opens Course Search from a course query while the current area is Academics", async () => {
     const onNavigate = vi.fn();
     const onNavigateToCourseSearch = vi.fn();

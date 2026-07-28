@@ -1396,14 +1396,14 @@ export function AppShell({
             aria-describedby="ba-original-albert-help"
             aria-label="Use original Albert"
             disabled={isDisabling}
-            title="Use original Albert. Better Albert stays off until you turn it on from the browser extension icon."
+            title="Switches to original Albert now. Use the browser extension icon to turn Better Albert back on."
             onClick={handleDisable}
           >
             {isDisabling ? "Switching…" : "Original Albert"}
           </button>
           <span className="ba-visually-hidden" id="ba-original-albert-help">
-            Better Albert stays off until you turn it on from the browser
-            extension icon.
+            Switches to original Albert now. Use the browser extension icon to
+            turn Better Albert back on.
           </span>
         </div>
       </div>

@@ -169,7 +169,7 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(banner).toBeVisible();
   await expect(disableButton).toHaveAttribute(
     "title",
-    "Use original Albert. Better Albert stays off until you turn it on from the browser extension icon.",
+    "Switches to original Albert now. Use the browser extension icon to turn Better Albert back on.",
   );
   await expect(disableButton).toHaveAttribute(
     "aria-describedby",
@@ -181,7 +181,7 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
     "rgba(0, 0, 0, 0)",
   );
   await expect(page.locator("#ba-original-albert-help")).toHaveText(
-    "Better Albert stays off until you turn it on from the browser extension icon.",
+    "Switches to original Albert now. Use the browser extension icon to turn Better Albert back on.",
   );
   await expect(page.locator(".ba-shell")).toHaveCSS(
     "background-color",

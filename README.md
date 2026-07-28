@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.94 includes:
+Version 0.5.95 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an inline verified-destination cue for single search matches, so Enter
@@ -52,6 +52,9 @@ Version 0.5.94 includes:
 - newcomer resource search switches from “Start here” to the same recovery
   label after a typed no-result query, keeping the state honest while retaining
   first-week verified links;
+- the enabled-state “Original Albert” escape hatch now explains the immediate
+  switch and how to turn Better Albert back on, instead of describing a future
+  disabled state;
 - conservative orientation disambiguation that sends generic orientation
   requests to Albert's resource directory while preserving international and
   pre-arrival orientation matches for OGS;
