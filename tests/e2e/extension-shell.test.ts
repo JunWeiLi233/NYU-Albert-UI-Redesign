@@ -3280,6 +3280,18 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
           name: "Open Home — Find classes, check holds, and review your schedule",
         }),
       ).toBeVisible();
+      await academicTaskSearch.fill("financial aid status");
+      await expect(
+        academicTaskFinder.getByText('1 result for “financial aid status”', {
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        academicTaskFinder.getByRole("button", {
+          exact: true,
+          name: "Open Finances — Check balances, pay tuition, view bills, and manage financial aid",
+        }),
+      ).toBeVisible();
       await academicTaskSearch.fill("find a course");
       await expect(
         academicTaskFinder.getByText('1 result for “find a course”', {

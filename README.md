@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.76 includes:
+Version 0.5.77 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - one isolated Shadow DOM application frame: a fixed violet rail on desktop and
@@ -36,6 +36,8 @@ Version 0.5.76 includes:
   when Albert omits the shared link-directory container;
 - safe page-world activation for the exact non-transactional Academic Planner,
   Degree Progress, What If Report, and Graduation Status shortcuts;
+- cross-area “financial aid status” routing that takes a newcomer to Finances
+  when the exact native status control is not in the current Albert view;
 - effective 200% zoom containment for family hubs, deep pages, read-only
   dialogs, and both Class Search variants without replacing native controls;
 - a common full-page PeopleSoft layout for recognized deep `/psp/` and `/psc/`
@@ -91,7 +93,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.76` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.77` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

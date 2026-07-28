@@ -56,6 +56,7 @@ describe("page-family task vocabulary", () => {
         "amount due",
         "bills payments and refunds",
         "how much owe",
+        "financial aid status",
         "manage your personal finances",
         "review charges",
         "tuition and fees",

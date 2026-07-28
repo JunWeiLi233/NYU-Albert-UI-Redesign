@@ -129,6 +129,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "bills payments and refunds",
       "check balance",
       "how much owe",
+      "financial aid status",
       "manage your personal finances",
       "need help financial aid",
       "pay bill",
