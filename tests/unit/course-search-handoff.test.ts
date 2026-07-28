@@ -168,4 +168,18 @@ describe("course-search handoff", () => {
     document.querySelector("iframe")?.setAttribute("hidden", "");
     expect(hasOpenCourseSearchFrame(document)).toBe(false);
   });
+
+  it("detects an allowlisted cart nested inside a same-origin relay", () => {
+    document.body.innerHTML = "<iframe title='portal relay'></iframe>";
+    const relay = document.querySelector<HTMLIFrameElement>("iframe");
+    const relayDocument = relay?.contentDocument;
+    if (!relayDocument) {
+      throw new Error("Expected a same-origin relay document");
+    }
+    relayDocument.body.innerHTML = `
+      <iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL"></iframe>
+    `;
+
+    expect(hasOpenCourseSearchFrame(document)).toBe(true);
+  });
 });

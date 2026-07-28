@@ -210,11 +210,25 @@ function isVisibleFrame(frame: HTMLIFrameElement): boolean {
 export function hasOpenCourseSearchFrame(document: Document): boolean {
   return Array.from(
     document.querySelectorAll<HTMLIFrameElement>("iframe"),
-  ).some(
-    (frame) =>
-      isVisibleFrame(frame) &&
-      (isCourseSearchRelayUrl(frame.src) || isEnrollmentCartUrl(frame.src)),
-  );
+  ).some((frame) => {
+    if (!isVisibleFrame(frame)) {
+      return false;
+    }
+    if (isCourseSearchRelayUrl(frame.src) || isEnrollmentCartUrl(frame.src)) {
+      return true;
+    }
+
+    // A portal relay can host the allowlisted cart one level deeper. Same-
+    // origin frames expose contentDocument; cross-origin frames safely return
+    // null and remain covered by their own content-script lifecycle.
+    try {
+      return frame.contentDocument
+        ? hasOpenCourseSearchFrame(frame.contentDocument)
+        : false;
+    } catch {
+      return false;
+    }
+  });
 }
 
 function isMessageType(value: unknown, type: string): boolean {
