@@ -89,6 +89,65 @@ describe("AppShell cross-area task handoffs", () => {
     ).not.toContain("Student support");
   });
 
+  it("keeps missing exact resource intents from matching a longer unrelated alias", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "global",
+          description: "Find visa and immigration guidance",
+          featured: false,
+          id: "ogs",
+          keywords: ["international student services"],
+          label: "OGS",
+          nativeLabels: ["OGS"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const finderToggle = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Find a task"]',
+    );
+    finderToggle?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "student services",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “student services”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Other Resources",
+    );
+    expect(shadowRoot?.textContent).not.toContain("Verified destination: OGS");
+  });
+
   it("does not advertise class search without a verified Course Search path", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],

@@ -290,6 +290,23 @@ function getMeaningfulTaskSearchValue(value: string): string {
   return getTaskSearchWords(value, true).join(" ");
 }
 
+// Keep high-intent resource phrases tied to the service they describe. If an
+// exact native anchor is unavailable, the caller can fall back to the broad
+// Other Resources area instead of surfacing a longer, unrelated alias (for
+// example OGS's “international student services” for “student services”).
+const EXACT_RESOURCE_INTENTS = new Map<string, PageToolId>([
+  ["student services", "student-services"],
+  ["student support", "student-services"],
+  ["tech wifi", "campus-resources"],
+  ["technology help", "campus-resources"],
+  ["involved", "student-life"],
+  ["campus events", "student-life"],
+]);
+
+function getExactResourceIntentId(query: string): PageToolId | undefined {
+  return EXACT_RESOURCE_INTENTS.get(getMeaningfulTaskSearchValue(query));
+}
+
 function isWithinOneTaskSearchEdit(left: string, right: string): boolean {
   if (Math.abs(left.length - right.length) > 1) {
     return false;
@@ -773,6 +790,15 @@ export function AppShell({
       let matchingResourceTools = availableResourceTools.filter((tool) =>
         matchesResource(tool, searchQuery, allowTypos),
       );
+      const exactResourceIntentId = getExactResourceIntentId(searchQuery);
+      if (exactResourceIntentId) {
+        const exactResourceIntent = availableResourceTools.find(
+          (tool) => tool.id === exactResourceIntentId,
+        );
+        matchingResourceTools = exactResourceIntent
+          ? [exactResourceIntent]
+          : [];
+      }
       if (allowTypos && matchingResourceTools.length > 1) {
         const queryWords = getTaskSearchWords(searchQuery);
         const queryWord = queryWords.length === 1 ? queryWords[0] : undefined;
