@@ -150,6 +150,43 @@ const COURSE_SEARCH_NON_COURSE_INTENTS = [
   "enrollment appointment",
   "enrollment dates",
 ] as const;
+const COURSE_SEARCH_ACTION_WORDS = new Set([
+  "add",
+  "browse",
+  "catalog",
+  "catalogue",
+  "enroll",
+  "find",
+  "look",
+  "looking",
+  "register",
+  "registration",
+  "search",
+  "sign",
+]);
+const COURSE_SEARCH_OBJECT_WORDS = new Set([
+  "class",
+  "classes",
+  "course",
+  "courses",
+  "catalog",
+  "catalogue",
+  "offerings",
+]);
+const COURSE_SEARCH_FILLER_WORDS = new Set([
+  "a",
+  "an",
+  "can",
+  "for",
+  "i",
+  "in",
+  "my",
+  "please",
+  "the",
+  "to",
+  "want",
+  "where",
+]);
 
 const NEW_STUDENT_RESOURCE_INTENTS = [
   "new student",
@@ -355,6 +392,44 @@ function isConversationalSupportQuery(query: string): boolean {
   const words = getTaskSearchWords(query);
   return (
     words.length >= 3 && words.includes("need") && words.includes("help")
+  );
+}
+
+function isConversationalCourseSearchIntent(query: string): boolean {
+  if (
+    query.length === 0 ||
+    matchesTaskSearch(query, COURSE_SEARCH_NON_COURSE_INTENTS)
+  ) {
+    return false;
+  }
+
+  const words = normalizeTaskSearchValue(query)
+    .split(/\s+/)
+    .filter((word) => word.length > 0 && !TASK_SEARCH_IGNORED_WORDS.has(word));
+  const hasSearchAction = words.some((word) =>
+    COURSE_SEARCH_ACTION_WORDS.has(word),
+  );
+  const hasCourseObject = words.some((word) =>
+    COURSE_SEARCH_OBJECT_WORDS.has(word),
+  );
+
+  return (
+    hasSearchAction &&
+    hasCourseObject &&
+    words.every(
+      (word) =>
+        COURSE_SEARCH_ACTION_WORDS.has(word) ||
+        COURSE_SEARCH_OBJECT_WORDS.has(word) ||
+        COURSE_SEARCH_FILLER_WORDS.has(word),
+    ) &&
+    matchesTaskSearch(query, COURSE_SEARCH_KEYWORDS)
+  );
+}
+
+function isExplicitCourseSearchQuery(query: string): boolean {
+  const meaningfulQuery = getMeaningfulTaskSearchValue(query);
+  return COURSE_SEARCH_KEYWORDS.some(
+    (keyword) => getMeaningfulTaskSearchValue(keyword) === meaningfulQuery,
   );
 }
 
@@ -592,8 +667,8 @@ export function AppShell({
       : undefined;
   const isCrossAreaCourseSearchIntent = (query: string): boolean =>
     courseSearchShortcut?.mode === "home" &&
-    !matchesTaskSearch(query, COURSE_SEARCH_NON_COURSE_INTENTS) &&
-    matchesTaskSearch(query, COURSE_SEARCH_KEYWORDS);
+    (isExplicitCourseSearchQuery(query) ||
+      isConversationalCourseSearchIntent(query));
   const matchesFamily = (
     pageFamily: PrimaryPageFamily,
     query: string,
@@ -711,6 +786,25 @@ export function AppShell({
           : availableTaskTools.filter((tool) =>
               matchesTool(tool, searchQuery, allowTypos),
             );
+      const directCourseSearch = matchingTaskTools.find(
+        (tool) => tool.id === "course-search",
+      );
+      const conversationalCourseSearch =
+        isConversationalCourseSearchIntent(searchQuery);
+      if (conversationalCourseSearch && directCourseSearch) {
+        return {
+          resourceTools: [],
+          taskFamilies: [],
+          taskTools: [directCourseSearch],
+        };
+      }
+      if (conversationalCourseSearch && courseSearchShortcut?.mode === "home") {
+        return {
+          resourceTools: [],
+          taskFamilies: ["home" as const],
+          taskTools: [],
+        };
+      }
       const exactTaskTools = matchingTaskTools.filter((tool) =>
         [tool.label, ...(tool.keywords ?? [])].some(
           (value) => getMeaningfulTaskSearchValue(value) === meaningfulQuery,

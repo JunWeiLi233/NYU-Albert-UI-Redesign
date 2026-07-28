@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.91 includes:
+Version 0.5.92 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an inline verified-destination cue for single search matches, so Enter
@@ -39,6 +39,9 @@ Version 0.5.91 includes:
   student success before broader resource categories in newcomer search;
 - a cross-area course-search result cue that names the actual one-step action
   (“Find classes — Open Course Search”) before the student presses Enter;
+- conversational course requests such as “look for a course” that stay on the
+  verified Find Classes destination instead of mixing in unrelated course
+  feedback, learning-platform, or summer-program links;
 - a precise conversational support query that opens Student Services only when
   its exact native anchor is verified, avoiding unrelated links when it is not;
 - a resource-search empty state that points students to Albert’s official

@@ -113,6 +113,109 @@ describe("AppShell cross-area task handoffs", () => {
     expect(onNavigate).toHaveBeenCalledWith("home");
   });
 
+  it("prioritizes a conversational course request over loosely matching resources", async () => {
+    const onOpenTool = vi.fn();
+
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "academic-records",
+          description: "Review published course feedback",
+          featured: false,
+          id: "course-feedback-results",
+          keywords: ["course feedback"],
+          label: "Course Feedback Results",
+          nativeLabels: ["Course Feedback Results"],
+        },
+        {
+          category: "learning-career",
+          description: "Open NYU's learning platform",
+          featured: false,
+          id: "nyu-brightspace",
+          keywords: ["course materials", "learning platform"],
+          label: "NYU Brightspace",
+          nativeLabels: ["NYU Brightspace"],
+        },
+        {
+          category: "learning-career",
+          description: "Explore summer courses and programs",
+          featured: false,
+          id: "nyu-summer",
+          keywords: ["summer courses"],
+          label: "NYU Summer",
+          nativeLabels: ["NYU Summer"],
+        },
+      ],
+      availableTaskTools: [
+        {
+          description: "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          keywords: ["find a course", "course search"],
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+          pageFamily: "home",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool,
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const finderToggle = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Find a task"]',
+    );
+    expect(finderToggle).not.toBeNull();
+
+    await act(async () => {
+      finderToggle?.click();
+      await Promise.resolve();
+    });
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "look for a course",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “look for a course”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Find Classes",
+    );
+
+    await act(async () => {
+      taskSearch.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "Enter",
+        }),
+      );
+    });
+
+    expect(onOpenTool).toHaveBeenCalledWith("course-search");
+  });
+
   it("keeps verified resource starters available after an empty resource search", async () => {
     document.body.innerHTML = `
       <nav id="IS_BB_HEADER_MENU">
