@@ -1792,6 +1792,44 @@ button {
   }
 }
 
+/*
+ * The general finder has the same newcomer-first shortcut density as the
+ * resource finder. At compact widths, keep its shortcut row in one visible
+ * line so magnification cannot leave a partially clipped third row without
+ * telling the student that more actions are available.
+ */
+@media (max-width: 899px) {
+  .ba-task-finder:not([data-resource-search="true"])
+    .ba-task-finder-common-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--ba-space-2);
+  }
+
+  .ba-task-finder:not([data-resource-search="true"])
+    .ba-task-finder-common-scroll-hint {
+    display: inline;
+    color: var(--ba-color-nyu-violet);
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .ba-task-finder:not([data-resource-search="true"])
+    .ba-task-finder-common-list {
+    flex-wrap: nowrap;
+    padding-bottom: var(--ba-space-1);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .ba-task-finder:not([data-resource-search="true"])
+    .ba-task-finder-common-task {
+    flex: 0 0 auto;
+  }
+}
+
 @media (max-width: 279px) {
   .ba-discovery-actions {
     grid-template-columns: minmax(0, 1fr);

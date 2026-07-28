@@ -846,6 +846,37 @@ test("exposes task-first discovery at every supported width and delegates throug
         zoomReflowGeometry.viewportWidth,
       );
     }
+    if (width < 900) {
+      await expect(
+        commonTasks.getByText("Scroll for more", { exact: true }),
+      ).toBeVisible();
+      const compactCommonTaskGeometry = await commonTasks.evaluate(
+        (group) => {
+          const bounds = group.getBoundingClientRect();
+          const buttons = Array.from(group.querySelectorAll("button"));
+          const firstButtonBounds = buttons[0]?.getBoundingClientRect();
+          const list = group.querySelector<HTMLElement>(
+            ".ba-task-finder-common-list",
+          );
+          return {
+            firstButtonWithinViewport: Boolean(
+              firstButtonBounds &&
+                firstButtonBounds.left >= bounds.left - 1 &&
+                firstButtonBounds.right <= bounds.right + 1,
+            ),
+            minimumHeight: Math.min(
+              ...buttons.map((button) => button.getBoundingClientRect().height),
+            ),
+            scrollOverflow: (list?.scrollWidth ?? 0) - (list?.clientWidth ?? 0),
+          };
+        },
+      );
+      expect(compactCommonTaskGeometry.firstButtonWithinViewport).toBe(true);
+      expect(compactCommonTaskGeometry.minimumHeight).toBeGreaterThanOrEqual(
+        44,
+      );
+      expect(compactCommonTaskGeometry.scrollOverflow).toBeGreaterThan(0);
+    }
     await expect(
       taskFinder.getByRole("navigation", {
         name: "Jump to task finder section",

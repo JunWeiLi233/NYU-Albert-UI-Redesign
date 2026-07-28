@@ -1420,11 +1420,9 @@ export function AppShell({
                     {isResourceSearchMode
                       ? "Popular resources"
                       : "Common tasks"}
-                    {isResourceSearchMode && (
-                      <span className="ba-task-finder-common-scroll-hint">
-                        Scroll for more
-                      </span>
-                    )}
+                    <span className="ba-task-finder-common-scroll-hint">
+                      Scroll for more
+                    </span>
                   </span>
                   <div className="ba-task-finder-common-list">
                     {isResourceSearchMode
