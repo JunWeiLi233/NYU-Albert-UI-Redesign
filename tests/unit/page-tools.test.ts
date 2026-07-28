@@ -810,6 +810,14 @@ describe("page-family native tools", () => {
       "academic-support",
       "student-life",
     ]);
+    const nyuConnect = getAvailableResourceTools(document).find(
+      ({ id }) => id === "nyu-connect",
+    );
+    const studentServices = getAvailableResourceTools(document).find(
+      ({ id }) => id === "student-services",
+    );
+    expect(nyuConnect?.keywords).toContain("student success");
+    expect(studentServices?.keywords).not.toContain("student success");
     expect(openNativeResourceTool(document, "wellness-center")).toBe(true);
     expect(click).toHaveBeenCalledOnce();
   });

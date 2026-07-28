@@ -1728,6 +1728,26 @@ test("exposes task-first discovery at every supported width and delegates throug
       "getting around campus",
       "Open Other Resources — NYU services, offices, and support",
     ],
+    [
+      "academic services",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "communities and groups",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "how we engage",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "housing and dining",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "wellbeing resources",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
     ["browse the course catalog", "Open Find Classes — Search by subject, course number, title, or instructor"],
     [
       "new student",
@@ -4383,6 +4403,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(resourceSearchInput).toBeFocused();
 
   for (const query of [
+    "student success",
     "student success specialist",
     "success network",
     "request assistance",

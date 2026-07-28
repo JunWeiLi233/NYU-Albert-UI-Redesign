@@ -96,6 +96,10 @@ describe("page-family task vocabulary", () => {
         "school id",
         "student link",
         "studentlink",
+        "academic services",
+        "communities and groups",
+        "how we engage",
+        "housing and dining",
         "student guides",
         "resources for students",
         "key links",
@@ -104,6 +108,7 @@ describe("page-family task vocabulary", () => {
         "getting around campus",
         "get support",
         "wellbeing",
+        "wellbeing resources",
       ]),
     );
   });

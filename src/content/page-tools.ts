@@ -495,7 +495,6 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "need help",
       "student help",
       "student services",
-      "student success",
       "student support",
       "support",
     ],
