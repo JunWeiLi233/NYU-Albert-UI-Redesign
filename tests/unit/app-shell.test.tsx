@@ -148,6 +148,45 @@ describe("AppShell cross-area task handoffs", () => {
     ).not.toContain("Find classes");
   });
 
+  it("does not advertise Home status starters without their native controls", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    const commonTaskLabels = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(
+        ".ba-task-finder-common-task",
+      ) ?? [],
+    ).map((button) => button.textContent);
+    expect(commonTaskLabels).not.toEqual(
+      expect.arrayContaining([
+        "Class schedule",
+        "Check holds",
+        "When can I register?",
+        "To-do list",
+      ]),
+    );
+  });
+
   it("opens Course Search from a course query while the current area is Academics", async () => {
     const onNavigate = vi.fn();
     const onNavigateToCourseSearch = vi.fn();

@@ -50,7 +50,12 @@ const TASK_SEARCH_SUGGESTIONS = [
     query: "find a course",
     requiresCourseSearch: true,
   },
-  { label: "Class schedule", query: "class schedule" },
+  {
+    label: "Class schedule",
+    query: "class schedule",
+    requiresTaskId: "weekly-schedule",
+    fallbackPageFamily: "home",
+  },
   { label: "Course materials", query: "course materials" },
   { label: "Academic dates", query: "academic calendar" },
   { label: "Housing", query: "housing" },
@@ -60,9 +65,24 @@ const TASK_SEARCH_SUGGESTIONS = [
     query: "student support",
     requiresResourceId: "student-services",
   },
-  { label: "Check holds", query: "check holds" },
-  { label: "When can I register?", query: "when can I register" },
-  { label: "To-do list", query: "to do list" },
+  {
+    label: "Check holds",
+    query: "check holds",
+    requiresTaskId: "holds-status",
+    fallbackPageFamily: "home",
+  },
+  {
+    label: "When can I register?",
+    query: "when can I register",
+    requiresTaskId: "registration-time",
+    fallbackPageFamily: "home",
+  },
+  {
+    label: "To-do list",
+    query: "to do list",
+    requiresTaskId: "todo-status",
+    fallbackPageFamily: "home",
+  },
   { label: "Meet advisor", query: "meet advisor" },
   { label: "View grades", query: "view grades" },
   { label: "Check balance", query: "check balance" },
@@ -71,8 +91,10 @@ const TASK_SEARCH_SUGGESTIONS = [
 ] as const satisfies readonly {
   label: string;
   query: string;
+  fallbackPageFamily?: PrimaryPageFamily;
   requiresCourseSearch?: boolean;
   requiresResourceId?: PageToolId;
+  requiresTaskId?: PageToolId;
 }[];
 
 const RESOURCE_SEARCH_SUGGESTIONS = [
@@ -940,6 +962,10 @@ export function AppShell({
     !isResourceSearchMode && normalizedTaskSearchQuery.length === 0
       ? TASK_SEARCH_SUGGESTIONS.filter((suggestion) => {
           const { query } = suggestion;
+          const fallbackPageFamily =
+            "fallbackPageFamily" in suggestion
+              ? suggestion.fallbackPageFamily
+              : undefined;
           const requiresCourseSearch =
             "requiresCourseSearch" in suggestion
               ? suggestion.requiresCourseSearch
@@ -948,7 +974,22 @@ export function AppShell({
             "requiresResourceId" in suggestion
               ? suggestion.requiresResourceId
               : undefined;
+          const requiresTaskId =
+            "requiresTaskId" in suggestion
+              ? suggestion.requiresTaskId
+              : undefined;
           if (requiresCourseSearch && !hasCourseSearchDestination) {
+            return false;
+          }
+          if (
+            requiresTaskId &&
+            !availableTaskTools.some(({ id }) => id === requiresTaskId) &&
+            !(
+              fallbackPageFamily &&
+              currentPageFamily !== fallbackPageFamily &&
+              availableTaskFamilies.includes(fallbackPageFamily)
+            )
+          ) {
             return false;
           }
           if (
