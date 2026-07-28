@@ -90,6 +90,8 @@ describe("page-family task vocabulary", () => {
         "school id",
         "student link",
         "studentlink",
+        "student guides",
+        "resources for students",
       ]),
     );
   });
