@@ -6,8 +6,14 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.107 includes:
+Version 0.5.108 includes:
 
+- plain-language campus Wi-Fi and disability-accommodation queries now reach
+  the verified Other Resources directory when no direct anchor is present;
+- student-employment wording now opens the verified Wasserman resource when
+  Albert exposes that official link;
+- generic “events” no longer falls through to OGS’s longer immigration-events
+  alias, preserving a safe Other Resources destination;
 - native PeopleSoft lightboxes suppress the fixed extension shell while open,
   keeping What-If and other modal content unobscured at high zoom;
 - plain-language “class search,” “find classes,” and “search for a course”

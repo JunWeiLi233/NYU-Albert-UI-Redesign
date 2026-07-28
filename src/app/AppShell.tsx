@@ -251,6 +251,8 @@ const OGS_ORIENTATION_CUES = new Set([
   "visa",
 ]);
 
+const OGS_GENERIC_RESOURCE_INTENTS = new Set(["event", "events"]);
+
 function normalizeTaskSearchValue(value: string): string {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -437,6 +439,12 @@ function isGenericOrientationIntent(query: string): boolean {
   return (
     words.includes("orientation") &&
     !words.some((word) => OGS_ORIENTATION_CUES.has(word))
+  );
+}
+
+function isGenericOgsResourceIntent(query: string): boolean {
+  return OGS_GENERIC_RESOURCE_INTENTS.has(
+    getMeaningfulTaskSearchValue(query),
   );
 }
 
@@ -757,7 +765,10 @@ export function AppShell({
     query: string,
     allowTypos = false,
   ): boolean => {
-    if (tool.id === "ogs" && isGenericOrientationIntent(query)) {
+    if (
+      tool.id === "ogs" &&
+      (isGenericOrientationIntent(query) || isGenericOgsResourceIntent(query))
+    ) {
       return false;
     }
 
