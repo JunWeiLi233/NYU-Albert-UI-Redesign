@@ -6178,6 +6178,37 @@ test("themes the proven cross-origin class-search frame and preserves transactio
     "Enter a department or subject, then use Search.",
   );
   await expect(classSearch.locator("#subject")).toBeFocused();
+  const primarySearchGeometry = await classSearch
+    .locator(".ps_box-search")
+    .evaluate((filter) => {
+      const action = filter.querySelector<HTMLElement>(
+        '[data-better-albert-region="primary-search-action"]',
+      );
+      const wrapper = action?.parentElement;
+      if (!action || !wrapper) {
+        return undefined;
+      }
+      const filterStyle = getComputedStyle(filter);
+      const expectedWrapperWidth =
+        filter.clientWidth -
+        Number.parseFloat(filterStyle.paddingLeft) -
+        Number.parseFloat(filterStyle.paddingRight);
+      return {
+        actionWidth: Math.round(action.getBoundingClientRect().width),
+        wrapperWidth: Math.round(wrapper.getBoundingClientRect().width),
+        expectedWrapperWidth: Math.round(expectedWrapperWidth),
+      };
+    });
+  expect(primarySearchGeometry).toBeDefined();
+  if (!primarySearchGeometry) {
+    throw new Error("The native primary Class Search action wrapper is missing");
+  }
+  expect(primarySearchGeometry.wrapperWidth).toBe(
+    primarySearchGeometry.expectedWrapperWidth,
+  );
+  expect(primarySearchGeometry.actionWidth).toBe(
+    primarySearchGeometry.wrapperWidth,
+  );
   await classSearch.locator("#career").focus();
   await classSearch.locator("body").evaluate((body) => {
     body.append(document.createElement("span"));

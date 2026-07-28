@@ -2283,7 +2283,10 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
 html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   [data-better-albert-region="primary-search-action"] {
   box-sizing: border-box;
-  width: 100%;
+  display: block !important;
+  grid-column: 1 / -1 !important;
+  justify-self: stretch;
+  width: 100% !important;
   min-height: 52px;
   padding: 10px 24px;
   border: 2px solid var(--ba-native-violet) !important;
@@ -2291,6 +2294,43 @@ html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
   color: #fff !important;
   font-size: 1rem;
   font-weight: 900;
+}
+
+/*
+ * Fluid PeopleSoft pages sometimes wrap the native primary action in a
+ * compact control whose intrinsic width is only the button label. Stretch
+ * that verified immediate wrapper with the button so the one-step action is a
+ * clear full-width ending to the task-first search block. The native button,
+ * listener, and form ownership remain untouched; the generic relationship is
+ * intentional because the live component's wrapper class is not stable.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search"]
+  [data-better-albert-region="filter"]
+  :not([data-better-albert-region="filter"]):has(
+    > [data-better-albert-region="primary-search-action"]
+  ) {
+  display: block !important;
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  min-width: 0;
+}
+
+/*
+ * The live legacy cart uses a nested inline-block chain instead of the
+ * fluid filter region. Stretch only the verified search branch's known
+ * PeopleSoft wrappers so that chain cannot shrink the native action back to
+ * its label width.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  :where(.ps-button-wrapper, .ps_box-button, .ps_box-group, .ps_content-group):has(
+    [data-better-albert-region="primary-search-action"]
+  ) {
+  display: block !important;
+  grid-column: 1 / -1 !important;
+  min-width: 0;
+  width: 100% !important;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="class-search"]

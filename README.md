@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.84 includes:
+Version 0.5.85 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an inline verified-destination cue for single search matches, so Enter
@@ -20,6 +20,8 @@ Version 0.5.84 includes:
   into a clipped third row at high zoom;
 - a high-zoom Class Search handoff that scrolls the original combined search
   field fully into view while keeping it focused and ready for typing;
+- a full-width primary Class Search action even when PeopleSoft wraps the
+  verified native button in an intrinsically sized control wrapper;
 - a cross-area course-search intent that carries a verified “find a course”
   query from Academics, Grades, Finances, or Personal Info through Home and
   into the original Class Search control;
