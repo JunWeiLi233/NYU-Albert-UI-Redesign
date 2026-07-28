@@ -74,6 +74,7 @@ interface FamilyHubPlan {
   paymentForm: HTMLFormElement | undefined;
   personalEditForms: readonly HTMLFormElement[];
   sections: readonly Element[];
+  scheduleSections: readonly Element[];
   tables: readonly Element[];
   workspace: Element;
   wrapper: Element;
@@ -106,6 +107,67 @@ function hasNativeSectionAccessibleName(section: Element): boolean {
   }
 
   return hasNativeSectionHeading(section);
+}
+
+function hasScheduleCue(section: Element): boolean {
+  const values = [section.getAttribute("aria-label") ?? ""];
+  const labelledBy = section.getAttribute("aria-labelledby")?.trim();
+  if (labelledBy) {
+    for (const id of labelledBy.split(/\s+/).filter(Boolean)) {
+      const label = section.ownerDocument.getElementById(id);
+      if (label) {
+        values.push(label.textContent ?? "");
+      }
+    }
+  }
+  values.push(
+    ...Array.from(
+      section.querySelectorAll(
+        ":scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > [role='heading']",
+      ),
+    ).map((heading) => heading.textContent ?? ""),
+  );
+  return values.some((value) =>
+    /\b(?:schedule|weekly|class week)\b/i.test(normalizedText(value)),
+  );
+}
+
+function findHomeScheduleSections(
+  family: PrimaryPageFamily,
+  contentRoot: Element,
+): readonly Element[] {
+  if (family !== "home") {
+    return [];
+  }
+
+  const allSchedules = Array.from(
+    contentRoot.querySelectorAll(".isSSS_ShCtSchWrp"),
+  ).filter((schedule) => !schedule.matches("#IS_SSS_SUMMARY_NEWS"));
+  const scheduleLinkWrappers = Array.from(
+    contentRoot.querySelectorAll(".isSSS_ShCtLnkWrp"),
+  ).filter((wrapper) => normalizedText(wrapper.textContent).length > 0);
+  if (scheduleLinkWrappers.length === 1) {
+    return scheduleLinkWrappers;
+  }
+  const selectedSchedules = allSchedules.filter((schedule) =>
+    schedule.classList.contains("selected"),
+  );
+  const candidates =
+    selectedSchedules.length > 0 ? selectedSchedules : allSchedules;
+  const meaningfulCandidates = candidates.filter(
+    (candidate) =>
+      hasNativeSectionHeading(candidate) ||
+      normalizedText(candidate.textContent).length > 0,
+  );
+  const renderedCandidates = meaningfulCandidates.filter(hasRenderedBox);
+  const eligibleCandidates =
+    renderedCandidates.length > 0 ? renderedCandidates : meaningfulCandidates;
+  if (eligibleCandidates.length === 1) {
+    return eligibleCandidates;
+  }
+
+  const cuedCandidates = eligibleCandidates.filter(hasScheduleCue);
+  return cuedCandidates.length === 1 ? cuedCandidates : [];
 }
 
 function normalizedAttentionHeading(
@@ -629,6 +691,7 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
         sections,
       ),
       sections,
+      scheduleSections: findHomeScheduleSections(this.family, contentRoot),
       tables: Array.from(contentRoot.querySelectorAll("table")),
       workspace,
       wrapper,
@@ -651,6 +714,7 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
       ...(plan.homeTodoTarget ? [plan.homeTodoTarget] : []),
       ...(plan.paymentForm ? [plan.paymentForm] : []),
       ...plan.personalEditForms,
+      ...plan.scheduleSections,
     ];
 
     try {
@@ -750,6 +814,28 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
           markFocusTarget(journal, section);
         }
       });
+      for (const scheduleSection of plan.scheduleSections) {
+        markRegion(journal, scheduleSection, "schedule-section");
+        if (!hasScheduleCue(scheduleSection)) {
+          journal.setAttribute(
+            scheduleSection,
+            FALLBACK_SECTION_LABEL_ATTRIBUTE,
+            "Today and weekly schedule",
+          );
+        }
+        if (
+          !scheduleSection.hasAttribute("role") &&
+          !scheduleSection.hasAttribute("aria-label") &&
+          !scheduleSection.hasAttribute("aria-labelledby")
+        ) {
+          journal.setAttribute(scheduleSection, "role", "region");
+          journal.setAttribute(
+            scheduleSection,
+            "aria-label",
+            "Today and weekly schedule",
+          );
+        }
+      }
       for (const step of plan.academicJourney) {
         journal.setAttribute(step.section, ACADEMIC_STEP_ATTRIBUTE, step.label);
         if (!step.section.hasAttribute("role")) {

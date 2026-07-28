@@ -809,6 +809,78 @@ describe("structural adapter manager", () => {
     );
   });
 
+  it("labels the selected schedule nested inside the Home shopping cart", () => {
+    const document = fixture("tests/fixtures/albert-shell.html");
+    const schedule = document.querySelector(".isSSS_ShCtSchWrp");
+    const contentRoot = document.querySelector(".isDS_Section");
+    if (!schedule || !contentRoot) {
+      throw new Error("Home fixture is missing its schedule content");
+    }
+    schedule.classList.add("selected");
+    schedule.removeAttribute("aria-labelledby");
+    schedule.querySelector("h1")?.replaceChildren(
+      document.createTextNode("Enrolled Courses - Summer 2026"),
+    );
+    const shoppingCart = document.createElement("div");
+    shoppingCart.className = "isSSS_ShopCart";
+    schedule.replaceWith(shoppingCart);
+    shoppingCart.append(schedule);
+    contentRoot.append(shoppingCart);
+
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("family-home");
+    expect(schedule.getAttribute("data-better-albert-region")).toBe(
+      "schedule-section",
+    );
+    expect(schedule.getAttribute("data-better-albert-section-label")).toBe(
+      "Today and weekly schedule",
+    );
+    expect(schedule.getAttribute("role")).toBe("region");
+    expect(schedule.getAttribute("aria-label")).toBe(
+      "Today and weekly schedule",
+    );
+  });
+
+  it("labels the live Home schedule-link cluster when it is the only verified wrapper", () => {
+    const document = fixture("tests/fixtures/albert-shell.html");
+    const contentRoot = document.querySelector(".isDS_Section");
+    if (!contentRoot) {
+      throw new Error("Home fixture is missing its content root");
+    }
+    const shoppingCart = document.createElement("div");
+    shoppingCart.className = "isSSS_ShopCart";
+    const scheduleLinks = document.createElement("div");
+    scheduleLinks.className = "isSSS_ShCtLnkWrp";
+    scheduleLinks.textContent = "Legend Weekly Schedule";
+    shoppingCart.append(scheduleLinks);
+    contentRoot.append(shoppingCart);
+
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("family-home");
+    expect(scheduleLinks.getAttribute("data-better-albert-region")).toBe(
+      "schedule-section",
+    );
+    expect(
+      scheduleLinks.getAttribute("data-better-albert-section-label"),
+    ).toBe("Today and weekly schedule");
+  });
+
   it("keeps the Home news carousel out of the weekly schedule region", () => {
     const document = fixture("tests/fixtures/albert-shell.html");
     const news = document.querySelector(".isSSS_ShCtSchWrp");

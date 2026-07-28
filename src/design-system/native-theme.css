@@ -1096,10 +1096,10 @@ html[data-better-albert-enabled]
 
 /*
  * Some Albert releases omit the heading inside the updates, schedule, or
- * account region. The adapter adds this cue only when no native heading or
- * accessible name exists; it is presentation-only and the journal restores
- * it on rollback. This keeps large native areas legible without inventing
- * data.
+ * account region. The adapter adds this cue when the native label is missing
+ * or too system-specific to orient a new student; it is presentation-only and
+ * the journal restores it on rollback. This keeps large native areas legible
+ * without inventing data.
  */
 html[data-better-albert-enabled]
   [data-better-albert-section-label]::before {
