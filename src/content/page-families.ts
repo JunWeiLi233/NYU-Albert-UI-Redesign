@@ -61,6 +61,9 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
     description: "Course planning, advising, enrollment, and degree progress",
     keywords: [
       "add classes",
+      "academic advisor",
+      "academic planning",
+      "academic planning and support",
       "advisor help",
       "contact advisor",
       "drop a class",
@@ -71,6 +74,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "swap a class",
       "swap class",
       "who is advisor",
+      "your academic advisor",
       "withdraw from a class",
       "what classes need",
     ],

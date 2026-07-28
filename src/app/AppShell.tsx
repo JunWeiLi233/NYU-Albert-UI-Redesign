@@ -50,6 +50,7 @@ const TASK_SEARCH_SUGGESTIONS = [
   { label: "Academic dates", query: "academic calendar" },
   { label: "Housing", query: "housing" },
   { label: "New student help", query: "new student" },
+  { label: "Student support", query: "student support" },
   { label: "Check holds", query: "check holds" },
   { label: "When can I register?", query: "when can I register" },
   { label: "To-do list", query: "to do list" },
@@ -63,6 +64,9 @@ const TASK_SEARCH_SUGGESTIONS = [
 const RESOURCE_SEARCH_SUGGESTIONS = [
   { label: "Academic dates", toolId: "academic-calendar" },
   { label: "Course materials", toolId: "nyu-brightspace" },
+  { label: "Academic support", toolId: "academic-support" },
+  { label: "Student life", toolId: "student-life" },
+  { label: "Career help", toolId: "wasserman" },
   { label: "Financial aid", toolId: "financial-aid-resources" },
   { label: "ID card", toolId: "nyu-card-center" },
   { label: "Health & counseling", toolId: "wellness-center" },
@@ -593,7 +597,9 @@ export function AppShell({
       const resourceTools =
         exactResourceLabelTools.length > 0
           ? exactResourceLabelTools
-          : matchingResourceTools;
+          : exactResourceAliasTools.length > 0
+            ? exactResourceAliasTools
+            : matchingResourceTools;
 
       // An exact official resource label is already an actionable destination.
       // Prefer it over a broad area match so common requests such as

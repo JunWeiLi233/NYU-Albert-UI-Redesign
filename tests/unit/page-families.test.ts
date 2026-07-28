@@ -20,6 +20,17 @@ describe("page-family task vocabulary", () => {
     );
   });
 
+  it("recognizes public advisor language on the Academics destination", () => {
+    expect(PAGE_FAMILY_DEFINITIONS.academics.keywords).toEqual(
+      expect.arrayContaining([
+        "academic advisor",
+        "academic planning",
+        "academic planning and support",
+        "your academic advisor",
+      ]),
+    );
+  });
+
   it("recognizes outcome language that should lead students to Finances", () => {
     expect(PAGE_FAMILY_DEFINITIONS.finances.keywords).toEqual(
       expect.arrayContaining([

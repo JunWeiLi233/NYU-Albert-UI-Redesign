@@ -922,7 +922,7 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Try “find a course” for one-step class search, “new student,” or “financial aid”",
     );
     await expect(commonTasks).toBeVisible();
-    await expect(commonTasks.getByRole("button")).toHaveCount(14);
+    await expect(commonTasks.getByRole("button")).toHaveCount(15);
     const commonFindClasses = commonTasks.getByRole("button", {
       exact: true,
       name: "Find classes",
@@ -950,6 +950,7 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Academic dates",
       "Housing",
       "New student help",
+      "Student support",
       "Check holds",
       "When can I register?",
       "To-do list",
@@ -1796,6 +1797,11 @@ test("exposes task-first discovery at every supported width and delegates throug
     [
       "new student",
       "Open Other Resources — NYU services, offices, and support",
+    ],
+    ["student support", "Open Student Services"],
+    [
+      "your academic advisor",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
     ],
     ["academic tutoring at nyu", "Open Academic Support"],
     ["access clinical care", "Open Wellness Center"],
@@ -4400,12 +4406,15 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   const popularResources = resourceSearch.getByRole("group", {
     name: "Popular resources",
   });
-  await expect(popularResources.getByRole("button")).toHaveCount(11);
+  await expect(popularResources.getByRole("button")).toHaveCount(14);
   expect(
     await popularResources.getByRole("button").allTextContents(),
   ).toEqual([
     "Academic dates",
     "Course materials",
+    "Academic support",
+    "Student life",
+    "Career help",
     "Financial aid",
     "ID card",
     "Health & counseling",
@@ -4479,6 +4488,25 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await resourceSearchToggle.click();
   await expect(resourceSearch).toBeVisible();
   await expect(resourceSearchInput).toBeFocused();
+
+  for (const [label, resourceId] of [
+    ["Academic support", "academic-support"],
+    ["Student life", "student-life"],
+    ["Career help", "wasserman"],
+  ] as const) {
+    await popularResources
+      .getByRole("button", { exact: true, name: label })
+      .click();
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-native-resource-search-activated",
+      resourceId,
+    );
+    await expect(resourceSearch).toBeHidden();
+    await expect(nativeOverlay).toBeVisible();
+    await resourceSearchToggle.click();
+    await expect(resourceSearch).toBeVisible();
+    await expect(resourceSearchInput).toBeFocused();
+  }
 
   for (const query of [
     "NYU Engage",
@@ -5140,7 +5168,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   const mobilePopularResources = resourceSearch.getByRole("group", {
     name: "Popular resources",
   });
-  await expect(mobilePopularResources.getByRole("button")).toHaveCount(11);
+  await expect(mobilePopularResources.getByRole("button")).toHaveCount(14);
   const mobilePopularGeometry = await mobilePopularResources.evaluate(
     (group) => {
       const bounds = group.getBoundingClientRect();
