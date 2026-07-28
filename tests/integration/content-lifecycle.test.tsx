@@ -267,6 +267,61 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("keeps newcomer context when task discovery opens Other Resources", async () => {
+    const resourceMenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const resourceTrigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    if (resourceTrigger) {
+      resourceTrigger.onclick = (event) => {
+        event.preventDefault();
+        const isOpening = resourceMenu?.hasAttribute("hidden") ?? false;
+        resourceMenu?.toggleAttribute("hidden", !isOpening);
+        resourceTrigger.classList.toggle("megaMenuSelected", isOpening);
+      };
+    }
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const taskFinderToggle = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Find a task"]',
+    );
+
+    taskFinderToggle?.click();
+    await settleLifecycle();
+
+    const newcomerStarter = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(
+        ".ba-task-finder-common-task",
+      ) ?? [],
+    ).find((button) => button.textContent === "New student help");
+    expect(newcomerStarter).not.toBeUndefined();
+
+    newcomerStarter?.click();
+    await settleLifecycle();
+    await settleLifecycle();
+
+    const resourceSearch = shadowRoot?.querySelector<HTMLElement>(
+      '.ba-task-finder[data-resource-search="true"]',
+    );
+    expect(resourceSearch?.hidden).toBe(false);
+    expect(resourceSearch?.textContent).toContain(
+      "New to NYU? Start with a verified service below.",
+    );
+    expect(
+      resourceSearch?.querySelector(".ba-task-finder-common-label")?.textContent,
+    ).toContain("Start here");
+
+    lifecycle.stop();
+  });
+
   it("returns the rail to the top when resource search closes", async () => {
     const resourceMenu = document.querySelector<HTMLElement>(
       "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",

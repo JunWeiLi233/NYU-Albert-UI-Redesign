@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.85 includes:
+Version 0.5.86 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an inline verified-destination cue for single search matches, so Enter
@@ -31,6 +31,9 @@ Version 0.5.85 includes:
 - verified popular NYU resource starters that remain available after a
   no-result search, so a newcomer can recover without leaving the search
   surface or guessing Albert's native directory labels;
+- a newcomer-aware resource handoff that keeps the “New student help” intent
+  visible when Albert's verified directory opens, with a clear “Start here”
+  cue for first-week services;
 - one isolated Shadow DOM application frame: a fixed violet rail on desktop and
   a compact responsive workspace header below 900px;
 - task-first discovery cards at every supported width that explain what

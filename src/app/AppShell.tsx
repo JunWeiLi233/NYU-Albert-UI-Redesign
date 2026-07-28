@@ -135,6 +135,21 @@ const COURSE_SEARCH_NON_COURSE_INTENTS = [
   "enrollment dates",
 ] as const;
 
+const NEW_STUDENT_RESOURCE_INTENTS = [
+  "new student",
+  "first year student",
+  "newly admitted student",
+  "welcome week",
+  "advice for your first semester",
+  "first semester advice",
+  "time management",
+  "time management guide",
+  "advice for transfer students",
+  "transfer student",
+  "student tech guide",
+  "orientation",
+] as const;
+
 function normalizeTaskSearchValue(value: string): string {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -293,6 +308,10 @@ function matchesTaskSearch(
         hasContiguousTaskSearchPhrase(queryWords, searchableValue, allowTypos))
     );
   });
+}
+
+function isNewStudentResourceIntent(query: string): boolean {
+  return matchesTaskSearch(query, NEW_STUDENT_RESOURCE_INTENTS);
 }
 
 function PageToolNavigation({
@@ -454,6 +473,9 @@ export function AppShell({
   const [isDisabling, setIsDisabling] = useState(false);
   const [isTaskFinderOpen, setIsTaskFinderOpen] = useState(false);
   const [taskSearchQuery, setTaskSearchQuery] = useState("");
+  const [resourceFinderIntent, setResourceFinderIntent] = useState<
+    "new-student" | null
+  >(null);
   const taskFinderId = useId();
   const taskFinderRef = useRef<HTMLElement>(null);
   const taskFinderSearchRef = useRef<HTMLInputElement>(null);
@@ -461,6 +483,7 @@ export function AppShell({
   const resourceDirectoryToggleRef = useRef<HTMLButtonElement>(null);
   const resourceNavigationToggleRef = useRef<HTMLButtonElement>(null);
   const resourceReturnFocusRef = useRef<(() => void) | null>(null);
+  const pendingResourceFinderIntentRef = useRef<"new-student" | null>(null);
   const previousNativeResourcesOpenRef = useRef(isNativeResourcesOpen);
   const taskAreaHeadingRef = useRef<HTMLHeadingElement>(null);
   const taskShortcutHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -846,10 +869,17 @@ export function AppShell({
   }, [isTaskFinderOpen, taskFinderViewSignature]);
 
   useEffect(() => {
-    if (!isNativeResourcesOpen || availableResourceTools.length === 0) {
+    if (!isNativeResourcesOpen) {
+      setResourceFinderIntent(null);
       return;
     }
 
+    if (availableResourceTools.length === 0) {
+      return;
+    }
+
+    setResourceFinderIntent(pendingResourceFinderIntentRef.current);
+    pendingResourceFinderIntentRef.current = null;
     setTaskSearchQuery("");
     setIsTaskFinderOpen(true);
   }, [availableResourceTools.length, isNativeResourcesOpen]);
@@ -943,8 +973,13 @@ export function AppShell({
       return;
     }
     if (pageFamily === "resources" && !isNativeResourcesOpen) {
+      pendingResourceFinderIntentRef.current = isNewStudentResourceIntent(query)
+        ? "new-student"
+        : null;
       resourceReturnFocusRef.current = () =>
         taskFinderToggleRef.current?.focus({ preventScroll: true });
+    } else {
+      pendingResourceFinderIntentRef.current = null;
     }
     if (
       pageFamily === currentPageFamily &&
@@ -1057,6 +1092,7 @@ export function AppShell({
   };
 
   const openResourceDirectory = (): void => {
+    pendingResourceFinderIntentRef.current = null;
     resourceReturnFocusRef.current = () =>
       resourceDirectoryToggleRef.current?.focus({ preventScroll: true });
     handlePrimaryNavigation("resources");
@@ -1391,7 +1427,9 @@ export function AppShell({
               </strong>
               <span>
                 {isResourceSearchMode
-                  ? "Search only the official links already available in Albert’s Other Resources directory."
+                  ? resourceFinderIntent === "new-student"
+                    ? "New to NYU? Start with a verified service below. Search only the official links available in Albert’s Other Resources directory."
+                    : "Search only the official links already available in Albert’s Other Resources directory."
                   : "Choose a task or a link already available in Albert. Better Albert never invents destinations."}
               </span>
             </div>
@@ -1472,7 +1510,9 @@ export function AppShell({
                     id={`${taskFinderId}-common-label`}
                   >
                     {isResourceSearchMode
-                      ? "Popular resources"
+                      ? resourceFinderIntent === "new-student"
+                        ? "Start here"
+                        : "Popular resources"
                       : "Common tasks"}
                     <span className="ba-task-finder-common-scroll-hint">
                       Scroll for more
