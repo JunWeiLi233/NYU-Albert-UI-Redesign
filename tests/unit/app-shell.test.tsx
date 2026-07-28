@@ -432,6 +432,51 @@ describe("AppShell cross-area task handoffs", () => {
     expect(scholarshipText).not.toContain("Verified destination: Wasserman");
   });
 
+  it("routes pronoun wording to the verified Personal Info area", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "personal"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "pronouns",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain('1 result for “pronouns”');
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Personal Info",
+    );
+  });
+
   it("does not advertise class search without a verified Course Search path", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],

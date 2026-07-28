@@ -174,6 +174,8 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "new email address",
       "new emergency contact",
       "new phone number",
+      "name pronunciation",
+      "pronouns",
       "update contact info",
       "update address",
       "update email",

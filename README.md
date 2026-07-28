@@ -6,8 +6,10 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.110 includes:
+Version 0.5.111 includes:
 
+- “pronouns” and “name pronunciation” now reach the verified Personal Info
+  workspace when the native control is on that page;
 - “major planning” and “student clubs” now reach their verified Academics or
   Other Resources workspace instead of returning no destination;
 - a generic “scholarship” query prefers the verified Financial Aid resource
