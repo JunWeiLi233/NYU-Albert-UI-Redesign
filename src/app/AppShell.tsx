@@ -248,25 +248,6 @@ function matchesTaskSearch(
   });
 }
 
-function matchesTaskSearchLabel(
-  query: string,
-  label: string,
-  allowTypos: boolean,
-): boolean {
-  const queryWords = getTaskSearchWords(query, true);
-  const labelWords = normalizeTaskSearchValue(label).split(/\s+/);
-  return (
-    queryWords.length === labelWords.length &&
-    queryWords.every((word, index) => {
-      const labelWord = labelWords[index];
-      return Boolean(
-        labelWord &&
-          matchesTaskSearchWord(word, labelWord, allowTypos),
-      );
-    })
-  );
-}
-
 function PageToolNavigation({
   isHomeStarter = false,
   onOpenResourceDirectory,
@@ -503,10 +484,7 @@ export function AppShell({
       );
       const meaningfulQuery = getTaskSearchWords(searchQuery, true).join(" ");
       const exactResourceTools = matchingResourceTools.filter(
-        (tool) =>
-          normalizeTaskSearchValue(tool.label) === meaningfulQuery ||
-          (allowTypos &&
-            matchesTaskSearchLabel(searchQuery, tool.label, true)),
+        (tool) => normalizeTaskSearchValue(tool.label) === meaningfulQuery,
       );
       const resourceTools =
         exactResourceTools.length > 0
