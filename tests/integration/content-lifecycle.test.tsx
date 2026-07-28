@@ -321,6 +321,46 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("returns the rail to its page context when Albert changes area", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const shell = shadowRoot?.querySelector<HTMLElement>(".ba-shell");
+    const primaryNavigation = shadowRoot?.querySelector<HTMLElement>(
+      ".ba-primary-nav",
+    );
+    expect(shell).not.toBeUndefined();
+    expect(primaryNavigation).not.toBeUndefined();
+
+    if (shell) {
+      shell.scrollTop = 240;
+    }
+    if (primaryNavigation) {
+      primaryNavigation.scrollTop = 180;
+    }
+
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-home"]')
+      ?.removeAttribute("aria-current");
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-finances"]')
+      ?.setAttribute("aria-current", "page");
+    await settleLifecycle();
+
+    expect(
+      shadowRoot?.querySelector('[aria-current="page"]')?.getAttribute(
+        "aria-label",
+      ),
+    ).toBe("Finances");
+    expect(shell?.scrollTop).toBe(0);
+    expect(primaryNavigation?.scrollTop).toBe(0);
+    lifecycle.stop();
+  });
+
   it("delegates an allowlisted page tool to the matching native Albert link", async () => {
     const nativeCourseSearch = document.querySelector<HTMLAnchorElement>(
       'a[href="/fixture-course-search"]',

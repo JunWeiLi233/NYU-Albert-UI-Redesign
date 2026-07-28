@@ -445,11 +445,25 @@ export function AppShell({
   const taskAreaHeadingRef = useRef<HTMLHeadingElement>(null);
   const taskShortcutHeadingRef = useRef<HTMLHeadingElement>(null);
   const resourceSectionHeadingRef = useRef<HTMLHeadingElement>(null);
+  const shellRef = useRef<HTMLElement>(null);
+  const primaryNavigationRef = useRef<HTMLElement>(null);
   const resourceCategoryHeadingRefs = useRef<
     Map<ResourceCategory, HTMLHeadingElement>
   >(new Map());
   const isResourceSearchMode = isNativeResourcesOpen;
   const currentPage = PAGE_FAMILY_DEFINITIONS[currentPageFamily];
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    const primaryNavigation = primaryNavigationRef.current;
+    if (shell) {
+      shell.scrollTop = 0;
+    }
+    if (primaryNavigation) {
+      primaryNavigation.scrollTop = 0;
+    }
+  }, [currentPageFamily]);
+
   const availableTaskFamilies = PRIMARY_PAGE_FAMILIES.filter((pageFamily) =>
     availablePageFamilies.includes(pageFamily),
   );
@@ -1002,7 +1016,7 @@ export function AppShell({
   };
 
   return (
-    <header className="ba-shell" aria-label="Better Albert">
+    <header ref={shellRef} className="ba-shell" aria-label="Better Albert">
       <button className="ba-skip-link" type="button" onClick={onSkipToContent}>
         Skip to Albert content
       </button>
@@ -1125,7 +1139,11 @@ export function AppShell({
           />
         )}
 
-        <nav className="ba-primary-nav" aria-label="Better Albert areas">
+        <nav
+          ref={primaryNavigationRef}
+          className="ba-primary-nav"
+          aria-label="Better Albert areas"
+        >
           <span className="ba-primary-label">Student services</span>
           {PRIMARY_PAGE_FAMILIES.map((pageFamily) => {
             const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
