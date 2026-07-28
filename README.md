@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.90 includes:
+Version 0.5.91 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an inline verified-destination cue for single search matches, so Enter
@@ -41,6 +41,8 @@ Version 0.5.90 includes:
   (“Find classes — Open Course Search”) before the student presses Enter;
 - a precise conversational support query that opens Student Services only when
   its exact native anchor is verified, avoiding unrelated links when it is not;
+- a resource-search empty state that points students to Albert’s official
+  directory instead of asking them to broaden an unsupported need blindly;
 - conservative orientation disambiguation that sends generic orientation
   requests to Albert's resource directory while preserving international and
   pre-arrival orientation matches for OGS;

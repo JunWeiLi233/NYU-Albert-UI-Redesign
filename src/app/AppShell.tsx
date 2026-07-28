@@ -1810,7 +1810,7 @@ export function AppShell({
                   </strong>
                   <span>
                     {isResourceSearchMode
-                      ? "Try a broader term. Better Albert only searches original links from Other Resources."
+                      ? "No exact link is available here. Use “View Albert resource directory” below to browse Albert’s official list."
                       : "Try a broader term. Better Albert only searches links already available in this Albert view."}
                   </span>
                 </div>

@@ -181,6 +181,9 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).toContain(
       '0 results for “student support”',
     );
+    expect(shadowRoot?.textContent).toContain(
+      'No exact link is available here. Use “View Albert resource directory” below',
+    );
 
     await act(async () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
