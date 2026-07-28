@@ -880,6 +880,14 @@ describe("page-family native tools", () => {
       expect.arrayContaining([
         "student visa and immigration",
         "student visa immigration",
+        "office of global services",
+        "visa information and programs",
+        "employment and tax",
+        "visa and academic changes",
+        "know your rights",
+        "understand your legal requirements",
+        "international student hub",
+        "troubleshooting submitting an online form",
       ]),
     );
     expect(wasserman?.keywords).toEqual(
