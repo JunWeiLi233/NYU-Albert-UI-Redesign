@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.74 includes:
+Version 0.5.75 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - one isolated Shadow DOM application frame: a fixed violet rail on desktop and
@@ -89,7 +89,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.74` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.75` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

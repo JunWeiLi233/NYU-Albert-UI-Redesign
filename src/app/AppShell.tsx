@@ -705,6 +705,11 @@ export function AppShell({
     )
       ? OFFICIAL_TRANSCRIPT_SHORTCUT
       : undefined;
+  const useOfficialTranscriptGuidance = Boolean(
+    contextualResourceShortcut &&
+      normalizedTaskSearchQuery.includes("transcript") &&
+      !normalizedTaskSearchQuery.includes("unofficial"),
+  );
   const availableTaskSearchSuggestions =
     !isResourceSearchMode && normalizedTaskSearchQuery.length === 0
       ? TASK_SEARCH_SUGGESTIONS.filter(({ query }) => {
@@ -1766,6 +1771,11 @@ export function AppShell({
                           <div className="ba-task-finder-list">
                             {tools.map((tool) => {
                               const descriptionId = `${taskFinderId}-resource-${tool.id}`;
+                              const description =
+                                useOfficialTranscriptGuidance &&
+                                tool.id === OFFICIAL_TRANSCRIPT_SHORTCUT.id
+                                  ? OFFICIAL_TRANSCRIPT_SHORTCUT.description
+                                  : tool.description;
 
                               return (
                                 <button
@@ -1780,9 +1790,7 @@ export function AppShell({
                                 >
                                   <span className="ba-task-finder-item-copy">
                                     <strong>{tool.label}</strong>
-                                    <span id={descriptionId}>
-                                      {tool.description}
-                                    </span>
+                                    <span id={descriptionId}>{description}</span>
                                   </span>
                                   <span aria-hidden="true">›</span>
                                 </button>

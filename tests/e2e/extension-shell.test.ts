@@ -2105,6 +2105,16 @@ test("exposes task-first discovery at every supported width and delegates throug
       name: "Open University Registrar",
     }),
   ).toBeVisible();
+  await expect(
+    taskFinder
+      .getByRole("button", {
+        exact: true,
+        name: "Open University Registrar",
+      })
+      .locator(".ba-task-finder-item-copy > span"),
+  ).toHaveText(
+    "Open NYU Registrar instructions for ordering an official transcript",
+  );
   await taskSearch.press("Enter");
   await expect(taskFinder).toBeVisible();
   await expect(taskSearch).toBeFocused();
