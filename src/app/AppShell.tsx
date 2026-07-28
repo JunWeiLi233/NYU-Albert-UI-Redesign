@@ -45,7 +45,11 @@ export interface AppShellProps {
 }
 
 const TASK_SEARCH_SUGGESTIONS = [
-  { label: "Find classes", query: "find a course" },
+  {
+    label: "Find classes",
+    query: "find a course",
+    requiresCourseSearch: true,
+  },
   { label: "Class schedule", query: "class schedule" },
   { label: "Course materials", query: "course materials" },
   { label: "Academic dates", query: "academic calendar" },
@@ -67,6 +71,7 @@ const TASK_SEARCH_SUGGESTIONS = [
 ] as const satisfies readonly {
   label: string;
   query: string;
+  requiresCourseSearch?: boolean;
   requiresResourceId?: PageToolId;
 }[];
 
@@ -673,6 +678,10 @@ export function AppShell({
             }
           : undefined
       : undefined;
+  const hasCourseSearchDestination = Boolean(
+    verifiedCourseSearch ||
+      (currentPageFamily !== "home" && availablePageFamilies.includes("home")),
+  );
   const isCrossAreaCourseSearchIntent = (query: string): boolean =>
     courseSearchShortcut?.mode === "home" &&
     (isExplicitCourseSearchQuery(query) ||
@@ -799,6 +808,18 @@ export function AppShell({
       );
       const conversationalCourseSearch =
         isConversationalCourseSearchIntent(searchQuery);
+      if (
+        (isExplicitCourseSearchQuery(searchQuery) ||
+          conversationalCourseSearch) &&
+        !directCourseSearch &&
+        courseSearchShortcut?.mode !== "home"
+      ) {
+        return {
+          resourceTools: [],
+          taskFamilies: [],
+          taskTools: [],
+        };
+      }
       if (conversationalCourseSearch && directCourseSearch) {
         return {
           resourceTools: [],
@@ -919,10 +940,17 @@ export function AppShell({
     !isResourceSearchMode && normalizedTaskSearchQuery.length === 0
       ? TASK_SEARCH_SUGGESTIONS.filter((suggestion) => {
           const { query } = suggestion;
+          const requiresCourseSearch =
+            "requiresCourseSearch" in suggestion
+              ? suggestion.requiresCourseSearch
+              : false;
           const requiresResourceId =
             "requiresResourceId" in suggestion
               ? suggestion.requiresResourceId
               : undefined;
+          if (requiresCourseSearch && !hasCourseSearchDestination) {
+            return false;
+          }
           if (
             requiresResourceId &&
             !availableResourceTools.some(({ id }) => id === requiresResourceId)

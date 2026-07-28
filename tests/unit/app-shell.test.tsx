@@ -89,6 +89,65 @@ describe("AppShell cross-area task handoffs", () => {
     ).not.toContain("Student support");
   });
 
+  it("does not advertise class search without a verified Course Search path", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    expect(
+      Array.from(
+        shadowRoot?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-common-task",
+        ) ?? [],
+      ).map((button) => button.textContent),
+    ).not.toContain("Find classes");
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "find a course",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain('0 results for “find a course”');
+    expect(
+      Array.from(
+        shadowRoot?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-common-task, .ba-task-finder-item",
+        ) ?? [],
+      ).map((button) => button.textContent),
+    ).not.toContain("Find classes");
+  });
+
   it("opens Course Search from a course query while the current area is Academics", async () => {
     const onNavigate = vi.fn();
     const onNavigateToCourseSearch = vi.fn();
