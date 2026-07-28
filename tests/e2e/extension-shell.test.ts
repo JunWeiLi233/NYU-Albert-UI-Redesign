@@ -1782,6 +1782,14 @@ test("exposes task-first discovery at every supported width and delegates throug
       "wellbeing resources",
       "Open Other Resources — NYU services, offices, and support",
     ],
+    [
+      "Health and Wellness",
+      "Open Wellness Center",
+    ],
+    [
+      "Career Development",
+      "Open Wasserman",
+    ],
     ["browse the course catalog", "Open Find Classes — Search by subject, course number, title, or instructor"],
     [
       "new student",
@@ -4465,6 +4473,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
 
   for (const query of [
     "NYU Engage",
+    "NYU Engage: Find Clubs, Organizations, and Events",
     "student government",
     "service opportunities",
     "service opportunities and civic engagement",
@@ -4844,16 +4853,33 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   );
   await expect(popularResources).toBeVisible();
 
-  await resourceSearchInput.fill("course materials");
+  for (const query of [
+    "course materials",
+    "Access course materials and collaborate with your class",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open NYU Brightspace",
+      }),
+    ).toBeVisible();
+  }
+
+  await resourceSearchInput.fill("Browse important dates and deadlines");
   await expect(
-    resourceSearch.getByText('1 result for “course materials”', {
-      exact: true,
-    }),
+    resourceSearch.getByText(
+      '1 result for “Browse important dates and deadlines”',
+      { exact: true },
+    ),
   ).toBeVisible();
   await expect(
     resourceSearch.getByRole("button", {
       exact: true,
-      name: "Open NYU Brightspace",
+      name: "Open Academic Calendar",
     }),
   ).toBeVisible();
 

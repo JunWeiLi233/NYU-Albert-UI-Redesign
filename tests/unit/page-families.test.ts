@@ -84,6 +84,8 @@ describe("page-family task vocabulary", () => {
         "time management",
         "transfer student",
         "student tech guide",
+        "health and wellness",
+        "career development",
         "parking",
         "disability services",
         "accessibility",

@@ -143,6 +143,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "commencement date",
       "dates",
       "deadlines",
+      "browse important dates and deadlines",
       "drop add deadline",
       "final exams",
       "finals",
@@ -227,6 +228,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
     id: "nyu-brightspace",
     keywords: [
       "assignments",
+      "access course materials and collaborate with your class",
       "class materials",
       "classes",
       "course materials",
@@ -653,6 +655,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "multicultural education and programs",
       "multicultural center",
       "nyu engage",
+      "nyu engage find clubs organizations and events",
       "off campus student",
       "off campus student support",
       "religious life",
