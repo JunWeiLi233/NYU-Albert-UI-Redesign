@@ -6,7 +6,10 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.104 includes:
+Version 0.5.105 includes:
+
+- native PeopleSoft lightboxes suppress the fixed extension shell while open,
+  keeping What-If and other modal content unobscured at high zoom;
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an accessible one-step “Open …” action that announces the verified destination and keyboard handoff hint to assistive technology;

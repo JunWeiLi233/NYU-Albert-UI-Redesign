@@ -47,4 +47,21 @@ describe("native modal markers", () => {
       document.documentElement.hasAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE),
     ).toBe(true);
   });
+
+  it("suppresses the rail for a PeopleSoft lightbox body marker", () => {
+    document.body.classList.add("iLightboxOpen");
+
+    applyNativeTheme(document, "academics", true);
+
+    expect(
+      document.documentElement.hasAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE),
+    ).toBe(true);
+
+    document.body.classList.remove("iLightboxOpen");
+    applyNativeTheme(document, "academics", true);
+
+    expect(
+      document.documentElement.hasAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE),
+    ).toBe(false);
+  });
 });

@@ -170,9 +170,17 @@ function updateReadOnlyModalMarkers(document: Document): void {
   const hasOpenNativeDialog = Array.from(
     document.querySelectorAll(NATIVE_DIALOG_SELECTOR),
   ).some((dialog) => isPotentiallyVisible(dialog as HTMLElement, document));
+  // PeopleSoft lightboxes can paint their dialog in a portal layer while the
+  // outer #pt_modals container remains presentation-hidden. The body marker
+  // is the stable lifecycle signal for that state; honor it so the extension
+  // shell cannot cover native modal content at high zoom.
+  const hasOpenLightbox =
+    document.body?.classList.contains("iLightboxOpen") ?? false;
   document.documentElement.toggleAttribute(
     NATIVE_MODAL_OPEN_ATTRIBUTE,
-    hasOpenNativeDialog || hasOpenCourseSearchFrame(document),
+    hasOpenNativeDialog ||
+      hasOpenLightbox ||
+      hasOpenCourseSearchFrame(document),
   );
   const hasOpenReadOnlyDialog = Array.from(
     document.querySelectorAll(`#pt_modals.PSMODAL[${READ_ONLY_MODAL_ATTRIBUTE}]`),
