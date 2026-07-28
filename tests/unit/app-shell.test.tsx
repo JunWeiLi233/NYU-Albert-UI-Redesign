@@ -46,6 +46,49 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("does not advertise Student support without its exact verified resource", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "academic-records",
+          description: "Check NYU academic dates and deadlines",
+          featured: false,
+          id: "academic-calendar",
+          keywords: ["academic calendar", "dates"],
+          label: "Academic Calendar",
+          nativeLabels: ["Academic Calendar"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    expect(
+      Array.from(
+        shadowRoot?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-common-task",
+        ) ?? [],
+      ).map((button) => button.textContent),
+    ).not.toContain("Student support");
+  });
+
   it("opens Course Search from a course query while the current area is Academics", async () => {
     const onNavigate = vi.fn();
     const onNavigateToCourseSearch = vi.fn();

@@ -51,7 +51,11 @@ const TASK_SEARCH_SUGGESTIONS = [
   { label: "Academic dates", query: "academic calendar" },
   { label: "Housing", query: "housing" },
   { label: "New student help", query: "new student" },
-  { label: "Student support", query: "student support" },
+  {
+    label: "Student support",
+    query: "student support",
+    requiresResourceId: "student-services",
+  },
   { label: "Check holds", query: "check holds" },
   { label: "When can I register?", query: "when can I register" },
   { label: "To-do list", query: "to do list" },
@@ -60,7 +64,11 @@ const TASK_SEARCH_SUGGESTIONS = [
   { label: "Check balance", query: "check balance" },
   { label: "Pay tuition", query: "pay tuition" },
   { label: "Financial aid status", query: "financial aid status" },
-] as const;
+] as const satisfies readonly {
+  label: string;
+  query: string;
+  requiresResourceId?: PageToolId;
+}[];
 
 const RESOURCE_SEARCH_SUGGESTIONS = [
   { label: "Academic dates", toolId: "academic-calendar" },
@@ -909,7 +917,19 @@ export function AppShell({
   );
   const availableTaskSearchSuggestions =
     !isResourceSearchMode && normalizedTaskSearchQuery.length === 0
-      ? TASK_SEARCH_SUGGESTIONS.filter(({ query }) => {
+      ? TASK_SEARCH_SUGGESTIONS.filter((suggestion) => {
+          const { query } = suggestion;
+          const requiresResourceId =
+            "requiresResourceId" in suggestion
+              ? suggestion.requiresResourceId
+              : undefined;
+          if (
+            requiresResourceId &&
+            !availableResourceTools.some(({ id }) => id === requiresResourceId)
+          ) {
+            return false;
+          }
+
           const normalizedQuery = query.toLocaleLowerCase();
           return (
             availableTaskTools.some((tool) =>
