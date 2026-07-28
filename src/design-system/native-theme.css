@@ -26,6 +26,18 @@ html[data-better-albert-enabled] body {
   font-family: var(--ba-native-font);
 }
 
+/*
+ * The compact shell is fixed so it remains available while a student scrolls
+ * a long Albert page or uses browser magnification. Its measured height is an
+ * extension-owned, reversible offset; native source order and controls stay
+ * untouched beneath it.
+ */
+@media (max-width: 899px) {
+  html[data-better-albert-enabled][data-better-albert-compact-header] body {
+    padding-top: var(--ba-native-shell-height, 0px) !important;
+  }
+}
+
 html[data-better-albert-enabled][data-better-albert-compact-header]
   #NYU_ALBERT_LOGO {
   display: none !important;

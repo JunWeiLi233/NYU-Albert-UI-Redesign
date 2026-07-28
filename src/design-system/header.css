@@ -1069,11 +1069,13 @@ button {
   }
 
   :host {
-    position: sticky;
-    inset: auto;
+    position: fixed;
+    inset: 0 0 auto;
     top: 0;
     width: 100%;
     height: auto;
+    /* Keep native promotional layers behind the compact navigation. */
+    z-index: 1000 !important;
   }
 
   .ba-shell {

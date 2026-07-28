@@ -134,6 +134,14 @@ export function mountHeader({
 
   const setTaskFinderOpen = (isOpen: boolean): void => {
     host.style.zIndex = isOpen ? TASK_FINDER_Z_INDEX : SHELL_Z_INDEX;
+    if (isOpen) {
+      // Compact mode elevates the shell above native promotional layers with a
+      // stylesheet rule. The modal finder must still win over the native
+      // resource directory, so promote this inline value with equal priority.
+      host.style.setProperty("z-index", TASK_FINDER_Z_INDEX, "important");
+    } else {
+      host.style.setProperty("z-index", SHELL_Z_INDEX);
+    }
     for (const taskFinderStateRoot of taskFinderStateRoots) {
       taskFinderStateRoot.toggleAttribute(
         TASK_FINDER_OPEN_ATTRIBUTE,
