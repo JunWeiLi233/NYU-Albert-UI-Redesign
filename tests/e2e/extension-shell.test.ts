@@ -4435,6 +4435,26 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(resourceSearchInput).toBeFocused();
 
   for (const query of [
+    "NYU Engage",
+    "student government",
+    "service opportunities",
+    "multicultural education and programs",
+    "veteran services",
+    "global spiritual life",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Student Life",
+      }),
+    ).toBeVisible();
+  }
+
+  for (const query of [
     "student success",
     "student success specialist",
     "success network",
@@ -4645,7 +4665,14 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(resourceSearch).toBeVisible();
   await expect(resourceSearchInput).toBeFocused();
 
-  for (const query of ["career development", "career center", "internships"]) {
+  for (const query of [
+    "career development",
+    "career center",
+    "internships",
+    "find a job or internship",
+    "connect with alumni",
+    "entrepreneurship resources",
+  ]) {
     await resourceSearchInput.fill(query);
     await expect(
       resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
@@ -4688,6 +4715,9 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "library",
     "campus map",
     "shuttle",
+    "accessibility and accommodations",
+    "athletics and fitness",
+    "sustainability",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -4711,6 +4741,24 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await resourceSearchToggle.click();
   await expect(resourceSearch).toBeVisible();
   await expect(resourceSearchInput).toBeFocused();
+
+  for (const query of [
+    "off campus living",
+    "summer housing",
+    "dining on campus",
+    "basic needs assistance",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Housing",
+      }),
+    ).toBeVisible();
+  }
 
   await resourceSearchInput.fill("meal plan");
   await expect(
@@ -4771,6 +4819,22 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     }),
   ).toBeVisible();
 
+  for (const query of [
+    "Tutoring and Help with Classes",
+    "help with classes",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Academic Support",
+      }),
+    ).toBeVisible();
+  }
+
   await resourceSearchInput.fill("Where can I get tutoring?");
   await expect(
     resourceSearch.getByText('1 result for “Where can I get tutoring?”', {
@@ -4816,6 +4880,23 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await resourceSearchToggle.click();
   await expect(resourceSearch).toBeVisible();
   await expect(resourceSearchInput).toBeFocused();
+
+  for (const query of [
+    "wellness exchange",
+    "counseling services",
+    "health education",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Wellness Center",
+      }),
+    ).toBeVisible();
+  }
 
   await resourceSearchInput.fill("I need help");
   await expect(
