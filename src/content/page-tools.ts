@@ -1164,8 +1164,22 @@ export function openNativePageTool(
     return false;
   }
 
+  const focusRegion =
+    definition.focusRegion ?? definition.fallbackFocusRegion;
+  if (
+    focusRegion &&
+    target.getAttribute("data-better-albert-region") === focusRegion
+  ) {
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+    target.focus({ preventScroll: true });
+    target.scrollIntoView?.({ block: "center", inline: "nearest" });
+    return true;
+  }
+
   if (!isPageToolControl(target)) {
-    if (!definition.focusRegion && !definition.fallbackFocusRegion) {
+    if (!focusRegion) {
       return false;
     }
     if (!(target instanceof HTMLElement)) {

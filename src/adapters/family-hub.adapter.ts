@@ -56,7 +56,7 @@ interface FamilyHubPlan {
   directories: readonly Element[];
   enrollmentForm: HTMLFormElement | undefined;
   financialAidTarget: Element | undefined;
-  gradeViewerTarget: HTMLSelectElement | undefined;
+  gradeViewerTarget: Element | undefined;
   homeHoldsTarget: Element | undefined;
   homeRegistrationTarget: Element | undefined;
   homeTodoTarget: Element | undefined;
@@ -398,7 +398,7 @@ function findFinancialAidTarget(
 function findGradeViewerTarget(
   family: PrimaryPageFamily,
   sections: readonly Element[],
-): HTMLSelectElement | undefined {
+): Element | undefined {
   if (family !== "grades") {
     return undefined;
   }
@@ -418,7 +418,27 @@ function findGradeViewerTarget(
       !select.disabled &&
       select.getAttribute("aria-disabled") !== "true",
   );
-  return selects.length === 1 ? selects[0] : undefined;
+  if (selects.length === 1) {
+    return selects[0];
+  }
+  if (selects.length > 1) {
+    return undefined;
+  }
+
+  const careerLinks = Array.from(
+    termSelectors[0]?.querySelectorAll<HTMLAnchorElement>("a") ?? [],
+  ).filter((anchor) => {
+    const label = normalizedText(
+      anchor.textContent ?? anchor.getAttribute("aria-label"),
+    );
+    return (
+      anchor.isConnected &&
+      !anchor.matches("[disabled], [aria-disabled='true']") &&
+      /^[a-z][a-z -]{1,48}\s*:\s*\/?$/i.test(label)
+    );
+  });
+
+  return careerLinks.length === 1 ? careerLinks[0] : undefined;
 }
 
 function hasVerifiedFamilyAnchor(

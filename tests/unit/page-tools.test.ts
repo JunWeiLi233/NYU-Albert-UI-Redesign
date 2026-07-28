@@ -341,6 +341,24 @@ describe("page-family native tools", () => {
     expect(nativeCareerSelect?.hasAttribute("tabindex")).toBe(false);
   });
 
+  it("focuses the exact native career chooser link used by live Grades", () => {
+    document.body.innerHTML = `
+      <a
+        href="javascript:void(0);"
+        data-better-albert-region="grade-viewer"
+      >Undergraduate : /</a>
+    `;
+    const nativeCareerLink = document.querySelector<HTMLAnchorElement>(
+      '[data-better-albert-region="grade-viewer"]',
+    );
+
+    expect(getAvailablePageTools(document, "grades").map(({ id }) => id)).toEqual([
+      "view-grades",
+    ]);
+    expect(openNativePageTool(document, "view-grades")).toBe(true);
+    expect(document.activeElement).toBe(nativeCareerLink);
+  });
+
   it("omits an ambiguous or disabled grade-career target", () => {
     document.body.innerHTML = `
       <select data-better-albert-region="grade-viewer"></select>

@@ -904,6 +904,32 @@ describe("structural adapter manager", () => {
     ).toContain("Quick access shows the transcript");
   });
 
+  it("marks the exact native career chooser link for live Grades pages", () => {
+    const document = fixture("tests/fixtures/families/grades.html");
+    const careerSection = document.querySelector(".isSSS_CareerSelect");
+    careerSection!.innerHTML =
+      '<a href="javascript:void(0);">Undergraduate : /</a>';
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "grades",
+        topLevel: true,
+      }),
+    ).toBe("family-grades");
+
+    const gradeViewerTarget = document.querySelector(
+      '[data-better-albert-region="grade-viewer"]',
+    );
+    expect(gradeViewerTarget?.matches("a")).toBe(true);
+    expect(gradeViewerTarget?.textContent).toContain("Undergraduate");
+    expect(
+      gradeViewerTarget?.hasAttribute("data-better-albert-focus-target"),
+    ).toBe(true);
+  });
+
   it("does not label a Personal Info form without an exact Save and Cancel boundary", () => {
     const document = fixture("tests/fixtures/families/personal.html");
     document
