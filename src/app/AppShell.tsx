@@ -498,7 +498,7 @@ export function AppShell({
     !isResourceSearchMode && currentPageFamily !== "home"
       ? verifiedCourseSearch
         ? {
-            description: "Open the original Course Search",
+            description: verifiedCourseSearch.description,
             mode: "direct" as const,
           }
         : availablePageFamilies.includes("home")
@@ -1174,7 +1174,7 @@ export function AppShell({
                 <span>
                   {isResourceSearchMode
                     ? "Search all official links in this directory"
-                    : "Find classes, resources, and new-student help"}
+                    : "Find classes, tasks, and NYU resources"}
                 </span>
               </span>
               <span

@@ -455,7 +455,7 @@ describe("content-script lifecycle", () => {
 
     expect(shortcut?.dataset.courseSearchMode).toBe("direct");
     expect(shortcut?.textContent).toContain(
-      "Open the original Course Search",
+      "Search by subject, course number, title, or instructor",
     );
     shortcut?.click();
     await settleLifecycle();
