@@ -468,8 +468,8 @@ export function startCourseSearchFrameReceiver(
   const handleOpenRequest = (event: MessageEvent): void => {
     if (
       handled ||
-      event.source !== window.parent ||
-      event.origin !== PORTAL_ORIGIN ||
+      (event.source !== window.parent && event.source !== window.top) ||
+      !isAllowlistedOrigin(event.origin) ||
       !isMessageType(event.data, COURSE_SEARCH_FRAME_OPEN_MESSAGE)
     ) {
       return;
