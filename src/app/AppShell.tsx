@@ -22,6 +22,7 @@ import type {
   TaskToolDefinition,
 } from "../content/page-tools";
 import {
+  COURSE_SEARCH_KEYWORDS,
   RESOURCE_CATEGORIES,
   RESOURCE_CATEGORY_DEFINITIONS,
 } from "../content/page-tools";
@@ -127,6 +128,12 @@ const TASK_SEARCH_CONVERSATIONAL_WORDS = new Set([
 ]);
 
 const TASK_SEARCH_RELAXED_WORDS = new Set(["help", "need"]);
+const COURSE_SEARCH_NON_COURSE_INTENTS = [
+  "when can i register",
+  "registration time",
+  "enrollment appointment",
+  "enrollment dates",
+] as const;
 
 function normalizeTaskSearchValue(value: string): string {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -859,6 +866,11 @@ export function AppShell({
     }
   };
 
+  const isCrossAreaCourseSearchIntent = (query: string): boolean =>
+    courseSearchShortcut?.mode === "home" &&
+    !matchesTaskSearch(query, COURSE_SEARCH_NON_COURSE_INTENTS) &&
+    matchesTaskSearch(query, COURSE_SEARCH_KEYWORDS);
+
   const toggleTaskFinder = (): void => {
     if (isTaskFinderOpen) {
       closeTaskFinder();
@@ -922,7 +934,13 @@ export function AppShell({
 
   const handleTaskFinderNavigation = (
     pageFamily: PrimaryPageFamily,
+    query = "",
   ): void => {
+    if (pageFamily === "home" && isCrossAreaCourseSearchIntent(query)) {
+      closeTaskFinder();
+      onNavigateToCourseSearch();
+      return;
+    }
     if (pageFamily === "resources" && !isNativeResourcesOpen) {
       resourceReturnFocusRef.current = () =>
         taskFinderToggleRef.current?.focus({ preventScroll: true });
@@ -971,7 +989,7 @@ export function AppShell({
 
     const pageFamily = taskFamilies[0];
     if (pageFamily) {
-      handleTaskFinderNavigation(pageFamily);
+      handleTaskFinderNavigation(pageFamily, normalizedQuery);
       return true;
     }
 
@@ -1007,7 +1025,7 @@ export function AppShell({
 
     const pageFamily = filteredTaskFamilies[0];
     if (pageFamily) {
-      handleTaskFinderNavigation(pageFamily);
+      handleTaskFinderNavigation(pageFamily, normalizedTaskSearchQuery);
       return;
     }
 
@@ -1691,7 +1709,10 @@ export function AppShell({
                           aria-label={`Open ${definition.label} — ${definition.navigationHint}`}
                           key={pageFamily}
                           onClick={() =>
-                            handleTaskFinderNavigation(pageFamily)
+                            handleTaskFinderNavigation(
+                              pageFamily,
+                              normalizedTaskSearchQuery,
+                            )
                           }
                         >
                           <span className="ba-task-finder-item-copy">
