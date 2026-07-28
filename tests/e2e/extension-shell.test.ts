@@ -4731,6 +4731,9 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "Where can I print?",
     "library",
     "campus map",
+    "student centers and spaces",
+    "gyms and campus recreation",
+    "student tech centers",
     "shuttle",
     "accessibility and accommodations",
     "athletics and fitness",
@@ -4760,6 +4763,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(resourceSearchInput).toBeFocused();
 
   for (const query of [
+    "on campus living",
     "off campus living",
     "summer housing",
     "dining on campus",

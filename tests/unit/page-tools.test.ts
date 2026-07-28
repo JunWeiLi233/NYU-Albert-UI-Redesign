@@ -816,8 +816,22 @@ describe("page-family native tools", () => {
     const studentServices = getAvailableResourceTools(document).find(
       ({ id }) => id === "student-services",
     );
+    const housing = getAvailableResourceTools(document).find(
+      ({ id }) => id === "housing",
+    );
+    const campusResources = getAvailableResourceTools(document).find(
+      ({ id }) => id === "campus-resources",
+    );
     expect(nyuConnect?.keywords).toContain("student success");
     expect(studentServices?.keywords).not.toContain("student success");
+    expect(housing?.keywords).toContain("on campus living");
+    expect(campusResources?.keywords).toEqual(
+      expect.arrayContaining([
+        "student centers and spaces",
+        "gyms and campus recreation",
+        "student tech centers",
+      ]),
+    );
     expect(openNativeResourceTool(document, "wellness-center")).toBe(true);
     expect(click).toHaveBeenCalledOnce();
   });
