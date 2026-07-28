@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.80 includes:
+Version 0.5.81 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an inline verified-destination cue for single search matches, so Enter
@@ -15,6 +15,9 @@ Version 0.5.80 includes:
 - a compact horizontal common-task strip with a visible “Scroll for more”
   cue, keeping one-step Find classes and newcomer shortcuts fully readable at
   200% zoom;
+- a single-row resource starter strip at compact widths, so popular NYU
+  services remain discoverable with a visible scroll cue instead of wrapping
+  into a clipped third row at high zoom;
 - a full-viewport compact finder modal that keeps Albert's native resource
   directory mounted but behind the search surface at high zoom and short
   heights;
@@ -102,7 +105,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.80` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.81` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

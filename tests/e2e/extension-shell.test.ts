@@ -5506,6 +5506,28 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(
     resourceSearch.getByText("Scroll for more", { exact: true }),
   ).toBeVisible();
+
+  await page.setViewportSize({ height: 800, width: 664 });
+  const zoomedPopularGeometry = await mobilePopularResources.evaluate(
+    (group) => {
+      const buttons = Array.from(group.querySelectorAll("button"));
+      const list = group.querySelector<HTMLElement>(
+        ".ba-task-finder-common-list",
+      );
+      const buttonTops = new Set(
+        buttons.map((button) => Math.round(button.getBoundingClientRect().top)),
+      );
+      return {
+        rowCount: buttonTops.size,
+        scrollOverflow: (list?.scrollWidth ?? 0) - (list?.clientWidth ?? 0),
+      };
+    },
+  );
+  expect(zoomedPopularGeometry.rowCount).toBe(1);
+  expect(zoomedPopularGeometry.scrollOverflow).toBeGreaterThan(0);
+  await expect(
+    resourceSearch.getByText("Scroll for more", { exact: true }),
+  ).toBeVisible();
   await expect(
     resourceSearch.getByRole("button", {
       exact: true,
