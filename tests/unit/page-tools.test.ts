@@ -50,6 +50,16 @@ describe("page-family native tools", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
+  it("keeps course-registration language on the exact Course Search task", () => {
+    const courseSearch = getAvailableTaskTools(document).find(
+      ({ id }) => id === "course-search",
+    );
+
+    expect(courseSearch?.keywords).toEqual(
+      expect.arrayContaining(["course registration"]),
+    );
+  });
+
   it("dispatches page-owned clicks without evaluating javascript URLs in the extension", () => {
     const search = document.querySelector<HTMLAnchorElement>('a[href="#search"]');
     search?.setAttribute("href", "javascript:void(0)");

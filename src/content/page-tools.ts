@@ -652,6 +652,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
         "class location",
         "classroom",
         "classroom location",
+        "course registration",
         "course search",
         "enroll",
         "find a class",
