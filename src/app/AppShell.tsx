@@ -1052,7 +1052,11 @@ export function AppShell({
       </div>
 
       <div className="ba-workspace-row">
-        <div className="ba-page-context" aria-live="polite">
+        <div
+          className="ba-page-context"
+          data-page-family={currentPageFamily}
+          aria-live="polite"
+        >
           <span className="ba-page-eyebrow">Workspace</span>
           <strong className="ba-page-title">{currentPage.label}</strong>
           <span className="ba-page-description">{currentPage.description}</span>

@@ -175,6 +175,11 @@ button {
   background: #400066;
 }
 
+/* Keep the longer newcomer-facing Home context compact at short desktop heights. */
+.ba-page-context[data-page-family="home"] {
+  padding-block: var(--ba-space-3);
+}
+
 .ba-page-eyebrow,
 .ba-tool-label {
   font-size: var(--ba-font-size-xs);
