@@ -262,6 +262,44 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("returns the rail to the top when resource search closes", async () => {
+    const resourceMenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const resourceTrigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    resourceMenu?.removeAttribute("hidden");
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const shell = shadowRoot?.querySelector<HTMLElement>(".ba-shell");
+
+    resourceTrigger?.classList.add("megaMenuSelected");
+    await settleLifecycle();
+    expect(
+      shadowRoot?.querySelector<HTMLElement>(
+        '.ba-task-finder[data-resource-search="true"]',
+      ),
+    ).not.toBeUndefined();
+
+    if (shell) {
+      shell.scrollTop = 240;
+    }
+    expect(shell?.scrollTop).toBe(240);
+
+    resourceTrigger?.classList.remove("megaMenuSelected");
+    await settleLifecycle();
+    expect(shell?.scrollTop).toBe(0);
+
+    lifecycle.stop();
+  });
+
   it("reopens task discovery at the top without changing Albert page scroll", async () => {
     const lifecycle = await startContentScript({
       document,

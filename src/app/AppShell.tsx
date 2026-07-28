@@ -462,7 +462,7 @@ export function AppShell({
     if (primaryNavigation) {
       primaryNavigation.scrollTop = 0;
     }
-  }, [currentPageFamily]);
+  }, [currentPageFamily, isResourceSearchMode]);
 
   const availableTaskFamilies = PRIMARY_PAGE_FAMILIES.filter((pageFamily) =>
     availablePageFamilies.includes(pageFamily),
