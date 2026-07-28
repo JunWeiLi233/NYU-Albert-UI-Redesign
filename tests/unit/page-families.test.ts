@@ -118,6 +118,15 @@ describe("page-family task vocabulary", () => {
         "get support",
         "wellbeing",
         "wellbeing resources",
+        "academic tutoring at nyu",
+        "access clinical care",
+        "book an appointment with nyu connect",
+        "clubs and organizations",
+        "food accessibility assistance",
+        "leadership opportunities",
+        "public transportation discounts",
+        "report an incident",
+        "writing center",
       ]),
     );
   });

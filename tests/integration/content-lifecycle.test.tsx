@@ -120,7 +120,7 @@ describe("content-script lifecycle", () => {
       "Check Holds",
       "When Can I Register?",
       "Weekly Schedule",
-      "Browse NYU resources",
+      "Search NYU resources",
     ]);
     expect(
       Array.from(
@@ -611,7 +611,9 @@ describe("content-script lifecycle", () => {
     const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
     const resourceOpener = Array.from(
       shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
-    ).find((button) => button.getAttribute("aria-label") === "Browse NYU resources");
+    ).find(
+      (button) => button.getAttribute("aria-label") === "Search NYU resources",
+    );
 
     expect(resourceOpener).not.toBeUndefined();
     resourceOpener?.click();
@@ -635,7 +637,7 @@ describe("content-script lifecycle", () => {
     await settleLifecycle();
 
     expect(shadowRoot?.activeElement?.getAttribute("aria-label")).toBe(
-      "Browse NYU resources",
+      "Search NYU resources",
     );
     lifecycle.stop();
   });
@@ -953,7 +955,7 @@ describe("content-script lifecycle", () => {
       "Check Account Balance",
       "Get Account Statement",
       "Check Financial Aid Status",
-      "Browse NYU resources",
+      "Search NYU resources",
     ]);
     lifecycle.stop();
   });

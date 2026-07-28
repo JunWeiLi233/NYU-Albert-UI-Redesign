@@ -220,12 +220,14 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
       name: "When Can I Register?",
     }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", {
-      exact: true,
-      name: "Browse NYU resources",
-    }),
-  ).toBeVisible();
+  const searchNyuResources = page.getByRole("button", {
+    exact: true,
+    name: "Search NYU resources",
+  });
+  await expect(searchNyuResources).toBeVisible();
+  await expect(searchNyuResources).toContainText(
+    "Search official calendars, offices, support, and campus services",
+  );
   await expect(
     page.getByRole("button", { exact: true, name: "Academic Calendar" }),
   ).toBeVisible();
@@ -592,7 +594,7 @@ test("exposes task-first discovery at every supported width and delegates throug
   });
   const homeResourceDirectory = page.getByRole("button", {
     exact: true,
-    name: "Browse NYU resources",
+    name: "Search NYU resources",
   });
   const homeStarter = page.locator(".ba-home-starter-nav");
   const primaryNavigation = page.locator(".ba-primary-nav");
@@ -1795,6 +1797,13 @@ test("exposes task-first discovery at every supported width and delegates throug
       "new student",
       "Open Other Resources — NYU services, offices, and support",
     ],
+    ["academic tutoring at nyu", "Open Academic Support"],
+    ["access clinical care", "Open Wellness Center"],
+    ["book an appointment with nyu connect", "Open NYU Connect"],
+    ["leadership opportunities", "Open Student Life"],
+    ["food accessibility assistance", "Open Housing"],
+    ["report an incident", "Open Campus Safety"],
+    ["public transportation discounts", "Open Campus Resources"],
     [
       "first-year student",
       "Open Other Resources — NYU services, offices, and support",
@@ -4100,7 +4109,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   });
   const homeResourceDirectory = page.getByRole("button", {
     exact: true,
-    name: "Browse NYU resources",
+    name: "Search NYU resources",
   });
   await expect(otherResourcesToggle).toHaveAttribute("aria-expanded", "false");
   await expect(homeResourceDirectory).toBeVisible();

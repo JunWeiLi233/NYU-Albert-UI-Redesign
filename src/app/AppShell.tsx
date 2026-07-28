@@ -397,7 +397,7 @@ function PageToolNavigation({
             className="ba-tool-item ba-home-resource-item"
             type="button"
             aria-describedby="ba-home-resource-description"
-            aria-label="Browse NYU resources"
+            aria-label="Search NYU resources"
             ref={resourceDirectoryToggleRef}
             onClick={onOpenResourceDirectory}
           >
@@ -407,7 +407,7 @@ function PageToolNavigation({
                 className="ba-tool-description"
                 id="ba-home-resource-description"
               >
-                Calendars, offices, support, and campus services
+                Search official calendars, offices, support, and campus services
               </span>
             </span>
             <span className="ba-tool-arrow" aria-hidden="true">

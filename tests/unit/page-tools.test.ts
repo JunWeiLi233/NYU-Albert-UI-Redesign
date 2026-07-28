@@ -823,6 +823,12 @@ describe("page-family native tools", () => {
       ({ id }) => id === "campus-resources",
     );
     expect(nyuConnect?.keywords).toContain("student success");
+    expect(nyuConnect?.keywords).toEqual(
+      expect.arrayContaining([
+        "book an appointment with nyu connect",
+        "resources for student success",
+      ]),
+    );
     expect(studentServices?.keywords).not.toContain("student success");
     expect(housing?.keywords).toContain("on campus living");
     expect(campusResources?.keywords).toEqual(
@@ -831,6 +837,9 @@ describe("page-family native tools", () => {
         "gyms and campus recreation",
         "student tech guide",
         "student tech centers",
+        "accessibility specialist",
+        "group fitness",
+        "public transportation discounts",
       ]),
     );
     expect(openNativeResourceTool(document, "wellness-center")).toBe(true);
@@ -841,8 +850,38 @@ describe("page-family native tools", () => {
       expect.arrayContaining([
         "intramural and club sports",
         "service opportunities and civic engagement",
+        "clubs and organizations",
+        "leadership opportunities",
+        "volunteer service",
       ]),
     );
+    expect(
+      getAvailableResourceTools(document).find(
+        ({ id }) => id === "academic-support",
+      )?.keywords,
+    ).toEqual(
+      expect.arrayContaining([
+        "academic tutoring at nyu",
+        "university learning centers",
+        "writing center",
+      ]),
+    );
+    expect(
+      getAvailableResourceTools(document).find(
+        ({ id }) => id === "wellness-center",
+      )?.keywords,
+    ).toEqual(
+      expect.arrayContaining([
+        "access clinical care",
+        "get 24/7 support",
+        "student health center",
+      ]),
+    );
+    expect(
+      getAvailableResourceTools(document).find(
+        ({ id }) => id === "campus-safety",
+      )?.keywords,
+    ).toContain("report an incident");
     expect(click).toHaveBeenCalledOnce();
   });
 
