@@ -1866,6 +1866,25 @@ test("exposes task-first discovery at every supported width and delegates throug
       "your academic advisor",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
     ],
+    ["Academic Resource Center", "Open Academic Support"],
+    [
+      "Prepare for Your Meeting",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Professional Edge",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Unique Academic Opportunities",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "NYU Academic Advising Framework",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    ["Bobst Library", "Open Campus Resources"],
+    ["Studying Away", "Open Office of Global Programs"],
     [
       "undergraduate advisement",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",

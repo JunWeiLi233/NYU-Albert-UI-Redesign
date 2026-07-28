@@ -945,6 +945,7 @@ describe("page-family native tools", () => {
     ).toEqual(
       expect.arrayContaining([
         "academic tutoring at nyu",
+        "academic resource center",
         "university learning centers",
         "writing center",
       ]),
