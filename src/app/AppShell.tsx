@@ -163,6 +163,10 @@ function getTaskSearchWords(
     );
 }
 
+function getMeaningfulTaskSearchValue(value: string): string {
+  return getTaskSearchWords(value, true).join(" ");
+}
+
 function isWithinOneTaskSearchEdit(left: string, right: string): boolean {
   if (Math.abs(left.length - right.length) > 1) {
     return false;
@@ -587,11 +591,11 @@ export function AppShell({
       const meaningfulQuery = getTaskSearchWords(searchQuery, true).join(" ");
       const exactResourceLabelTools = matchingResourceTools.filter(
         (tool) =>
-          normalizeTaskSearchValue(tool.label) === meaningfulQuery,
+          getMeaningfulTaskSearchValue(tool.label) === meaningfulQuery,
       );
       const exactResourceAliasTools = matchingResourceTools.filter((tool) =>
         [tool.label, ...tool.keywords].some(
-          (value) => normalizeTaskSearchValue(value) === meaningfulQuery,
+          (value) => getMeaningfulTaskSearchValue(value) === meaningfulQuery,
         ),
       );
       const resourceTools =
@@ -613,19 +617,21 @@ export function AppShell({
             );
       const exactTaskTools = matchingTaskTools.filter((tool) =>
         [tool.label, ...(tool.keywords ?? [])].some(
-          (value) => normalizeTaskSearchValue(value) === meaningfulQuery,
+          (value) => getMeaningfulTaskSearchValue(value) === meaningfulQuery,
         ),
       );
       const taskTools =
         exactResourceLabelTools.length > 0
           ? []
-          : exactTaskTools.length > 0
+          : exactResourceAliasTools.length > 0 && exactTaskTools.length === 0
+            ? []
+            : exactTaskTools.length > 0
             ? exactTaskTools
             : matchingTaskTools;
       const hasDirectTaskResult =
         searchQuery.length > 0 && taskTools.length > 0;
       const prefersResourceAlias =
-        exactResourceAliasTools.length > 0 && !hasDirectTaskResult;
+        exactResourceAliasTools.length > 0 && exactTaskTools.length === 0;
       const prefersUniqueResource =
         matchingResourceTools.length === 1 && !hasDirectTaskResult;
       const taskFamilies =

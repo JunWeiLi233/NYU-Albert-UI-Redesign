@@ -853,6 +853,7 @@ describe("page-family native tools", () => {
         "explore the halls",
         "intersession housing",
         "off-campus living resources",
+        "find a place to stay",
       ]),
     );
     expect(campusResources?.keywords).toEqual(
@@ -888,6 +889,11 @@ describe("page-family native tools", () => {
         "understand your legal requirements",
         "international student hub",
         "troubleshooting submitting an online form",
+        "get a us visa",
+        "transfer to nyu",
+        "plan your trip",
+        "pre orientation",
+        "journey to nyu email series",
       ]),
     );
     expect(wasserman?.keywords).toEqual(

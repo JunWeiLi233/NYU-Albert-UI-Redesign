@@ -1819,6 +1819,7 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Explore the Halls", "Open Housing"],
     ["Residential Life Policies", "Open Housing"],
     ["Off-Campus Living Resources", "Open Housing"],
+    ["Find a Place to Stay", "Open Housing"],
     ["Incident Response Team", "Open Campus Safety"],
     ["Wifi, Streaming, and Technology", "Open Campus Resources"],
     ["social impact career hub", "Open Wasserman"],
@@ -1919,6 +1920,11 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Understand Your Legal Requirements", "Open OGS"],
     ["International Student Hub", "Open OGS"],
     ["Troubleshooting Submitting an Online Form", "Open OGS"],
+    ["Get a US Visa", "Open OGS"],
+    ["Transfer to NYU", "Open OGS"],
+    ["Plan Your Trip", "Open OGS"],
+    ["Pre-Orientation Events", "Open OGS"],
+    ["Journey to NYU Email Series", "Open OGS"],
     ["Campus Cash & NYUCard", "Open NYU Card Center"],
     ["NYU Bookstores", "Open Campus Resources"],
     ["Find More Student Guides", "Open Other Resources — NYU services, offices, and support"],
@@ -4707,6 +4713,11 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "Understand Your Legal Requirements",
     "International Student Hub",
     "Troubleshooting Submitting an Online Form",
+    "Get a US Visa",
+    "Transfer to NYU",
+    "Plan Your Trip",
+    "Pre-Orientation Events",
+    "Journey to NYU Email Series",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -4987,6 +4998,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "Explore the Halls",
     "Residential Life Policies",
     "Off-Campus Living Resources",
+    "Find a Place to Stay",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
