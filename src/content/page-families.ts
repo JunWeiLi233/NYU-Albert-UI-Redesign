@@ -95,6 +95,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "how much owe",
       "need help financial aid",
       "pay bill",
+      "payment plan",
       "pay tuition",
       "review charges",
       "see tuition bill",

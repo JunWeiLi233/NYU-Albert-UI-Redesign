@@ -76,6 +76,22 @@ describe("page-family native tools", () => {
     );
   });
 
+  it("keeps payment-plan language on the native eSuite account task", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <div class="is_bb_LinkItem"><a href="#bursar">View Bursar Account (log into eSuite)</a></div>
+      </section>
+    `;
+
+    const bursarAccount = getAvailableTaskTools(document).find(
+      ({ id }) => id === "bursar-account",
+    );
+
+    expect(bursarAccount?.keywords).toEqual(
+      expect.arrayContaining(["payment plan"]),
+    );
+  });
+
   it("dispatches page-owned clicks without evaluating javascript URLs in the extension", () => {
     const search = document.querySelector<HTMLAnchorElement>('a[href="#search"]');
     search?.setAttribute("href", "javascript:void(0)");

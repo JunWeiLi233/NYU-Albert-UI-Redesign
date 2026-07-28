@@ -21,6 +21,7 @@ describe("page-family task vocabulary", () => {
         "how much owe",
         "review charges",
         "what owe",
+        "payment plan",
       ]),
     );
   });

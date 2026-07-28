@@ -846,6 +846,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
         "account charges",
         "bill payment",
         "make a payment",
+        "payment plan",
         "pay charges",
         "pay tuition",
         "review charges",
