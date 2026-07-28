@@ -822,6 +822,12 @@ describe("page-family native tools", () => {
     const campusResources = getAvailableResourceTools(document).find(
       ({ id }) => id === "campus-resources",
     );
+    const cardCenter = getAvailableResourceTools(document).find(
+      ({ id }) => id === "nyu-card-center",
+    );
+    const ogs = getAvailableResourceTools(document).find(
+      ({ id }) => id === "ogs",
+    );
     expect(nyuConnect?.keywords).toContain("student success");
     expect(nyuConnect?.keywords).toEqual(
       expect.arrayContaining([
@@ -840,6 +846,20 @@ describe("page-family native tools", () => {
         "accessibility specialist",
         "group fitness",
         "public transportation discounts",
+        "nyu bookstores",
+        "students with disabilities",
+      ]),
+    );
+    expect(cardCenter?.keywords).toEqual(
+      expect.arrayContaining([
+        "campus cash and nyu card",
+        "campus cash and nyucard",
+      ]),
+    );
+    expect(ogs?.keywords).toEqual(
+      expect.arrayContaining([
+        "student visa and immigration",
+        "student visa immigration",
       ]),
     );
     expect(openNativeResourceTool(document, "wellness-center")).toBe(true);

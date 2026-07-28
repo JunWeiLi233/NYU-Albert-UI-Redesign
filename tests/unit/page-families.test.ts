@@ -14,6 +14,7 @@ describe("page-family task vocabulary", () => {
       expect.arrayContaining([
         "class schedule",
         "course registration",
+        "class registration",
         "enroll in class",
         "register for classes",
       ]),
@@ -50,7 +51,11 @@ describe("page-family task vocabulary", () => {
 
   it("keeps enrollment-letter requests on records", () => {
     expect(PAGE_FAMILY_DEFINITIONS.grades.keywords).toEqual(
-      expect.arrayContaining(["enrollment letter"]),
+      expect.arrayContaining([
+        "enrollment letter",
+        "graduation",
+        "graduation requirements",
+      ]),
     );
   });
 
@@ -142,6 +147,11 @@ describe("page-family task vocabulary", () => {
         "writing center",
         "student complaint information",
         "speaking freely",
+        "find more student guides",
+        "more about studentlink",
+        "student visa and immigration",
+        "nyu bookstores",
+        "campus cash and nyu card",
         "financial education",
         "opportunity programs",
         "mlk jr scholars program",
