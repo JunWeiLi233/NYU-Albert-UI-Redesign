@@ -1866,6 +1866,40 @@ test("exposes task-first discovery at every supported width and delegates throug
       "your academic advisor",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
     ],
+    [
+      "Choosing a major",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Course selection and sequencing",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Tracking and maintaining progress",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Developing skills and time management",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    ["Securing tutorial and other academic support", "Open Academic Support"],
+    [
+      "Preparing for graduation",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Majors, Minors and Academic Planning",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    ["Defining educational and career goals", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Understanding school and University policies and procedures", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Adjusting to the college environment", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Combined joint degree accelerated and other specialized programs", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Planning for study abroad", "Open Office of Global Programs"],
+    ["Involvement in co-curricular educational opportunities and activities", "Open Student Life"],
+    ["Solving personal problems that impede academic work", "Open Student Services"],
+    ["Liaison linkage with academic departments", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Finding Your Advisor", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["Academic Resource Center", "Open Academic Support"],
     [
       "Prepare for Your Meeting",

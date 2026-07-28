@@ -828,6 +828,9 @@ describe("page-family native tools", () => {
     const ogs = getAvailableResourceTools(document).find(
       ({ id }) => id === "ogs",
     );
+    const officeGlobalPrograms = getAvailableResourceTools(document).find(
+      ({ id }) => id === "office-global-programs",
+    );
     const wasserman = getAvailableResourceTools(document).find(
       ({ id }) => id === "wasserman",
     );
@@ -840,6 +843,9 @@ describe("page-family native tools", () => {
     );
     expect(studentServices?.keywords).not.toContain("student success");
     expect(studentServices?.keywords).toContain("office of the dean of students");
+    expect(studentServices?.keywords).toContain(
+      "solving personal problems that impede academic work",
+    );
     expect(housing?.keywords).toContain("on campus living");
     expect(housing?.keywords).toEqual(
       expect.arrayContaining([
@@ -897,6 +903,9 @@ describe("page-family native tools", () => {
         "journey to nyu email series",
       ]),
     );
+    expect(officeGlobalPrograms?.keywords).toContain(
+      "planning for study abroad",
+    );
     expect(wasserman?.keywords).toEqual(
       expect.arrayContaining([
         "social impact career hub",
@@ -929,6 +938,7 @@ describe("page-family native tools", () => {
         "centers for connection and community",
         "mindfulnyu",
         "find my club",
+        "involvement in co-curricular educational opportunities and activities",
         "music ensembles",
         "center for student life",
         "leadership launch",
@@ -946,6 +956,7 @@ describe("page-family native tools", () => {
       expect.arrayContaining([
         "academic tutoring at nyu",
         "academic resource center",
+        "securing tutorial and other academic support",
         "university learning centers",
         "writing center",
       ]),
