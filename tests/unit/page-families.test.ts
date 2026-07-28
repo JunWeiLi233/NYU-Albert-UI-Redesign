@@ -28,4 +28,18 @@ describe("page-family task vocabulary", () => {
       ]),
     );
   });
+
+  it("keeps missing resource destinations discoverable through native Other Resources", () => {
+    expect(PAGE_FAMILY_DEFINITIONS.resources.keywords).toEqual(
+      expect.arrayContaining([
+        "student support",
+        "technology help",
+        "wifi",
+        "printing",
+        "libraries",
+        "maps",
+        "transportation",
+      ]),
+    );
+  });
 });
