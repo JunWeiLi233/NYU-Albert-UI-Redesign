@@ -13,6 +13,8 @@ const COURSE_SEARCH_FRAME_OPEN_MESSAGE =
 const COMPONENT_ORIGIN = "https://sis.nyu.edu";
 const PORTAL_ORIGIN = "https://sis.portal.nyu.edu";
 const UNVERIFIED_FRAME_TARGET_ORIGIN = "*";
+const COURSE_SEARCH_RELAY_PATH =
+  /^\/psp\/[^/]+\/EMPLOYEE\/SA\/s\/WEBLIB_NYU_NCOA\.ISCRIPT1\.FieldFormula\.IScript_Open\/?$/i;
 
 function normalizeText(value: string | null | undefined): string {
   return value?.replace(/\s+/g, " ").trim().toLocaleLowerCase() ?? "";
@@ -171,6 +173,47 @@ export function isEnrollmentCartUrl(url: string): boolean {
       location.protocol === "https:" &&
       location.hostname === "sis.nyu.edu" &&
       ENROLLMENT_CART_PATH.test(location.pathname),
+  );
+}
+
+export function isCourseSearchRelayUrl(url: string): boolean {
+  const location = parseLocation(url);
+  return Boolean(
+    location &&
+      location.protocol === "https:" &&
+      location.hostname === "sis.portal.nyu.edu" &&
+      COURSE_SEARCH_RELAY_PATH.test(location.pathname),
+  );
+}
+
+function isVisibleFrame(frame: HTMLIFrameElement): boolean {
+  for (let current: HTMLElement | null = frame; current; current = current.parentElement) {
+    if (
+      current.hidden ||
+      current.getAttribute("aria-hidden") === "true" ||
+      current.ownerDocument.defaultView?.getComputedStyle(current).display ===
+        "none" ||
+      current.ownerDocument.defaultView?.getComputedStyle(current).visibility ===
+        "hidden"
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Detect the native Class Search overlay from the top-level portal document.
+ * The relay is cross-origin and may not expose its dialog markup to the
+ * parent, but its exact allowlisted frame routes are visible and reversible.
+ */
+export function hasOpenCourseSearchFrame(document: Document): boolean {
+  return Array.from(
+    document.querySelectorAll<HTMLIFrameElement>("iframe"),
+  ).some(
+    (frame) =>
+      isVisibleFrame(frame) &&
+      (isCourseSearchRelayUrl(frame.src) || isEnrollmentCartUrl(frame.src)),
   );
 }
 

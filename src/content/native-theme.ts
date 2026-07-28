@@ -1,4 +1,5 @@
 import type { PageFamily } from "./page-families";
+import { hasOpenCourseSearchFrame } from "./course-search-handoff";
 import {
   findNativeOtherResourcesSubmenu,
   getAvailablePageFamilies,
@@ -36,6 +37,7 @@ const READ_ONLY_MODAL_TITLES = new Set([
   "degree progress report",
   "my degree progress report",
 ]);
+const NATIVE_DIALOG_SELECTOR = "#pt_modals, [role='dialog']";
 
 function normalizedText(value: string | null | undefined): string {
   return value?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
@@ -166,11 +168,11 @@ function updateReadOnlyModalMarkers(document: Document): void {
   }
 
   const hasOpenNativeDialog = Array.from(
-    document.querySelectorAll("#pt_modals.PSMODAL, [role='dialog']"),
+    document.querySelectorAll(NATIVE_DIALOG_SELECTOR),
   ).some((dialog) => isPotentiallyVisible(dialog as HTMLElement, document));
   document.documentElement.toggleAttribute(
     NATIVE_MODAL_OPEN_ATTRIBUTE,
-    hasOpenNativeDialog,
+    hasOpenNativeDialog || hasOpenCourseSearchFrame(document),
   );
   const hasOpenReadOnlyDialog = Array.from(
     document.querySelectorAll(`#pt_modals.PSMODAL[${READ_ONLY_MODAL_ATTRIBUTE}]`),

@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   advanceToNativeClassSearch,
   createCourseSearchFrameHandoff,
+  hasOpenCourseSearchFrame,
+  isCourseSearchRelayUrl,
   isEnrollmentCartUrl,
   isTrustedCourseSearchIntentSource,
 } from "../../src/content/course-search-handoff";
@@ -146,5 +148,24 @@ describe("course-search handoff", () => {
         "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL",
       ),
     ).toBe(false);
+    expect(
+      isCourseSearchRelayUrl(
+        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open",
+      ),
+    ).toBe(true);
+    expect(
+      isCourseSearchRelayUrl(
+        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/OTHER_SCRIPT",
+      ),
+    ).toBe(false);
+  });
+
+  it("detects only visible allowlisted Class Search frames", () => {
+    document.body.innerHTML = `
+      <iframe src="https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open"></iframe>
+    `;
+    expect(hasOpenCourseSearchFrame(document)).toBe(true);
+    document.querySelector("iframe")?.setAttribute("hidden", "");
+    expect(hasOpenCourseSearchFrame(document)).toBe(false);
   });
 });
