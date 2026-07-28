@@ -36,6 +36,7 @@ export interface AppShellProps {
   isNativeResourcesOpen: boolean;
   onDisable: () => Promise<void>;
   onNavigate: (pageFamily: PrimaryPageFamily) => void;
+  onNavigateToCourseSearch: () => void;
   onOpenResource: (toolId: PageToolId) => void;
   onOpenTool: (toolId: PageToolId) => void;
   onSkipToContent: () => void;
@@ -427,6 +428,7 @@ export function AppShell({
   isNativeResourcesOpen,
   onDisable,
   onNavigate,
+  onNavigateToCourseSearch,
   onOpenResource,
   onOpenTool,
   onSkipToContent,
@@ -479,7 +481,7 @@ export function AppShell({
           }
         : availablePageFamilies.includes("home")
           ? {
-              description: "Go to Home for Course Search",
+              description: "Open Course Search",
               mode: "home" as const,
             }
           : undefined
@@ -937,7 +939,7 @@ export function AppShell({
       return;
     }
     if (courseSearchShortcut?.mode === "home") {
-      onNavigate("home");
+      onNavigateToCourseSearch();
     }
   };
 

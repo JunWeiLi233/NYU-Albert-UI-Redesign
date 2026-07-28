@@ -178,6 +178,7 @@ export async function startContentScript({
   let enabled = false;
   let mountedHeader: MountedHeader | undefined;
   let mountedNativeControlDocument: Document | undefined;
+  let activeNativeControlDocument: Document | undefined;
   let courseSearchFrameHandoff: CourseSearchFrameHandoff | undefined;
   let mutationObserver: MutationObserver | undefined;
   let relatedContextObserver: MutationObserver | undefined;
@@ -186,6 +187,7 @@ export async function startContentScript({
   let reconcileTimer: number | undefined;
   let renderFailed = false;
   let stopped = false;
+  let pendingCourseSearch = false;
   let unsubscribe = (): void => undefined;
   const window = document.defaultView;
   const adapterManager = new AdapterManager();
@@ -198,6 +200,7 @@ export async function startContentScript({
     }
     mountedHeader = undefined;
     mountedNativeControlDocument = undefined;
+    activeNativeControlDocument = undefined;
     courseSearchFrameHandoff?.stop();
     courseSearchFrameHandoff = undefined;
     lastViewModelSignature = "";
@@ -205,6 +208,7 @@ export async function startContentScript({
   };
 
   const rollback = (): void => {
+    pendingCourseSearch = false;
     try {
       adapterManager.rollback();
     } catch {
@@ -357,6 +361,7 @@ export async function startContentScript({
         }
       }
       const nextSignature = viewModelSignature(viewModel);
+      activeNativeControlDocument = nativeControlDocument;
 
       if (
         mountedHeader &&
@@ -391,6 +396,18 @@ export async function startContentScript({
                 nativeControlDocument,
               );
             }
+          },
+          onNavigateToCourseSearch: () => {
+            const targetDocument = activeNativeControlDocument;
+            if (!targetDocument) {
+              return;
+            }
+            pendingCourseSearch = true;
+            if (!navigateWithNativeAlbert(targetDocument, "home")) {
+              pendingCourseSearch = false;
+              return;
+            }
+            focusNativeControlDocument(document, targetDocument);
           },
           onOpenResource: (toolId) => {
             if (openNativeResourceTool(nativeControlDocument, toolId)) {
@@ -430,12 +447,26 @@ export async function startContentScript({
         });
         mountedNativeControlDocument = nativeControlDocument;
         lastViewModelSignature = nextSignature;
+        if (pendingCourseSearch && classification.pageFamily === "home") {
+          courseSearchFrameHandoff?.request();
+          if (openNativePageTool(nativeControlDocument, "course-search")) {
+            pendingCourseSearch = false;
+            focusNativeControlDocument(document, nativeControlDocument);
+          }
+        }
         return;
       }
 
       if (lastViewModelSignature !== nextSignature) {
         mountedHeader.update(viewModel);
         lastViewModelSignature = nextSignature;
+      }
+      if (pendingCourseSearch && classification.pageFamily === "home") {
+        courseSearchFrameHandoff?.request();
+        if (openNativePageTool(nativeControlDocument, "course-search")) {
+          pendingCourseSearch = false;
+          focusNativeControlDocument(document, nativeControlDocument);
+        }
       }
     } catch {
       renderFailed = true;

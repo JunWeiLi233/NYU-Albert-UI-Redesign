@@ -2805,7 +2805,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
         "home",
       );
       await expect(courseSearchShortcut).toContainText(
-        "Go to Home for Course Search",
+      "Open Course Search",
       );
       expect(
         await courseSearchShortcut.evaluate((button) =>

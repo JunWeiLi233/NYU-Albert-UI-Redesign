@@ -42,6 +42,7 @@ export interface MountHeaderOptions extends ShellViewModel {
   nativeControlDocument?: Document;
   onDisable: () => Promise<void>;
   onNavigate: (pageFamily: PrimaryPageFamily) => void;
+  onNavigateToCourseSearch: () => void;
   onOpenResource: (toolId: PageToolId) => void;
   onOpenTool: (toolId: PageToolId) => void;
   onSkipToContent: () => void;
@@ -74,6 +75,7 @@ export function mountHeader({
   nativeControlDocument = document,
   onDisable,
   onNavigate,
+  onNavigateToCourseSearch,
   onOpenResource,
   onOpenTool,
   onSkipToContent,
@@ -203,6 +205,7 @@ export function mountHeader({
             isNativeResourcesOpen={isNativeResourcesOpen}
             onDisable={onDisable}
             onNavigate={onNavigate}
+            onNavigateToCourseSearch={onNavigateToCourseSearch}
             onOpenResource={onOpenResource}
             onOpenTool={onOpenTool}
             onSkipToContent={onSkipToContent}

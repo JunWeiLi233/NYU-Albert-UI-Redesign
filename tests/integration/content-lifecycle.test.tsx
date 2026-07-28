@@ -463,7 +463,7 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
-  it("uses Home as the shortest honest Course Search path when the direct control is unavailable", async () => {
+  it("opens Course Search through Home when the direct control is unavailable", async () => {
     const nativeHome = document.querySelector<HTMLAnchorElement>(
       'a[href="/fixture-home"]',
     );
@@ -490,11 +490,73 @@ describe("content-script lifecycle", () => {
       );
 
     expect(shortcut?.dataset.courseSearchMode).toBe("home");
-    expect(shortcut?.textContent).toContain(
-      "Go to Home for Course Search",
-    );
+    expect(shortcut?.textContent).toContain("Open Course Search");
     shortcut?.click();
     expect(nativeClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
+  it("carries the Home Course Search intent through native navigation", async () => {
+    const nativeHome = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-home"]',
+    );
+    const nativeAcademics = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-academics"]',
+    );
+    nativeHome?.removeAttribute("aria-current");
+    nativeAcademics?.setAttribute("aria-current", "page");
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-course-search"]')
+      ?.remove();
+
+    const nativeHomeClick = vi.fn((event: Event) => {
+      event.preventDefault();
+      nativeHome?.setAttribute("aria-current", "page");
+      nativeAcademics?.removeAttribute("aria-current");
+      const linkColumn = document.querySelector<HTMLElement>(
+        "#nyuSSSHomeLinksStatic .is_bb_LinkColumn",
+      );
+      const item = document.createElement("div");
+      item.className = "is_bb_LinkItem";
+      const courseSearch = document.createElement("a");
+      courseSearch.href = "/fixture-course-search";
+      courseSearch.textContent = "Course Search";
+      item.append(courseSearch);
+      linkColumn?.prepend(item);
+    });
+    nativeHome?.addEventListener("click", nativeHomeClick);
+    const nativeCourseSearchClick = vi.fn((event: Event) =>
+      event.preventDefault(),
+    );
+    document
+      .querySelector<HTMLElement>("#nyuSSSHomeLinksStatic")
+      ?.addEventListener("click", (event) => {
+        if (
+          event.target instanceof HTMLAnchorElement &&
+          event.target.textContent?.trim() === "Course Search"
+        ) {
+          nativeCourseSearchClick(event);
+        }
+      });
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shortcut = document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-course-search-shortcut",
+      );
+
+    expect(shortcut?.dataset.courseSearchMode).toBe("home");
+    shortcut?.click();
+    await settleLifecycle();
+
+    expect(nativeHomeClick).toHaveBeenCalledOnce();
+    expect(nativeCourseSearchClick).toHaveBeenCalledOnce();
     lifecycle.stop();
   });
 
