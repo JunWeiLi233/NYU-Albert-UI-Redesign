@@ -1292,7 +1292,7 @@ export function AppShell({
                   placeholder={
                     isResourceSearchMode
                       ? "Try financial aid, counseling, or ID card"
-                      : "Try “find a course” for one-step class search, then “financial aid” or “housing”"
+                      : "Try “find a course” for one-step class search, “new student,” or “financial aid”"
                   }
                   ref={taskFinderSearchRef}
                   spellCheck={false}

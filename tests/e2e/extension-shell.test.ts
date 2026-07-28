@@ -911,7 +911,7 @@ test("exposes task-first discovery at every supported width and delegates throug
     }
     await expect(taskSearch).toHaveAttribute(
       "placeholder",
-      "Try “find a course” for one-step class search, then “financial aid” or “housing”",
+      "Try “find a course” for one-step class search, “new student,” or “financial aid”",
     );
     await expect(commonTasks).toBeVisible();
     await expect(commonTasks.getByRole("button")).toHaveCount(14);
