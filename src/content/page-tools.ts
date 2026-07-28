@@ -404,6 +404,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "health",
       "health care",
       "health center",
+      "health and counseling",
       "health insurance",
       "health records",
       "health requirements",
