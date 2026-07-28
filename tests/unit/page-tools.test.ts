@@ -92,6 +92,28 @@ describe("page-family native tools", () => {
     );
   });
 
+  it("keeps precise identity language on verified Personal Info tasks", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <div class="is_bb_LinkItem"><a href="#demographic">Demographic Information</a></div>
+        <div class="is_bb_LinkItem"><a href="#address">Edit Addresses</a></div>
+      </section>
+    `;
+
+    const taskTools = getAvailableTaskTools(document);
+    const demographic = taskTools.find(
+      ({ id }) => id === "demographic-information",
+    );
+    const addresses = taskTools.find(({ id }) => id === "addresses");
+
+    expect(demographic?.keywords).toEqual(
+      expect.arrayContaining(["date of birth", "gender", "legal name"]),
+    );
+    expect(addresses?.keywords).toEqual(
+      expect.arrayContaining(["address"]),
+    );
+  });
+
   it("dispatches page-owned clicks without evaluating javascript URLs in the extension", () => {
     const search = document.querySelector<HTMLAnchorElement>('a[href="#search"]');
     search?.setAttribute("href", "javascript:void(0)");

@@ -876,15 +876,23 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
   ],
   personal: [
     {
-      description: "Review official demographic information",
+      description:
+        "Review official demographic information, including legal name, gender, and date of birth",
       id: "demographic-information",
-      keywords: ["personal details", "preferred name"],
+      keywords: [
+        "date of birth",
+        "gender",
+        "legal name",
+        "personal details",
+        "preferred name",
+      ],
       label: "Review Personal Details",
       nativeLabels: ["Demographic Information"],
     },
     {
-      description: "Review or update pronouns in Albert",
+      description: "Review or update pronouns and name pronunciation in Albert",
       id: "pronouns",
+      keywords: ["name pronunciation"],
       label: "Update Pronouns",
       nativeLabels: ["Indicate My Pronouns"],
       taskOnly: true,
@@ -893,6 +901,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       description: "Change or review a saved address in Albert",
       id: "addresses",
       keywords: [
+        "address",
         "change address",
         "mailing address",
         "move",
