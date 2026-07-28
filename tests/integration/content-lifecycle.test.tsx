@@ -322,6 +322,61 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("keeps generic orientation searches on the verified resource directory", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const taskFinderToggle = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Find a task"]',
+    );
+
+    taskFinderToggle?.click();
+    await settleLifecycle();
+
+    const taskFinder = shadowRoot?.querySelector<HTMLElement>(
+      '.ba-task-finder[aria-label="Find a task"]',
+    );
+    const taskSearch = taskFinder?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeUndefined();
+    if (!taskSearch) {
+      lifecycle.stop();
+      return;
+    }
+
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+      taskSearch,
+      "orientation",
+    );
+    taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+    await settleLifecycle();
+
+    expect(taskFinder?.textContent).toContain('1 result for “orientation”');
+    expect(taskFinder?.textContent).toContain(
+      "NYU services, offices, and support",
+    );
+    expect(taskFinder?.textContent).not.toContain("Find visa, immigration");
+
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+      taskSearch,
+      "pre orientation events",
+    );
+    taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+    await settleLifecycle();
+
+    expect(taskFinder?.textContent).toContain(
+      '1 result for “pre orientation events”',
+    );
+    expect(taskFinder?.textContent).toContain("Find visa, immigration");
+
+    lifecycle.stop();
+  });
+
   it("returns the rail to the top when resource search closes", async () => {
     const resourceMenu = document.querySelector<HTMLElement>(
       "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",

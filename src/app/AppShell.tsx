@@ -150,6 +150,19 @@ const NEW_STUDENT_RESOURCE_INTENTS = [
   "orientation",
 ] as const;
 
+const OGS_ORIENTATION_CUES = new Set([
+  "arrival",
+  "f1",
+  "i20",
+  "immigration",
+  "international",
+  "j1",
+  "ogs",
+  "pre",
+  "sevis",
+  "visa",
+]);
+
 function normalizeTaskSearchValue(value: string): string {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -312,6 +325,14 @@ function matchesTaskSearch(
 
 function isNewStudentResourceIntent(query: string): boolean {
   return matchesTaskSearch(query, NEW_STUDENT_RESOURCE_INTENTS);
+}
+
+function isGenericOrientationIntent(query: string): boolean {
+  const words = getTaskSearchWords(query, true);
+  return (
+    words.includes("orientation") &&
+    !words.some((word) => OGS_ORIENTATION_CUES.has(word))
+  );
 }
 
 function PageToolNavigation({
@@ -577,8 +598,12 @@ export function AppShell({
     tool: ResourceToolDefinition,
     query: string,
     allowTypos = false,
-  ): boolean =>
-    matchesTaskSearch(
+  ): boolean => {
+    if (tool.id === "ogs" && isGenericOrientationIntent(query)) {
+      return false;
+    }
+
+    return matchesTaskSearch(
       query,
       [
         tool.label,
@@ -588,6 +613,7 @@ export function AppShell({
       ],
       allowTypos,
     );
+  };
   const filterTaskSearchResults = (query: string) => {
     const findResults = (searchQuery: string, allowTypos = false) => {
       let matchingResourceTools = availableResourceTools.filter((tool) =>
