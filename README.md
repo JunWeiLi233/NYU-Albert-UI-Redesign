@@ -6,9 +6,10 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.99 includes:
+Version 0.5.100 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
+- a visible one-step “Open …” action beside every unique verified search result, so pointer users can activate the same safe handoff without scrolling to the result card;
 - an inline verified-destination cue for single search matches, so Enter
   handoffs remain understandable at 200% zoom even before the result card is
   scrolled into view;

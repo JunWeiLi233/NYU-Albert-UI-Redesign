@@ -1847,14 +1847,27 @@ export function AppShell({
                 filteredResultCount === 1 && (
                   <>
                     {singleTaskSearchResult && (
-                      <p
-                        className="ba-task-finder-search-result"
-                        id={`${taskFinderId}-search-destination`}
-                      >
-                        <strong>Verified destination:</strong>{" "}
-                        {singleTaskSearchResult.label}
-                        <span> — {singleTaskSearchResult.description}</span>
-                      </p>
+                      <>
+                        <p
+                          className="ba-task-finder-search-result"
+                          id={`${taskFinderId}-search-destination`}
+                        >
+                          <strong>Verified destination:</strong>{" "}
+                          {singleTaskSearchResult.label}
+                          <span> — {singleTaskSearchResult.description}</span>
+                        </p>
+                        <button
+                          className="ba-task-finder-search-action"
+                          type="button"
+                          onClick={() =>
+                            openSingleVerifiedTaskResult(
+                              normalizedTaskSearchQuery,
+                            )
+                          }
+                        >
+                          Open {singleTaskSearchResult.label}
+                        </button>
+                      </>
                     )}
                     <p
                       className="ba-task-finder-search-hint"

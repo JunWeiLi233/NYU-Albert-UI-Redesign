@@ -285,14 +285,13 @@ describe("AppShell cross-area task handoffs", () => {
     );
     expect(shadowRoot?.textContent).toContain("Open Course SearchFind classes");
 
+    const openResult = shadowRoot?.querySelector<HTMLButtonElement>(
+      ".ba-task-finder-search-action",
+    );
+    expect(openResult?.textContent).toBe("Open Find classes");
+
     await act(async () => {
-      taskSearch.dispatchEvent(
-        new KeyboardEvent("keydown", {
-          bubbles: true,
-          cancelable: true,
-          key: "Enter",
-        }),
-      );
+      openResult?.click();
     });
 
     expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
