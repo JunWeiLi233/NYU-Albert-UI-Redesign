@@ -914,7 +914,7 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Try “find a course” for one-step class search, then “financial aid” or “housing”",
     );
     await expect(commonTasks).toBeVisible();
-    await expect(commonTasks.getByRole("button")).toHaveCount(13);
+    await expect(commonTasks.getByRole("button")).toHaveCount(14);
     const commonFindClasses = commonTasks.getByRole("button", {
       exact: true,
       name: "Find classes",
@@ -941,6 +941,7 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Course materials",
       "Academic dates",
       "Housing",
+      "New student help",
       "Check holds",
       "When can I register?",
       "To-do list",
@@ -1248,6 +1249,12 @@ test("exposes task-first discovery at every supported width and delegates throug
       document.body.dataset.nativeTaskFinderNavigation = "finances";
     });
   });
+  await page.locator('a[href="/fixture-resources"]').evaluate((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.body.dataset.nativeTaskFinderNavigation = "resources";
+    });
+  });
   await page.locator('a[href="/fixture-grades"]').evaluate((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
@@ -1328,6 +1335,16 @@ test("exposes task-first discovery at every supported width and delegates throug
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-task-finder-resource",
     "brightspace",
+  );
+  await expect(taskFinder).toBeHidden();
+
+  await taskFinderToggle.press("Enter");
+  await commonTasks
+    .getByRole("button", { exact: true, name: "New student help" })
+    .click();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-task-finder-navigation",
+    "resources",
   );
   await expect(taskFinder).toBeHidden();
 

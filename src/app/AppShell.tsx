@@ -49,6 +49,7 @@ const TASK_SEARCH_SUGGESTIONS = [
   { label: "Course materials", query: "course materials" },
   { label: "Academic dates", query: "academic calendar" },
   { label: "Housing", query: "housing" },
+  { label: "New student help", query: "new student" },
   { label: "Check holds", query: "check holds" },
   { label: "When can I register?", query: "when can I register" },
   { label: "To-do list", query: "to do list" },
