@@ -50,11 +50,12 @@ describe("page-family native tools", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
-  it("preserves native tool handlers while blocking javascript URL evaluation", () => {
+  it("dispatches page-owned clicks without evaluating javascript URLs in the extension", () => {
     const search = document.querySelector<HTMLAnchorElement>('a[href="#search"]');
     search?.setAttribute("href", "javascript:void(0)");
     const click = vi.fn((event: Event) => {
-      expect(event.defaultPrevented).toBe(true);
+      expect(event.defaultPrevented).toBe(false);
+      event.preventDefault();
     });
     search?.addEventListener("click", click);
 

@@ -29,6 +29,17 @@ describe("extension manifest", () => {
         ],
         run_at: "document_idle",
       }),
+      expect.objectContaining({
+        all_frames: true,
+        js: ["src/content/page-world-bridge.ts"],
+        matches: [
+          "https://sis.portal.nyu.edu/*",
+          "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL*",
+          "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL*",
+        ],
+        run_at: "document_start",
+        world: "MAIN",
+      }),
     ]);
     // Every sis.nyu.edu match/host must stay scoped to the two proven Class
     // Search component paths — never a broad sis.nyu.edu/* host grant.
