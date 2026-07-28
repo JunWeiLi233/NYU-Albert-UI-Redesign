@@ -4706,6 +4706,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
 
   for (const query of [
     "I need health insurance help",
+    "health and counseling",
     "I need mental health counseling",
     "Where do I submit immunization records?",
     "I need a medical appointment",
