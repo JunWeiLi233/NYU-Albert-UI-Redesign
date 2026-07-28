@@ -1804,6 +1804,10 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Other Resources — NYU services, offices, and support",
     ],
     [
+      "Time Management Guide",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
       "Where do I see my tuition bill",
       "Open Finances — Check balances, pay tuition, view bills, and manage financial aid",
     ],
@@ -4744,6 +4748,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "student centers and spaces",
     "gyms and campus recreation",
     "student tech guide",
+    "Printing on Campus",
     "student tech centers",
     "shuttle",
     "accessibility and accommodations",
@@ -4778,6 +4783,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "off campus living",
     "summer housing",
     "dining on campus",
+    "Dining on Campus and Meal Plans",
     "basic needs assistance",
   ]) {
     await resourceSearchInput.fill(query);
