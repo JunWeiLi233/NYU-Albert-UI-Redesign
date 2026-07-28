@@ -383,6 +383,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "i 20",
       "i 94",
       "international student visa",
+      "international student services",
       "office of global services",
       "visa information and programs",
       "student visa and immigration",

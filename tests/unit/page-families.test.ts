@@ -81,6 +81,7 @@ describe("page-family task vocabulary", () => {
     expect(PAGE_FAMILY_DEFINITIONS.resources.keywords).toEqual(
       expect.arrayContaining([
         "student support",
+        "financial aid and registration",
         "technology help",
         "wifi",
         "advice for your first semester",
@@ -123,6 +124,7 @@ describe("page-family task vocabulary", () => {
         "school id",
         "student link",
         "studentlink",
+        "student activities board",
         "academic services",
         "communities and groups",
         "how we engage",

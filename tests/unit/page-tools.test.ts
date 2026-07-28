@@ -890,6 +890,7 @@ describe("page-family native tools", () => {
         "international student hub",
         "troubleshooting submitting an online form",
         "get a us visa",
+        "international student services",
         "transfer to nyu",
         "plan your trip",
         "pre orientation",

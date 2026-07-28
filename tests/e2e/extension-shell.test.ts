@@ -1750,6 +1750,14 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Other Resources — NYU services, offices, and support",
     ],
     [
+      "financial aid and registration",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "student activities board",
+      "Open Student Life",
+    ],
+    [
       "student guides",
       "Open Other Resources — NYU services, offices, and support",
     ],
@@ -1921,6 +1929,7 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["International Student Hub", "Open OGS"],
     ["Troubleshooting Submitting an Online Form", "Open OGS"],
     ["Get a US Visa", "Open OGS"],
+    ["International Student Services", "Open OGS"],
     ["Transfer to NYU", "Open OGS"],
     ["Plan Your Trip", "Open OGS"],
     ["Pre-Orientation Events", "Open OGS"],
