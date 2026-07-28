@@ -94,6 +94,7 @@ function isCourseSearchRadio(control: HTMLInputElement): boolean {
     control.labels?.[0]?.textContent,
     control.labels?.[1]?.textContent,
     control.parentElement?.textContent,
+    control.parentElement?.parentElement?.textContent,
   ];
   return labels.some((label) => normalizeText(label) === "class search");
 }
@@ -144,7 +145,7 @@ export function advanceToNativeClassSearch(document: Document): boolean {
     return false;
   }
 
-  activateNativeControl(control);
+  activateNativeControl(control, { allowJavascriptUrl: true });
   return true;
 }
 

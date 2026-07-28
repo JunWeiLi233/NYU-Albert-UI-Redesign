@@ -74,6 +74,25 @@ describe("course-search handoff", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
+  it("recognizes PeopleSoft's nested radio label structure", () => {
+    document.body.innerHTML = `
+      <h3>Find Classes to add to your Enrollment cart using the options below</h3>
+      <div class="ps_box-field" id="win0divFIND_OPTION_1">
+        <div class="ps_box-control" id="win0divFIND_OPTION_1ctrl">
+          <input type="radio" name="FIND_OPTION_1" checked>
+        </div>
+        <span>Class Search</span>
+      </div>
+      <a href="#native-search" role="button">Search</a>
+    `;
+    const search = document.querySelector<HTMLAnchorElement>("a");
+    const click = vi.fn((event: Event) => event.preventDefault());
+    search?.addEventListener("click", click);
+
+    expect(advanceToNativeClassSearch(document)).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
   it("fails open when the native mode is unchecked or ambiguous", () => {
     loadNativeLauncher({ checked: false });
     expect(advanceToNativeClassSearch(document)).toBe(false);

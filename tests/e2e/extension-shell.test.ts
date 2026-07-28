@@ -5556,7 +5556,6 @@ test("advances Find Classes through nested portal frames after delayed native co
           </body>
         </html>`,
       contentType: "text/html; charset=utf-8",
-      headers: { "content-security-policy": "default-src 'none'" },
     }),
   );
   await page.goto(PORTAL_URL);
@@ -5587,12 +5586,8 @@ test("advances Find Classes through nested portal frames after delayed native co
       body.insertAdjacentHTML(
         "beforeend",
         `<span><input type="radio" checked>Class Search</span>
-         <a href="#native-search"><img alt="Search" src="/native/search.png"></a>`,
+         <a href="javascript:document.body.dataset.nativeSearchActivated='true'">Search</a>`,
       );
-      body.querySelector("a")?.addEventListener("click", (event) => {
-        event.preventDefault();
-        body.dataset.nativeSearchActivated = "true";
-      });
     }, 600);
   });
 

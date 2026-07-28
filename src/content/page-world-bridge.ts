@@ -1,7 +1,9 @@
 const ACTIVATION_ATTRIBUTE = "data-better-albert-native-activation";
 const ACTIVATION_MESSAGE = "better-albert:activate-native-control";
 
-function isActivationMessage(value: unknown): value is { token: string } {
+function isActivationMessage(
+  value: unknown,
+): value is { token: string; allowJavascriptUrl?: boolean } {
   return Boolean(
     value &&
       typeof value === "object" &&
@@ -9,11 +11,16 @@ function isActivationMessage(value: unknown): value is { token: string } {
       value.type === ACTIVATION_MESSAGE &&
       "token" in value &&
       typeof value.token === "string" &&
-      value.token.length > 0,
+      value.token.length > 0 &&
+      (!("allowJavascriptUrl" in value) ||
+        typeof value.allowJavascriptUrl === "boolean"),
   );
 }
 
-function activateNativeControlInPageWorld(token: string): void {
+function activateNativeControlInPageWorld(
+  token: string,
+  allowJavascriptUrl: boolean,
+): void {
   const control = Array.from(
     document.querySelectorAll<HTMLElement>(
       `[${ACTIVATION_ATTRIBUTE}]`,
@@ -25,6 +32,11 @@ function activateNativeControlInPageWorld(token: string): void {
   }
 
   control.removeAttribute(ACTIVATION_ATTRIBUTE);
+  if (allowJavascriptUrl) {
+    control.click();
+    return;
+  }
+
   const click = new MouseEvent("click", {
     bubbles: true,
     cancelable: true,
@@ -41,6 +53,9 @@ window.addEventListener("message", (event: MessageEvent): void => {
   }
 
   if (isActivationMessage(event.data)) {
-    activateNativeControlInPageWorld(event.data.token);
+    activateNativeControlInPageWorld(
+      event.data.token,
+      event.data.allowJavascriptUrl === true,
+    );
   }
 });
