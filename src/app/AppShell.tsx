@@ -1859,6 +1859,7 @@ export function AppShell({
                         <button
                           className="ba-task-finder-search-action"
                           type="button"
+                          aria-describedby={`${taskFinderId}-search-destination ${taskFinderId}-search-hint`}
                           onClick={() =>
                             openSingleVerifiedTaskResult(
                               normalizedTaskSearchQuery,

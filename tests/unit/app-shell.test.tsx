@@ -289,6 +289,12 @@ describe("AppShell cross-area task handoffs", () => {
       ".ba-task-finder-search-action",
     );
     expect(openResult?.textContent).toBe("Open Find classes");
+    expect(openResult?.getAttribute("aria-describedby")).toContain(
+      "search-destination",
+    );
+    expect(openResult?.getAttribute("aria-describedby")).toContain(
+      "search-hint",
+    );
 
     await act(async () => {
       openResult?.click();
