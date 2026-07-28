@@ -224,6 +224,29 @@ function matchesTaskSearchWord(
   );
 }
 
+function hasContiguousTaskSearchPhrase(
+  queryWords: readonly string[],
+  searchableValue: string,
+  allowTypos: boolean,
+): boolean {
+  if (queryWords.length < 2) {
+    return true;
+  }
+
+  const searchableWords = searchableValue
+    .split(/\s+/)
+    .filter((word) => !TASK_SEARCH_IGNORED_WORDS.has(word));
+  return searchableWords.some((_, startIndex) =>
+    queryWords.every((queryWord, offset) => {
+      const candidateWord = searchableWords[startIndex + offset];
+      return (
+        candidateWord !== undefined &&
+        matchesTaskSearchWord(queryWord, candidateWord, allowTypos)
+      );
+    }),
+  );
+}
+
 function matchesTaskSearch(
   query: string,
   values: readonly string[],
@@ -242,8 +265,13 @@ function matchesTaskSearch(
   }
   return values.some((value) => {
     const searchableValue = normalizeTaskSearchValue(value);
-    return queryWords.every((word) =>
+    const looseMatch = queryWords.every((word) =>
       matchesTaskSearchWord(word, searchableValue, allowTypos),
+    );
+    return (
+      looseMatch &&
+      (queryWords.length !== 2 ||
+        hasContiguousTaskSearchPhrase(queryWords, searchableValue, allowTypos))
     );
   });
 }
