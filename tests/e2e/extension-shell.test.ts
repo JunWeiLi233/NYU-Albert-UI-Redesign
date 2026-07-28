@@ -4789,6 +4789,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   );
   await expect(nativeOverlay).toBeHidden();
   await expect(otherResourcesToggle).toHaveAttribute("aria-expanded", "false");
+  await expect(homeResourceDirectory).toBeFocused();
   await expect(
     page.getByRole("button", { exact: true, name: "Find a task" }),
   ).toBeVisible();

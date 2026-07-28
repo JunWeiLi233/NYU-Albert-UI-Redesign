@@ -442,6 +442,60 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("returns focus to the resource opener after Escape closes resource search", async () => {
+    const resourceMenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const resourceTrigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    if (resourceTrigger) {
+      resourceTrigger.onclick = (event) => {
+        event.preventDefault();
+        const isOpening = resourceMenu?.hasAttribute("hidden") ?? false;
+        resourceMenu?.toggleAttribute("hidden", !isOpening);
+        resourceTrigger.classList.toggle("megaMenuSelected", isOpening);
+      };
+    }
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const resourceOpener = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
+    ).find((button) => button.getAttribute("aria-label") === "Browse NYU resources");
+
+    expect(resourceOpener).not.toBeUndefined();
+    resourceOpener?.click();
+    await settleLifecycle();
+
+    const resourceSearch = shadowRoot?.querySelector<HTMLElement>(
+      '.ba-task-finder[data-resource-search="true"]',
+    );
+    expect(resourceSearch?.hidden).toBe(false);
+
+    const resourceSearchInput = resourceSearch?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    resourceSearchInput?.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        bubbles: true,
+        cancelable: true,
+        key: "Escape",
+      }),
+    );
+    await settleLifecycle();
+
+    expect(shadowRoot?.activeElement?.getAttribute("aria-label")).toBe(
+      "Browse NYU resources",
+    );
+    lifecycle.stop();
+  });
+
   it("does not mount when disabled and removes all presentation when disabled later", async () => {
     const disabledLifecycle = await startContentScript({
       document,

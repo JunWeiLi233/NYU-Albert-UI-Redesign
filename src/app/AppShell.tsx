@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
 } from "react";
 
 import {
@@ -283,6 +284,7 @@ function PageToolNavigation({
   onOpenTool,
   pageLabel,
   contextualResourceShortcut,
+  resourceDirectoryToggleRef,
   tools,
 }: {
   contextualResourceShortcut?: {
@@ -296,6 +298,7 @@ function PageToolNavigation({
   onOpenResource: (toolId: PageToolId) => void;
   onOpenTool: (toolId: PageToolId) => void;
   pageLabel: string;
+  resourceDirectoryToggleRef?: RefObject<HTMLButtonElement | null>;
   tools: readonly PageToolDefinition[];
 }) {
   const renderContextualResourceShortcut = (
@@ -392,6 +395,7 @@ function PageToolNavigation({
             type="button"
             aria-describedby="ba-home-resource-description"
             aria-label="Browse NYU resources"
+            ref={resourceDirectoryToggleRef}
             onClick={onOpenResourceDirectory}
           >
             <span className="ba-tool-copy">
@@ -435,6 +439,9 @@ export function AppShell({
   const taskFinderRef = useRef<HTMLElement>(null);
   const taskFinderSearchRef = useRef<HTMLInputElement>(null);
   const taskFinderToggleRef = useRef<HTMLButtonElement>(null);
+  const resourceDirectoryToggleRef = useRef<HTMLButtonElement>(null);
+  const resourceNavigationToggleRef = useRef<HTMLButtonElement>(null);
+  const resourceReturnFocusRef = useRef<(() => void) | null>(null);
   const taskAreaHeadingRef = useRef<HTMLHeadingElement>(null);
   const taskShortcutHeadingRef = useRef<HTMLHeadingElement>(null);
   const resourceSectionHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -787,6 +794,10 @@ export function AppShell({
   const handleTaskFinderNavigation = (
     pageFamily: PrimaryPageFamily,
   ): void => {
+    if (pageFamily === "resources" && !isNativeResourcesOpen) {
+      resourceReturnFocusRef.current = () =>
+        taskFinderToggleRef.current?.focus({ preventScroll: true });
+    }
     if (
       pageFamily === currentPageFamily &&
       !delegatesCurrentAreaNavigation
@@ -894,6 +905,12 @@ export function AppShell({
     onNavigate(pageFamily);
   };
 
+  const openResourceDirectory = (): void => {
+    resourceReturnFocusRef.current = () =>
+      resourceDirectoryToggleRef.current?.focus({ preventScroll: true });
+    handlePrimaryNavigation("resources");
+  };
+
   const handlePrimaryTool = (toolId: PageToolId): void => {
     closeTaskFinder();
     onOpenTool(toolId);
@@ -921,8 +938,18 @@ export function AppShell({
 
   const dismissTaskFinder = (): void => {
     if (isResourceSearchMode) {
+      const returnFocus = resourceReturnFocusRef.current;
       closeTaskFinder();
       onNavigate("resources");
+      const ownerWindow = taskFinderToggleRef.current?.ownerDocument.defaultView;
+      if (ownerWindow) {
+        ownerWindow.setTimeout(() => {
+          returnFocus?.();
+        }, 0);
+      } else {
+        returnFocus?.();
+      }
+      resourceReturnFocusRef.current = null;
       return;
     }
 
@@ -1087,8 +1114,8 @@ export function AppShell({
             isHomeStarter={currentPageFamily === "home"}
             {...(availablePageFamilies.includes("resources")
               ? {
-                  onOpenResourceDirectory: () =>
-                    handlePrimaryNavigation("resources"),
+                  onOpenResourceDirectory: openResourceDirectory,
+                  resourceDirectoryToggleRef,
                 }
               : {})}
             onOpenResource={handlePrimaryResource}
@@ -1136,7 +1163,16 @@ export function AppShell({
                       : `Open ${definition.label} using Albert navigation`
                     : `${definition.label} is not available in this Albert view`
                 }
-                onClick={() => handlePrimaryNavigation(pageFamily)}
+                ref={isResourcesToggle ? resourceNavigationToggleRef : undefined}
+                onClick={() => {
+                  if (isResourcesToggle && !isNativeResourcesOpen) {
+                    resourceReturnFocusRef.current = () =>
+                      resourceNavigationToggleRef.current?.focus({
+                        preventScroll: true,
+                      });
+                  }
+                  handlePrimaryNavigation(pageFamily);
+                }}
               >
                 <span className="ba-nav-copy">
                   <span className="ba-nav-label-text">
