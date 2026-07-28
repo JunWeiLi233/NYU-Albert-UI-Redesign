@@ -63,6 +63,10 @@ describe("AppShell cross-area task handoffs", () => {
       await Promise.resolve();
     });
     expect(shadowRoot?.textContent).toContain('1 result for “find a course”');
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Find classes — Open Course Search",
+    );
+    expect(shadowRoot?.textContent).toContain("Open Course SearchFind classes");
 
     await act(async () => {
       taskSearch.dispatchEvent(

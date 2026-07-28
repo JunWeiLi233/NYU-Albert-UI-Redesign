@@ -583,6 +583,10 @@ export function AppShell({
             }
           : undefined
       : undefined;
+  const isCrossAreaCourseSearchIntent = (query: string): boolean =>
+    courseSearchShortcut?.mode === "home" &&
+    !matchesTaskSearch(query, COURSE_SEARCH_NON_COURSE_INTENTS) &&
+    matchesTaskSearch(query, COURSE_SEARCH_KEYWORDS);
   const matchesFamily = (
     pageFamily: PrimaryPageFamily,
     query: string,
@@ -834,6 +838,15 @@ export function AppShell({
           const pageFamily = filteredTaskFamilies[0];
           if (pageFamily) {
             const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
+            if (
+              pageFamily === "home" &&
+              isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery)
+            ) {
+              return {
+                description: "Open Course Search",
+                label: "Find classes",
+              };
+            }
             return {
               description: definition.navigationHint,
               label: definition.label,
@@ -954,11 +967,6 @@ export function AppShell({
       taskFinderToggleRef.current?.focus();
     }
   };
-
-  const isCrossAreaCourseSearchIntent = (query: string): boolean =>
-    courseSearchShortcut?.mode === "home" &&
-    !matchesTaskSearch(query, COURSE_SEARCH_NON_COURSE_INTENTS) &&
-    matchesTaskSearch(query, COURSE_SEARCH_KEYWORDS);
 
   const toggleTaskFinder = (): void => {
     if (isTaskFinderOpen) {
@@ -1797,6 +1805,15 @@ export function AppShell({
                     {filteredTaskFamilies.map((pageFamily) => {
                       const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
                       const descriptionId = `${taskFinderId}-${pageFamily}`;
+                      const isCourseSearchArea =
+                        pageFamily === "home" &&
+                        isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery);
+                      const areaLabel = isCourseSearchArea
+                        ? "Find classes"
+                        : definition.label;
+                      const areaDescription = isCourseSearchArea
+                        ? "Open Course Search"
+                        : definition.navigationHint;
 
                       return (
                         <button
@@ -1805,7 +1822,7 @@ export function AppShell({
                           aria-current={
                             currentPageFamily === pageFamily ? "page" : undefined
                           }
-                          aria-label={`Open ${definition.label} — ${definition.navigationHint}`}
+                          aria-label={`Open ${areaLabel} — ${areaDescription}`}
                           key={pageFamily}
                           onClick={() =>
                             handleTaskFinderNavigation(
@@ -1815,9 +1832,10 @@ export function AppShell({
                           }
                         >
                           <span className="ba-task-finder-item-copy">
-                            <strong>{definition.navigationHint}</strong>
+                            <strong>{areaDescription}</strong>
                             <span id={descriptionId}>
-                              {definition.label} · Albert area
+                              {areaLabel}
+                              {isCourseSearchArea ? "" : " · Albert area"}
                             </span>
                           </span>
                           <span aria-hidden="true">›</span>

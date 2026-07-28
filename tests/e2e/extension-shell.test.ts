@@ -3320,7 +3320,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       await expect(
         academicTaskFinder.getByRole("button", {
           exact: true,
-          name: "Open Home — Find classes, check holds, and review your schedule",
+          name: "Open Find classes — Open Course Search",
         }),
       ).toBeVisible();
       await academicTaskSearch.fill("financial aid status");
