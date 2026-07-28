@@ -828,6 +828,9 @@ describe("page-family native tools", () => {
     const ogs = getAvailableResourceTools(document).find(
       ({ id }) => id === "ogs",
     );
+    const wasserman = getAvailableResourceTools(document).find(
+      ({ id }) => id === "wasserman",
+    );
     expect(nyuConnect?.keywords).toContain("student success");
     expect(nyuConnect?.keywords).toEqual(
       expect.arrayContaining([
@@ -838,6 +841,9 @@ describe("page-family native tools", () => {
     expect(studentServices?.keywords).not.toContain("student success");
     expect(studentServices?.keywords).toContain("office of the dean of students");
     expect(housing?.keywords).toContain("on campus living");
+    expect(housing?.keywords).toEqual(
+      expect.arrayContaining(["resident assistant", "resident assistant application"]),
+    );
     expect(campusResources?.keywords).toEqual(
       expect.arrayContaining([
         "student centers and spaces",
@@ -848,6 +854,7 @@ describe("page-family native tools", () => {
         "accessibility specialist",
         "group fitness",
         "public transportation discounts",
+        "green workplace",
         "students with disabilities",
       ]),
     );
@@ -863,6 +870,7 @@ describe("page-family native tools", () => {
         "student visa immigration",
       ]),
     );
+    expect(wasserman?.keywords).toContain("social impact career hub");
     expect(openNativeResourceTool(document, "wellness-center")).toBe(true);
     const studentLife = getAvailableResourceTools(document).find(
       ({ id }) => id === "student-life",
@@ -881,6 +889,14 @@ describe("page-family native tools", () => {
         "students with children",
         "centers for connection and community",
         "mindfulnyu",
+        "find my club",
+        "music ensembles",
+        "center for student life",
+        "leadership launch",
+        "student leadership week",
+        "project outreach",
+        "nyu service fair",
+        "day of service",
       ]),
     );
     expect(

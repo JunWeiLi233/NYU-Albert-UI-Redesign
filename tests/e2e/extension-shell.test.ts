@@ -1800,6 +1800,20 @@ test("exposes task-first discovery at every supported width and delegates throug
       "centers for connection and community",
       "Open Student Life",
     ],
+    ["find my club", "Open Student Life"],
+    ["music ensembles", "Open Student Life"],
+    ["center for student life", "Open Student Life"],
+    ["leadership launch", "Open Student Life"],
+    ["student leadership week", "Open Student Life"],
+    ["project outreach", "Open Student Life"],
+    ["nyu service fair", "Open Student Life"],
+    [
+      "voting info for students",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    ["resident assistant application", "Open Housing"],
+    ["social impact career hub", "Open Wasserman"],
+    ["green workplace", "Open Campus Resources"],
     [
       "housing and dining",
       "Open Other Resources — NYU services, offices, and support",
@@ -4599,6 +4613,14 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "global spiritual life",
     "MindfulNYU",
     "Centers for Connection and Community",
+    "Find My Club",
+    "Music Ensembles",
+    "Center for Student Life",
+    "Leadership Launch",
+    "Student Leadership Week",
+    "Project Outreach",
+    "NYU Service Fair",
+    "Day of Service",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -4831,6 +4853,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "find a job or internship",
     "connect with alumni",
     "entrepreneurship resources",
+    "social impact career hub",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -4882,6 +4905,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "accessibility and accommodations",
     "athletics and fitness",
     "sustainability",
+    "green workplace",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -4913,6 +4937,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "dining on campus",
     "Dining on Campus and Meal Plans",
     "basic needs assistance",
+    "resident assistant application",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
