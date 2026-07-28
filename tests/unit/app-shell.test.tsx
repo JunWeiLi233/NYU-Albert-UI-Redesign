@@ -454,6 +454,8 @@ describe("AppShell cross-area task handoffs", () => {
             "find course offerings",
             "look for classes",
             "search for classes",
+            "what classes are available",
+            "which courses are offered",
           ],
           label: "Find Classes",
           nativeLabels: ["Course Search"],
@@ -481,6 +483,8 @@ describe("AppShell cross-area task handoffs", () => {
       "find course offerings",
       "look for classes",
       "search for classes",
+      "what classes are available",
+      "which courses are offered",
     ]) {
       await act(async () => {
         finderToggle?.click();
@@ -519,7 +523,7 @@ describe("AppShell cross-area task handoffs", () => {
       });
     }
 
-    expect(onOpenTool).toHaveBeenCalledTimes(4);
+    expect(onOpenTool).toHaveBeenCalledTimes(6);
     expect(onOpenTool).toHaveBeenCalledWith("course-search");
   });
 
