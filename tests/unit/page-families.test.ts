@@ -118,6 +118,7 @@ describe("page-family task vocabulary", () => {
         "new student",
         "first year student",
         "newly admitted student",
+        "nyu engage find clubs organizations and events",
         "welcome week",
         "first semester",
         "first semester advice",

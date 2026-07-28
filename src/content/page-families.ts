@@ -304,6 +304,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "new student",
       "new student orientation",
       "newly admitted student",
+      "nyu engage find clubs organizations and events",
       "orientation",
       "parking",
       "printing",

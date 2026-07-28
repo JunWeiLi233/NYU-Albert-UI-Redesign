@@ -1920,6 +1920,10 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Bobst Library", "Open Campus Resources"],
     ["Studying Away", "Open Office of Global Programs"],
     [
+      "NYU Engage: Find Clubs, Organizations, and Events",
+      "Open Student Life",
+    ],
+    [
       "undergraduate advisement",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
     ],
