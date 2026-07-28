@@ -181,6 +181,20 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).toContain(
       '0 results for “student support”',
     );
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "need help with NYU",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '0 results for “need help with NYU”',
+    );
+
     const popularStarter = Array.from(
       shadowRoot?.querySelectorAll<HTMLButtonElement>(
         ".ba-task-finder-common-task",
@@ -193,5 +207,98 @@ describe("AppShell cross-area task handoffs", () => {
       await Promise.resolve();
     });
     expect(onOpenResource).toHaveBeenCalledWith("academic-calendar");
+  });
+
+  it("resolves the full need-help phrase only to Student Services when verified", async () => {
+    document.body.innerHTML = `
+      <nav id="IS_BB_HEADER_MENU">
+        <li
+          id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+          class="megaMenuSelected"
+          onclick="toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected');"
+        >
+          <a href="#">Other Resources</a>
+        </li>
+        <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
+          <a href="#student-services">Student Services</a>
+        </div>
+      </nav>
+    `;
+
+    const onOpenResource = vi.fn();
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "wellbeing-campus",
+          description: "Find general student services and support",
+          featured: false,
+          id: "student-services",
+          keywords: [
+            "help with nyu",
+            "need help with nyu",
+            "student support",
+          ],
+          label: "Student Services",
+          nativeLabels: ["Student Services"],
+        },
+        {
+          category: "academic-records",
+          description: "Check NYU academic dates and deadlines",
+          featured: true,
+          id: "academic-calendar",
+          keywords: ["academic calendar", "dates"],
+          label: "Academic Calendar",
+          nativeLabels: ["Academic Calendar"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "resources",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource,
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "need help with NYU",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “need help with NYU”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Student Services",
+    );
+
+    await act(async () => {
+      taskSearch.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "Enter",
+        }),
+      );
+    });
+
+    expect(onOpenResource).toHaveBeenCalledWith("student-services");
   });
 });

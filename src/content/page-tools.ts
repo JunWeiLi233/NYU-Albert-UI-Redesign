@@ -664,6 +664,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "general help",
       "office of the dean of students",
       "help with nyu",
+      "need help with nyu",
       "need help",
       "student help",
       "student services",

@@ -351,6 +351,13 @@ function isGenericOrientationIntent(query: string): boolean {
   );
 }
 
+function isConversationalSupportQuery(query: string): boolean {
+  const words = getTaskSearchWords(query);
+  return (
+    words.length >= 3 && words.includes("need") && words.includes("help")
+  );
+}
+
 function PageToolNavigation({
   isHomeStarter = false,
   onOpenResourceDirectory,
@@ -623,16 +630,29 @@ export function AppShell({
       return false;
     }
 
-    return matchesTaskSearch(
-      query,
-      [
-        tool.label,
-        tool.description,
-        RESOURCE_CATEGORY_DEFINITIONS[tool.category].label,
-        ...tool.keywords,
-      ],
-      allowTypos,
-    );
+    const values = [
+      tool.label,
+      tool.description,
+      RESOURCE_CATEGORY_DEFINITIONS[tool.category].label,
+      ...tool.keywords,
+    ];
+    if (!isConversationalSupportQuery(query)) {
+      return matchesTaskSearch(query, values, allowTypos);
+    }
+
+    const queryWords = getTaskSearchWords(query);
+    return values.some((value) => {
+      const searchableValue = normalizeTaskSearchValue(value);
+      return (
+        queryWords.every((word) =>
+          matchesTaskSearchWord(word, searchableValue, allowTypos),
+        ) && hasContiguousTaskSearchPhrase(
+          queryWords,
+          searchableValue,
+          allowTypos,
+        )
+      );
+    });
   };
   const filterTaskSearchResults = (query: string) => {
     const findResults = (searchQuery: string, allowTypos = false) => {
@@ -733,6 +753,13 @@ export function AppShell({
       taskFamilies.length + taskTools.length + resourceTools.length;
     const strictResultCount = countResults(strictResults);
     if (query.length === 0 || strictResultCount > 0) {
+      return strictResults;
+    }
+
+    // Keep a complete “need help …” request precise. Removing the support
+    // words would reduce a missing Student Services anchor to a broad “nyu”
+    // query and surface unrelated links instead of an honest fallback.
+    if (isConversationalSupportQuery(query)) {
       return strictResults;
     }
 

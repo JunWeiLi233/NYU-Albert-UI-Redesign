@@ -331,3 +331,5 @@ Capture and compare full-page screenshots at 400, 768, 899, 900, 1199, 1200, 143
 - Do the 900px navigation and 1200px display-type switches match the live behavior?
 - Are buttons 3px-radius controls, either filled violet or cleanly outlined?
 - Are focus, contrast, alt text, reduced motion, and semantic structure preserved?
+- Does “need help with NYU” resolve only to an exact Student Services anchor,
+  with no unrelated resource matches when that anchor is absent?
