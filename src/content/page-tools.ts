@@ -836,6 +836,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       id: "bursar-balance",
       keywords: [
         "amount due",
+        "check balance",
         "how much owe",
         "tuition balance",
         "what owe",

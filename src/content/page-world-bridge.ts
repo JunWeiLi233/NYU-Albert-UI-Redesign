@@ -25,14 +25,14 @@ function activateNativeControlInPageWorld(token: string): void {
   }
 
   control.removeAttribute(ACTIVATION_ATTRIBUTE);
-  control.dispatchEvent(
-    new MouseEvent("click", {
-      bubbles: true,
-      cancelable: true,
-      composed: true,
-      view: window,
-    }),
-  );
+  const click = new MouseEvent("click", {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    view: window,
+  });
+  click.preventDefault();
+  control.dispatchEvent(click);
 }
 
 window.addEventListener("message", (event: MessageEvent): void => {

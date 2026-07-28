@@ -13,7 +13,8 @@ export type NativeControl =
 /**
  * Activates an existing Albert control without evaluating javascript: URLs in
  * the extension world. Those anchors are delegated through the page-world
- * bridge so Albert's own handler and default action run under the page CSP.
+ * bridge so Albert's own handler runs under the page CSP while the
+ * javascript: URL default action stays suppressed.
  */
 export function activateNativeControl(control: NativeControl): void {
   if (

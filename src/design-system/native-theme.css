@@ -133,6 +133,7 @@ html[data-better-albert-task-finder-open][data-better-albert-enabled][data-bette
 html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header]
   #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open] {
   overflow: hidden !important;
+  pointer-events: none !important;
 }
 
 html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header]

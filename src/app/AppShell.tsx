@@ -94,6 +94,7 @@ const TASK_SEARCH_IGNORED_WORDS = new Set([
   "a",
   "am",
   "an",
+  "and",
   "are",
   "can",
   "do",
@@ -445,6 +446,7 @@ export function AppShell({
   const resourceDirectoryToggleRef = useRef<HTMLButtonElement>(null);
   const resourceNavigationToggleRef = useRef<HTMLButtonElement>(null);
   const resourceReturnFocusRef = useRef<(() => void) | null>(null);
+  const previousNativeResourcesOpenRef = useRef(isNativeResourcesOpen);
   const taskAreaHeadingRef = useRef<HTMLHeadingElement>(null);
   const taskShortcutHeadingRef = useRef<HTMLHeadingElement>(null);
   const resourceSectionHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -466,6 +468,25 @@ export function AppShell({
       primaryNavigation.scrollTop = 0;
     }
   }, [currentPageFamily, isResourceSearchMode]);
+
+  useEffect(() => {
+    const wasNativeResourcesOpen = previousNativeResourcesOpenRef.current;
+    previousNativeResourcesOpenRef.current = isNativeResourcesOpen;
+    if (!wasNativeResourcesOpen || isNativeResourcesOpen) {
+      return;
+    }
+
+    const returnFocus = resourceReturnFocusRef.current;
+    resourceReturnFocusRef.current = null;
+    const ownerWindow = resourceNavigationToggleRef.current?.ownerDocument
+      .defaultView;
+    if (!ownerWindow) {
+      returnFocus?.();
+      return;
+    }
+
+    ownerWindow.setTimeout(() => returnFocus?.(), 0);
+  }, [isNativeResourcesOpen]);
 
   const availableTaskFamilies = PRIMARY_PAGE_FAMILIES.filter((pageFamily) =>
     availablePageFamilies.includes(pageFamily),
@@ -531,28 +552,55 @@ export function AppShell({
     );
   const filterTaskSearchResults = (query: string) => {
     const findResults = (searchQuery: string, allowTypos = false) => {
-      const matchingResourceTools = availableResourceTools.filter((tool) =>
+      let matchingResourceTools = availableResourceTools.filter((tool) =>
         matchesResource(tool, searchQuery, allowTypos),
       );
+      if (allowTypos && matchingResourceTools.length > 1) {
+        const queryWords = getTaskSearchWords(searchQuery);
+        const queryWord = queryWords.length === 1 ? queryWords[0] : undefined;
+        if (queryWord) {
+          const typoMatches = matchingResourceTools.filter((tool) =>
+            normalizeTaskSearchValue(tool.label)
+              .split(" ")
+              .some((labelWord) =>
+                isWithinOneTaskSearchEdit(queryWord, labelWord),
+              ),
+          );
+          if (typoMatches.length > 0) {
+            const shortestLabel = Math.min(
+              ...typoMatches.map((tool) =>
+                normalizeTaskSearchValue(tool.label).split(" ").length,
+              ),
+            );
+            matchingResourceTools = typoMatches.filter(
+              (tool) =>
+                normalizeTaskSearchValue(tool.label).split(" ").length ===
+                shortestLabel,
+            );
+          }
+        }
+      }
       const meaningfulQuery = getTaskSearchWords(searchQuery, true).join(" ");
-      const exactResourceTools = matchingResourceTools.filter(
+      const exactResourceLabelTools = matchingResourceTools.filter(
         (tool) =>
-          [tool.label, ...tool.keywords].some(
-            (value) => normalizeTaskSearchValue(value) === meaningfulQuery,
-          ),
+          normalizeTaskSearchValue(tool.label) === meaningfulQuery,
+      );
+      const exactResourceAliasTools = matchingResourceTools.filter((tool) =>
+        [tool.label, ...tool.keywords].some(
+          (value) => normalizeTaskSearchValue(value) === meaningfulQuery,
+        ),
       );
       const resourceTools =
-        exactResourceTools.length > 0
-          ? exactResourceTools
+        exactResourceLabelTools.length > 0
+          ? exactResourceLabelTools
           : matchingResourceTools;
 
       // An exact official resource label is already an actionable destination.
       // Prefer it over a broad area match so common requests such as
       // “financial aid” open the NYU resource on Enter instead of making a
       // new student choose between Finances and Financial Aid.
-      const hasExactResourceResult = exactResourceTools.length > 0;
       const matchingTaskTools =
-        isResourceSearchMode || hasExactResourceResult
+        isResourceSearchMode
           ? []
           : availableTaskTools.filter((tool) =>
               matchesTool(tool, searchQuery, allowTypos),
@@ -563,10 +611,22 @@ export function AppShell({
         ),
       );
       const taskTools =
-        exactTaskTools.length > 0 ? exactTaskTools : matchingTaskTools;
+        exactResourceLabelTools.length > 0
+          ? []
+          : exactTaskTools.length > 0
+            ? exactTaskTools
+            : matchingTaskTools;
       const hasDirectTaskResult =
         searchQuery.length > 0 && taskTools.length > 0;
-      const taskFamilies = isResourceSearchMode || hasExactResourceResult
+      const prefersResourceAlias =
+        exactResourceAliasTools.length > 0 && !hasDirectTaskResult;
+      const prefersUniqueResource =
+        matchingResourceTools.length === 1 && !hasDirectTaskResult;
+      const taskFamilies =
+        isResourceSearchMode ||
+        exactResourceLabelTools.length > 0 ||
+        prefersResourceAlias ||
+        prefersUniqueResource
         ? []
         : availableTaskFamilies.filter(
             (pageFamily) =>
@@ -883,13 +943,16 @@ export function AppShell({
   ): void => {
     if (
       event.key !== "Enter" ||
-      normalizedTaskSearchQuery.length === 0 ||
-      filteredResultCount !== 1
+      normalizedTaskSearchQuery.length === 0
     ) {
       return;
     }
 
     event.preventDefault();
+    if (filteredResultCount !== 1) {
+      return;
+    }
+
     const pageFamily = filteredTaskFamilies[0];
     if (pageFamily) {
       handleTaskFinderNavigation(pageFamily);

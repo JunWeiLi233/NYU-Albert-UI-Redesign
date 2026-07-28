@@ -90,6 +90,9 @@ export function mountHeader({
   host.id = HEADER_HOST_ID;
   host.style.display = "block";
   host.style.isolation = "isolate";
+  // Make the outer stacking context explicit so the modal finder can stay
+  // above Albert's fixed native resource directory at every breakpoint.
+  host.style.position = "fixed";
   host.style.zIndex = SHELL_Z_INDEX;
 
   let root: Root | undefined;
