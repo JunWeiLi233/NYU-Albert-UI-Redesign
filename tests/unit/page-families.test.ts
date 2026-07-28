@@ -41,6 +41,7 @@ describe("page-family task vocabulary", () => {
         "transportation",
         "orientation",
         "new student orientation",
+        "parking",
       ]),
     );
   });

@@ -144,6 +144,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "maps",
       "new student orientation",
       "orientation",
+      "parking",
       "printing",
       "school id",
       "student id",
