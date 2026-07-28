@@ -842,7 +842,18 @@ describe("page-family native tools", () => {
     expect(studentServices?.keywords).toContain("office of the dean of students");
     expect(housing?.keywords).toContain("on campus living");
     expect(housing?.keywords).toEqual(
-      expect.arrayContaining(["resident assistant", "resident assistant application"]),
+      expect.arrayContaining([
+        "resident assistant",
+        "resident assistant application",
+        "nyu meal plan",
+        "kosher dining",
+        "dietary options",
+        "food allergen guide and policy",
+        "grubhub mobile ordering",
+        "explore the halls",
+        "intersession housing",
+        "off-campus living resources",
+      ]),
     );
     expect(campusResources?.keywords).toEqual(
       expect.arrayContaining([
@@ -851,6 +862,7 @@ describe("page-family native tools", () => {
         "student tech guide",
         "student tech centers",
         "nyu bookstores",
+        "wifi streaming and technology",
         "accessibility specialist",
         "group fitness",
         "public transportation discounts",
@@ -933,7 +945,13 @@ describe("page-family native tools", () => {
       getAvailableResourceTools(document).find(
         ({ id }) => id === "campus-safety",
       )?.keywords,
-    ).toEqual(expect.arrayContaining(["report an incident", "report a concern"]));
+    ).toEqual(
+      expect.arrayContaining([
+        "report an incident",
+        "report a concern",
+        "incident response team",
+      ]),
+    );
     expect(click).toHaveBeenCalledOnce();
   });
 

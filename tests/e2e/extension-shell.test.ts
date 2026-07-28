@@ -1812,6 +1812,15 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Other Resources — NYU services, offices, and support",
     ],
     ["resident assistant application", "Open Housing"],
+    ["NYU Meal Plan", "Open Housing"],
+    ["Kosher Dining", "Open Housing"],
+    ["Food Allergen Guide and Policy", "Open Housing"],
+    ["Grubhub Mobile Ordering", "Open Housing"],
+    ["Explore the Halls", "Open Housing"],
+    ["Residential Life Policies", "Open Housing"],
+    ["Off-Campus Living Resources", "Open Housing"],
+    ["Incident Response Team", "Open Campus Safety"],
+    ["Wifi, Streaming, and Technology", "Open Campus Resources"],
     ["social impact career hub", "Open Wasserman"],
     ["green workplace", "Open Campus Resources"],
     [
@@ -4906,6 +4915,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "athletics and fitness",
     "sustainability",
     "green workplace",
+    "Wifi, Streaming, and Technology",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -4938,6 +4948,13 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "Dining on Campus and Meal Plans",
     "basic needs assistance",
     "resident assistant application",
+    "NYU Meal Plan",
+    "Kosher Dining",
+    "Food Allergen Guide and Policy",
+    "Grubhub Mobile Ordering",
+    "Explore the Halls",
+    "Residential Life Policies",
+    "Off-Campus Living Resources",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -5182,6 +5199,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     ["career center", "Open Wasserman"],
     ["I feel unsafe", "Open Campus Safety"],
     ["Report a Concern", "Open Campus Safety"],
+    ["Incident Response Team", "Open Campus Safety"],
   ] as const) {
     await resourceSearchInput.fill(query);
     await expect(
