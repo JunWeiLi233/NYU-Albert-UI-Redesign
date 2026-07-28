@@ -132,6 +132,8 @@ html[data-better-albert-task-finder-open][data-better-albert-enabled][data-bette
 
 html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header]
   #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open] {
+  /* Keep the authoritative directory mounted, but behind the modal finder. */
+  z-index: 1 !important;
   overflow: hidden !important;
   pointer-events: none !important;
 }

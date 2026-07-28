@@ -137,8 +137,32 @@ export function mountHeader({
     rootElement.style.removeProperty(SHELL_HEIGHT_PROPERTY);
   };
 
+  const syncTaskFinderHostGeometry = (): void => {
+    const isCompact =
+      document.defaultView?.matchMedia?.("(max-width: 899px)")?.matches ??
+      false;
+    const isOpen = host.hasAttribute(TASK_FINDER_OPEN_ATTRIBUTE);
+    if (isOpen && isCompact) {
+      host.style.setProperty("inset", "0", "important");
+      host.style.setProperty("width", "100vw", "important");
+      host.style.setProperty("height", "100dvh", "important");
+      return;
+    }
+
+    host.style.removeProperty("inset");
+    host.style.removeProperty("width");
+    host.style.removeProperty("height");
+  };
+
+  const handleWindowResize = (): void => {
+    syncTaskFinderHostGeometry();
+    syncShellHeight();
+  };
+
   const setTaskFinderOpen = (isOpen: boolean): void => {
     host.style.zIndex = isOpen ? TASK_FINDER_Z_INDEX : SHELL_Z_INDEX;
+    host.toggleAttribute(TASK_FINDER_OPEN_ATTRIBUTE, isOpen);
+    syncTaskFinderHostGeometry();
     if (isOpen) {
       // Compact mode elevates the shell above native promotional layers with a
       // stylesheet rule. The modal finder must still win over the native
@@ -153,6 +177,7 @@ export function mountHeader({
         isOpen,
       );
     }
+    syncShellHeight();
   };
 
   const clearTaskFinderOpen = (): void => {
@@ -177,7 +202,7 @@ export function mountHeader({
       resizeObserver = new ResizeObserverConstructor(syncShellHeight);
       resizeObserver.observe(host);
     }
-    document.defaultView?.addEventListener("resize", syncShellHeight);
+    document.defaultView?.addEventListener("resize", handleWindowResize);
 
     root = createRoot(mountRoot);
 
@@ -251,7 +276,7 @@ export function mountHeader({
       unmount() {
         resizeObserver?.disconnect();
         resourcesObserver?.disconnect();
-        document.defaultView?.removeEventListener("resize", syncShellHeight);
+        document.defaultView?.removeEventListener("resize", handleWindowResize);
         clearTaskFinderOpen();
         restoreShellHeight();
         nativeResourcesMenu?.removeAttribute(
@@ -268,7 +293,7 @@ export function mountHeader({
       // Cleanup must not obscure the original rendering failure.
     }
     resizeObserver?.disconnect();
-    document.defaultView?.removeEventListener("resize", syncShellHeight);
+    document.defaultView?.removeEventListener("resize", handleWindowResize);
     clearTaskFinderOpen();
     restoreShellHeight();
     nativeControlDocument

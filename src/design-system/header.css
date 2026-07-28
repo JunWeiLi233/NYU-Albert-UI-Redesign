@@ -1083,6 +1083,18 @@ button {
     z-index: 1000 !important;
   }
 
+  /*
+   * The native Other Resources directory sits at Albert's maximum practical
+   * overlay layer and begins below the compact shell. Give the modal host a
+   * viewport-sized stacking box while it is open so that directory can never
+   * paint over the finder at high zoom or short heights.
+   */
+  :host([data-better-albert-task-finder-open]) {
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+  }
+
   .ba-shell {
     height: auto;
     max-height: none;

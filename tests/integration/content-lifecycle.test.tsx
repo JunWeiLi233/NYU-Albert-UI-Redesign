@@ -187,6 +187,11 @@ describe("content-script lifecycle", () => {
     expect(
       document.documentElement.hasAttribute(TASK_FINDER_OPEN_ATTRIBUTE),
     ).toBe(true);
+    expect(
+      document
+        .getElementById(HEADER_HOST_ID)
+        ?.hasAttribute(TASK_FINDER_OPEN_ATTRIBUTE),
+    ).toBe(true);
 
     lifecycle.stop();
     expect(

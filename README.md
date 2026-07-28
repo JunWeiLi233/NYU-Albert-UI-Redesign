@@ -6,9 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.77 includes:
+Version 0.5.78 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
+- a full-viewport compact finder modal that keeps Albert's native resource
+  directory mounted but behind the search surface at high zoom and short
+  heights;
 - one isolated Shadow DOM application frame: a fixed violet rail on desktop and
   a compact responsive workspace header below 900px;
 - task-first discovery cards at every supported width that explain what
@@ -93,7 +96,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.77` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.78` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

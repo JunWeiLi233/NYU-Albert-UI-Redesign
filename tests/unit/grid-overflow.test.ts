@@ -26,6 +26,19 @@ const THEME_CSS = readFileSync(
  * bug.
  */
 describe("Grid overflow containment contract", () => {
+  it("keeps the compact native resource directory behind the modal finder", () => {
+    const marker =
+      "html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header] #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]";
+    const idx = THEME_CSS.indexOf(marker);
+    expect(idx).toBeGreaterThan(-1);
+    expect(THEME_CSS.slice(idx, idx + 520)).toContain(
+      "z-index: 1 !important",
+    );
+    expect(THEME_CSS.slice(idx, idx + 520)).toContain(
+      "pointer-events: none !important",
+    );
+  });
+
   it("neutralizes native Personal Info contact-field width/float at full specificity (no :where)", () => {
     // .NYUEmail must be targeted by a concrete high-specificity selector, not
     // wrapped in :where() (which would lose to the native !important width).
