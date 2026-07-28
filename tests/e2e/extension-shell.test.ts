@@ -1822,6 +1822,14 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Incident Response Team", "Open Campus Safety"],
     ["Wifi, Streaming, and Technology", "Open Campus Resources"],
     ["social impact career hub", "Open Wasserman"],
+    ["Wasserman Career Portal", "Open Wasserman"],
+    ["career coaching", "Open Wasserman"],
+    ["Handshake", "Open Wasserman"],
+    ["On-Campus Employment", "Open Wasserman"],
+    ["Experiential Learning", "Open Wasserman"],
+    ["Career Hubs", "Open Wasserman"],
+    ["Resume Guide and Samples", "Open Wasserman"],
+    ["Fraudulent Job Postings", "Open Wasserman"],
     ["green workplace", "Open Campus Resources"],
     [
       "housing and dining",
@@ -4863,6 +4871,14 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "connect with alumni",
     "entrepreneurship resources",
     "social impact career hub",
+    "Wasserman Career Portal",
+    "career coaching",
+    "Handshake",
+    "On-Campus Employment",
+    "Experiential Learning",
+    "Career Hubs",
+    "Resume Guide and Samples",
+    "Fraudulent Job Postings",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(

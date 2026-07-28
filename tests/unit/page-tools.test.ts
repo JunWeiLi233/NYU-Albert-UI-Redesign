@@ -882,7 +882,19 @@ describe("page-family native tools", () => {
         "student visa immigration",
       ]),
     );
-    expect(wasserman?.keywords).toContain("social impact career hub");
+    expect(wasserman?.keywords).toEqual(
+      expect.arrayContaining([
+        "social impact career hub",
+        "career coaching",
+        "handshake",
+        "on-campus employment",
+        "experiential learning",
+        "career hubs",
+        "resume guide and samples",
+        "cover letter guide and samples",
+        "fraudulent job postings",
+      ]),
+    );
     expect(openNativeResourceTool(document, "wellness-center")).toBe(true);
     const studentLife = getAvailableResourceTools(document).find(
       ({ id }) => id === "student-life",
