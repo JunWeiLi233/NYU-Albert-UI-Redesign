@@ -197,6 +197,15 @@ interface FrameTarget {
 
 function getFrameTarget(frame: HTMLIFrameElement): FrameTarget | undefined {
   const source = parseLocation(frame.src);
+
+  // The enrollment-cart component can redirect between the two allowlisted
+  // SIS hosts while retaining its original iframe source. Do not trust a
+  // stale component origin here; the payload is a data-free handshake and
+  // every receiver still requires the exact portal origin.
+  if (source?.origin === COMPONENT_ORIGIN) {
+    return { origin: UNVERIFIED_FRAME_TARGET_ORIGIN };
+  }
+
   try {
     const currentOrigin = frame.contentWindow?.location.origin;
     if (typeof currentOrigin === "string" && isAllowlistedOrigin(currentOrigin)) {
@@ -206,7 +215,7 @@ function getFrameTarget(frame: HTMLIFrameElement): FrameTarget | undefined {
     // Cross-origin frames do not expose their settled location to the parent.
   }
 
-  if (isAllowlistedOrigin(source?.origin)) {
+  if (source?.origin === PORTAL_ORIGIN) {
     return {
       // PeopleSoft can redirect an allowlisted iframe between the two hosts
       // while the request is in flight. The payload contains no student data;
