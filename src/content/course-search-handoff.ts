@@ -12,6 +12,7 @@ const COURSE_SEARCH_FRAME_OPEN_MESSAGE =
   "better-albert:open-native-course-search";
 const COMPONENT_ORIGIN = "https://sis.nyu.edu";
 const PORTAL_ORIGIN = "https://sis.portal.nyu.edu";
+const UNVERIFIED_FRAME_TARGET_ORIGIN = "*";
 
 function normalizeText(value: string | null | undefined): string {
   return value?.replace(/\s+/g, " ").trim().toLocaleLowerCase() ?? "";
@@ -186,30 +187,48 @@ function getChildFrames(document: Document): HTMLIFrameElement[] {
   return Array.from(document.querySelectorAll<HTMLIFrameElement>("iframe"));
 }
 
-function getFrameTargetOrigin(frame: HTMLIFrameElement): string {
+function isAllowlistedOrigin(origin: string | undefined): boolean {
+  return origin === COMPONENT_ORIGIN || origin === PORTAL_ORIGIN;
+}
+
+interface FrameTarget {
+  origin: string;
+}
+
+function getFrameTarget(frame: HTMLIFrameElement): FrameTarget | undefined {
   const source = parseLocation(frame.src);
   try {
     const currentOrigin = frame.contentWindow?.location.origin;
-    if (currentOrigin === COMPONENT_ORIGIN || currentOrigin === PORTAL_ORIGIN) {
-      return currentOrigin;
+    if (typeof currentOrigin === "string" && isAllowlistedOrigin(currentOrigin)) {
+      return { origin: currentOrigin };
     }
   } catch {
-    // Cross-origin frames fall back to their allowlisted source host.
+    // Cross-origin frames do not expose their settled location to the parent.
   }
 
-  if (source?.origin === COMPONENT_ORIGIN) {
-    return COMPONENT_ORIGIN;
+  if (isAllowlistedOrigin(source?.origin)) {
+    return {
+      // PeopleSoft can redirect an allowlisted iframe between the two hosts
+      // while the request is in flight. The payload contains no student data;
+      // child receivers still require an exact allowlisted event.origin.
+      origin: UNVERIFIED_FRAME_TARGET_ORIGIN,
+    };
   }
 
-  return PORTAL_ORIGIN;
+  return undefined;
 }
 
 function postOpenRequestToChildFrames(document: Document): void {
   for (const frame of getChildFrames(document)) {
+    const target = getFrameTarget(frame);
+    if (!target || !frame.contentWindow) {
+      continue;
+    }
+
     try {
-      frame.contentWindow?.postMessage(
+      frame.contentWindow.postMessage(
         { type: COURSE_SEARCH_FRAME_OPEN_MESSAGE },
-        getFrameTargetOrigin(frame),
+        target.origin,
       );
     } catch {
       // PeopleSoft may navigate a modal frame between origin detection and

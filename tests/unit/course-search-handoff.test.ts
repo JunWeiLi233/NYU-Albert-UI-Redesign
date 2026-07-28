@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   advanceToNativeClassSearch,
+  createCourseSearchFrameHandoff,
   isEnrollmentCartUrl,
   isTrustedCourseSearchIntentSource,
 } from "../../src/content/course-search-handoff";
@@ -77,6 +78,51 @@ describe("course-search handoff", () => {
 
     loadNativeLauncher({ duplicateSearch: true });
     expect(advanceToNativeClassSearch(document)).toBe(false);
+  });
+
+  it("uses a non-sensitive handshake for an allowlisted frame whose redirect is unsettled", () => {
+    document.body.innerHTML =
+      '<iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL"></iframe>';
+    const frame = document.querySelector("iframe");
+    const postMessage = vi.fn();
+    if (!frame) {
+      throw new Error("Expected a frame");
+    }
+    Object.defineProperty(frame, "contentWindow", {
+      configurable: true,
+      value: {
+        get location(): never {
+          throw new DOMException("cross-origin", "SecurityError");
+        },
+        postMessage,
+      },
+    });
+
+    const handoff = createCourseSearchFrameHandoff(document);
+    handoff.request();
+    handoff.stop();
+
+    expect(postMessage).toHaveBeenCalledWith(
+      { type: "better-albert:open-native-course-search" },
+      "*",
+    );
+  });
+
+  it("does not send the handoff to an untrusted frame source", () => {
+    document.body.innerHTML =
+      '<iframe src="https://example.com/unknown-frame"></iframe>';
+    const frame = document.querySelector("iframe");
+    const postMessage = vi.fn();
+    if (!frame?.contentWindow) {
+      throw new Error("Expected a frame window");
+    }
+    frame.contentWindow.postMessage = postMessage;
+
+    const handoff = createCourseSearchFrameHandoff(document);
+    handoff.request();
+    handoff.stop();
+
+    expect(postMessage).not.toHaveBeenCalled();
   });
 
   it("accepts only the verified portal and enrollment-cart routes", () => {
