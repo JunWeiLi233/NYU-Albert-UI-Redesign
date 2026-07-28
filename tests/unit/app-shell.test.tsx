@@ -578,6 +578,123 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("keeps newcomer support aliases on the native resource directory", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    const search = async (query: string) => {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      return shadowRoot?.textContent ?? "";
+    };
+
+    for (const query of [
+      "academic support",
+      "student life",
+      "disability support",
+      "testing accommodations",
+      "campus accessibility",
+      "I need help with NYU",
+    ]) {
+      const text = await search(query);
+      expect(text).toContain(`1 result for “${query}”`);
+      expect(text).toContain("Verified destination: Other Resources");
+      expect(text).not.toContain("No verified destination matches");
+    }
+  });
+
+  it("prefers an exact newcomer resource over a broader area match", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "academic-records",
+          description: "Find academic support resources",
+          featured: false,
+          id: "academic-support",
+          keywords: ["academic support"],
+          label: "Academic Support",
+          nativeLabels: ["Academic Support"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "academic support",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “academic support”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Academic Support",
+    );
+    expect(shadowRoot?.textContent).not.toContain(
+      "Verified destination: Academics",
+    );
+  });
+
   it("does not advertise class search without a verified Course Search path", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],

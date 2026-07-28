@@ -6,8 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.112 includes:
+Version 0.5.113 includes:
 
+- accessibility and newcomer support phrases such as “disability support,”
+  “testing accommodations,” “campus accessibility,” “academic support,”
+  “student life,” and “I need help with NYU” now reach the verified Other
+  Resources directory when Albert does not expose a more specific native link;
 - generic “schedule appointment” and “book appointment” searches now fall
   back honestly instead of guessing Wasserman or NYU Connect, while
   counseling and financial-aid appointment phrases reach their verified

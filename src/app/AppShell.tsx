@@ -301,10 +301,16 @@ function getMeaningfulTaskSearchValue(value: string): string {
 // Other Resources area instead of surfacing a longer, unrelated alias (for
 // example OGS's “international student services” for “student services”).
 const EXACT_RESOURCE_INTENTS = new Map<string, PageToolId>([
+  ["academic support", "academic-support"],
+  ["campus accessibility", "campus-resources"],
+  ["disability support", "campus-resources"],
+  ["need help nyu", "student-services"],
   ["scholarship", "financial-aid-resources"],
   ["scholarships", "financial-aid-resources"],
+  ["student life", "student-life"],
   ["student services", "student-services"],
   ["student support", "student-services"],
+  ["testing accommodations", "campus-resources"],
   ["tech wifi", "campus-resources"],
   ["technology help", "campus-resources"],
   ["involved", "student-life"],
@@ -817,6 +823,12 @@ export function AppShell({
         matchesResource(tool, searchQuery, allowTypos),
       );
       const exactResourceIntentId = getExactResourceIntentId(searchQuery);
+      const hasVerifiedExactResourceIntent = Boolean(
+        exactResourceIntentId &&
+          availableResourceTools.some(
+            (tool) => tool.id === exactResourceIntentId,
+          ),
+      );
       if (exactResourceIntentId) {
         const exactResourceIntent = availableResourceTools.find(
           (tool) => tool.id === exactResourceIntentId,
@@ -927,6 +939,9 @@ export function AppShell({
         exactResourceAliasTools.length > 0 && exactTaskTools.length === 0;
       const prefersUniqueResource =
         matchingResourceTools.length === 1 && !hasDirectTaskResult;
+      const prefersOtherResourcesFallback = Boolean(
+        exactResourceIntentId && !hasVerifiedExactResourceIntent,
+      );
       const taskFamilies =
         isResourceSearchMode ||
         exactResourceLabelTools.length > 0 ||
@@ -936,6 +951,7 @@ export function AppShell({
         : availableTaskFamilies.filter(
             (pageFamily) =>
               !hasDirectTaskResult &&
+              (!prefersOtherResourcesFallback || pageFamily === "resources") &&
               matchesFamily(pageFamily, searchQuery, allowTypos),
           );
 

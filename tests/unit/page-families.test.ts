@@ -98,6 +98,8 @@ describe("page-family task vocabulary", () => {
     expect(PAGE_FAMILY_DEFINITIONS.resources.keywords).toEqual(
       expect.arrayContaining([
         "student support",
+        "academic support",
+        "student life",
         "financial aid and registration",
         "bobst library",
         "involvement in co-curricular educational opportunities and activities",
@@ -130,7 +132,11 @@ describe("page-family task vocabulary", () => {
         "career development",
         "parking",
         "disability services",
+        "disability support",
+        "campus accessibility",
+        "testing accommodations",
         "accessibility",
+        "need help with nyu",
         "bookstore",
         "campus map",
         "transit",
