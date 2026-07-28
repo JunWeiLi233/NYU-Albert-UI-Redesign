@@ -6,9 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.108 includes:
+Version 0.5.109 includes:
 
-- plain-language campus Wi-Fi and disability-accommodation queries now reach
+- major-change wording now opens the verified Academics workspace as an
+  honest planning handoff, without implying that Better Albert changes a
+  student's academic program;
+- plain-language campus Wi‑Fi and disability-accommodation queries now reach
   the verified Other Resources directory when no direct anchor is present;
 - student-employment wording now opens the verified Wasserman resource when
   Albert exposes that official link;
