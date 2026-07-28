@@ -24,6 +24,8 @@ const ENROLLMENT_GUIDANCE =
   "Review your selections in Albert before submitting.";
 const ACADEMIC_STEP_ATTRIBUTE = "data-better-albert-academic-step";
 const PERSONAL_GROUP_ATTRIBUTE = "data-better-albert-personal-group";
+const FALLBACK_SECTION_LABEL_ATTRIBUTE =
+  "data-better-albert-section-label";
 const ACADEMIC_JOURNEY = [
   { label: "Step 1 of 5 · Plan your path", region: "planning-section" },
   { label: "Step 2 of 5 · Check requirements", region: "degree-section" },
@@ -36,6 +38,11 @@ const PERSONAL_SECTION_GROUPS = new Map<string, string>([
   ["address-section", "Contact information"],
   ["missing-person-section", "Safety contact"],
   ["citizenship-section", "Official records"],
+]);
+const FALLBACK_SECTION_LABELS = new Map<string, string>([
+  ["home:news-section", "Updates and deadlines"],
+  ["home:schedule-section", "Today and weekly schedule"],
+  ["finances:account-section", "Account and billing"],
 ]);
 const PERSONAL_FOCUS_REGIONS = new Set([
   "citizenship-section",
@@ -74,6 +81,31 @@ interface FamilyHubPlan {
 
 function normalizedText(value: string | null | undefined): string {
   return value?.replace(/\s+/g, " ").trim().toLocaleLowerCase() ?? "";
+}
+
+function hasNativeSectionHeading(section: Element): boolean {
+  return Boolean(
+    section.querySelector("h1, h2, h3, h4, h5, h6, [role='heading']"),
+  );
+}
+
+function hasNativeSectionAccessibleName(section: Element): boolean {
+  if (section.getAttribute("aria-label")?.trim()) {
+    return true;
+  }
+
+  const labelledBy = section.getAttribute("aria-labelledby")?.trim();
+  if (labelledBy) {
+    const ids = labelledBy.split(/\s+/).filter(Boolean);
+    if (
+      ids.length > 0 &&
+      ids.every((id) => section.ownerDocument.getElementById(id))
+    ) {
+      return true;
+    }
+  }
+
+  return hasNativeSectionHeading(section);
 }
 
 function normalizedAttentionHeading(
@@ -266,7 +298,10 @@ function getFamilyRegion(
 ): string | undefined {
   switch (family) {
     case "home":
-      if (element.matches("#IS_SSS_SUMMARY_NEWS, .isSSS_ShCtSchWrp")) {
+      if (element.matches("#IS_SSS_SUMMARY_NEWS")) {
+        return "news-section";
+      }
+      if (element.matches(".isSSS_ShCtSchWrp")) {
         return "schedule-section";
       }
       if (element.matches("#ToDoHoldsEnrlDates, .isSSS_Attention")) {
@@ -681,6 +716,21 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
           getFamilyRegion(this.family, section) ??
           (index === 0 ? "primary-section" : "supporting-section");
         markRegion(journal, section, region);
+        const fallbackSectionLabel = FALLBACK_SECTION_LABELS.get(
+          `${this.family}:${region}`,
+        );
+        if (
+          fallbackSectionLabel &&
+          !hasNativeSectionAccessibleName(section)
+        ) {
+          journal.setAttribute(
+            section,
+            FALLBACK_SECTION_LABEL_ATTRIBUTE,
+            fallbackSectionLabel,
+          );
+          journal.setAttribute(section, "role", "region");
+          journal.setAttribute(section, "aria-label", fallbackSectionLabel);
+        }
         const personalGroup =
           this.family === "personal"
             ? PERSONAL_SECTION_GROUPS.get(region)

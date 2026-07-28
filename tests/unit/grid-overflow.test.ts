@@ -125,4 +125,16 @@ describe("Grid overflow containment contract", () => {
       "overflow-wrap: anywhere",
     );
   });
+
+  it("renders the adapter's fallback section cue without inventing native values", () => {
+    expect(THEME_CSS).toContain(
+      "[data-better-albert-section-label]::before",
+    );
+    const idx = THEME_CSS.indexOf(
+      "[data-better-albert-section-label]::before",
+    );
+    expect(THEME_CSS.slice(idx, idx + 360)).toContain(
+      "content: attr(data-better-albert-section-label)",
+    );
+  });
 });

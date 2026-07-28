@@ -613,7 +613,10 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
-  [data-better-albert-region="schedule-section"] {
+  :where(
+    [data-better-albert-region="news-section"],
+    [data-better-albert-region="schedule-section"]
+  ) {
   grid-column: 1;
 }
 
@@ -1060,6 +1063,7 @@ html[data-better-albert-enabled]
   :where(
     [data-better-albert-region="primary-section"],
     [data-better-albert-region="supporting-section"],
+    [data-better-albert-region="news-section"],
     [data-better-albert-region="schedule-section"],
     [data-better-albert-region="attention-section"],
     [data-better-albert-region="enrollment-section"],
@@ -1088,6 +1092,26 @@ html[data-better-albert-enabled]
   padding: 20px;
   border: 0;
   background: var(--ba-native-surface);
+}
+
+/*
+ * Some Albert releases omit the heading inside the updates, schedule, or
+ * account region. The adapter adds this cue only when no native heading or
+ * accessible name exists; it is presentation-only and the journal restores
+ * it on rollback. This keeps large native areas legible without inventing
+ * data.
+ */
+html[data-better-albert-enabled]
+  [data-better-albert-section-label]::before {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--ba-native-violet);
+  content: attr(data-better-albert-section-label);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
 }
 
 html[data-better-albert-enabled]
