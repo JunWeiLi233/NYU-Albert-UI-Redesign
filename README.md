@@ -6,8 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.111 includes:
+Version 0.5.112 includes:
 
+- generic “schedule appointment” and “book appointment” searches now fall
+  back honestly instead of guessing Wasserman or NYU Connect, while
+  counseling and financial-aid appointment phrases reach their verified
+  services directly;
 - “pronouns” and “name pronunciation” now reach the verified Personal Info
   workspace when the native control is on that page;
 - “major planning” and “student clubs” now reach their verified Academics or

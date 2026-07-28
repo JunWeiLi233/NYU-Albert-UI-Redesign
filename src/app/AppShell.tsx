@@ -252,6 +252,10 @@ const OGS_ORIENTATION_CUES = new Set([
 ]);
 
 const OGS_GENERIC_RESOURCE_INTENTS = new Set(["event", "events"]);
+const GENERIC_APPOINTMENT_RESOURCE_INTENTS = new Set([
+  "book appointment",
+  "schedule appointment",
+]);
 
 function normalizeTaskSearchValue(value: string): string {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -446,6 +450,12 @@ function isGenericOrientationIntent(query: string): boolean {
 
 function isGenericOgsResourceIntent(query: string): boolean {
   return OGS_GENERIC_RESOURCE_INTENTS.has(
+    getMeaningfulTaskSearchValue(query),
+  );
+}
+
+function isGenericAppointmentResourceIntent(query: string): boolean {
+  return GENERIC_APPOINTMENT_RESOURCE_INTENTS.has(
     getMeaningfulTaskSearchValue(query),
   );
 }
@@ -767,6 +777,9 @@ export function AppShell({
     query: string,
     allowTypos = false,
   ): boolean => {
+    if (isGenericAppointmentResourceIntent(query)) {
+      return false;
+    }
     if (
       tool.id === "ogs" &&
       (isGenericOrientationIntent(query) || isGenericOgsResourceIntent(query))

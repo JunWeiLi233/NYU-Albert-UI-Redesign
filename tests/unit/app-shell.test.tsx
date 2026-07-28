@@ -477,6 +477,107 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("keeps generic appointment wording honest and specific needs direct", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "learning-career",
+          description: "Find career coaching, jobs, and internships",
+          featured: false,
+          id: "wasserman",
+          keywords: ["schedule an appointment with a career coach"],
+          label: "Wasserman",
+          nativeLabels: ["Wasserman"],
+        },
+        {
+          category: "learning-career",
+          description: "Schedule support appointments and view your Success Network",
+          featured: false,
+          id: "nyu-connect",
+          keywords: ["book an appointment with nyu connect"],
+          label: "NYU Connect",
+          nativeLabels: ["NYU Connect"],
+        },
+        {
+          category: "wellbeing-campus",
+          description: "Find NYU health and wellness support",
+          featured: true,
+          id: "wellness-center",
+          keywords: ["counseling appointment", "mental health appointment"],
+          label: "Wellness Center",
+          nativeLabels: ["Wellness Center"],
+        },
+        {
+          category: "money-services",
+          description: "Open NYU financial aid resources",
+          featured: false,
+          id: "financial-aid-resources",
+          keywords: ["financial aid appointment"],
+          label: "Financial Aid",
+          nativeLabels: ["Financial Aid"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    const search = async (query: string) => {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      return shadowRoot?.textContent ?? "";
+    };
+
+    const genericAppointmentText = await search("schedule appointment");
+    expect(genericAppointmentText).toContain(
+      '1 result for “schedule appointment”',
+    );
+    expect(genericAppointmentText).toContain(
+      "Verified destination: Other Resources",
+    );
+    expect(genericAppointmentText).not.toContain(
+      "Verified destination: Wasserman",
+    );
+
+    const counselingText = await search("counseling appointment");
+    expect(counselingText).toContain(
+      "Verified destination: Wellness Center",
+    );
+
+    const aidAppointmentText = await search("financial aid appointment");
+    expect(aidAppointmentText).toContain(
+      "Verified destination: Financial Aid",
+    );
+  });
+
   it("does not advertise class search without a verified Course Search path", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
