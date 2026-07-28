@@ -1725,6 +1725,9 @@ test("exposes task-first discovery at every supported width and delegates throug
       exact: true,
     }),
   ).toBeVisible();
+  await expect(taskFinder.locator(".ba-task-finder-search-result")).toContainText(
+    "Verified destination: Finances — Check balances, pay tuition, view bills, and manage financial aid",
+  );
   await page.locator("body").evaluate((body) => {
     delete body.dataset.nativeTaskFinderNavigation;
   });

@@ -580,6 +580,22 @@ button {
   line-height: 1.4;
 }
 
+.ba-task-finder-search-result {
+  margin: calc(var(--ba-space-1) * -1) 0 0;
+  color: var(--ba-color-ink);
+  font-size: var(--ba-font-size-sm);
+  line-height: 1.35;
+}
+
+.ba-task-finder-search-result > strong {
+  color: var(--ba-color-nyu-violet);
+  font-weight: 800;
+}
+
+.ba-task-finder-search-result > span {
+  color: var(--ba-color-muted-ink);
+}
+
 .ba-task-finder-empty {
   display: grid;
   grid-column: 1 / -1;

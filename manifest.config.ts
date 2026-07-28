@@ -3,7 +3,7 @@ import { defineManifest } from "@crxjs/vite-plugin";
 export default defineManifest({
   manifest_version: 3,
   name: "Better Albert",
-  version: "0.5.79",
+  version: "0.5.80",
   description:
     "A local-first, NYU-aligned interface enhancement for NYU Albert.",
   permissions: ["storage"],

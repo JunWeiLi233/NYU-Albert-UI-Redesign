@@ -737,6 +737,41 @@ export function AppShell({
     filteredTaskFamilies.length +
     filteredTaskTools.length +
     filteredResourceTools.length;
+  const singleTaskSearchResult =
+    normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1
+      ? (() => {
+          const pageFamily = filteredTaskFamilies[0];
+          if (pageFamily) {
+            const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
+            return {
+              description: definition.navigationHint,
+              label: definition.label,
+            };
+          }
+
+          const taskTool = filteredTaskTools[0];
+          if (taskTool) {
+            return {
+              description: taskTool.description,
+              label: taskTool.label,
+            };
+          }
+
+          const resourceTool = filteredResourceTools[0];
+          if (resourceTool) {
+            return {
+              description:
+                useOfficialTranscriptGuidance &&
+                resourceTool.id === OFFICIAL_TRANSCRIPT_SHORTCUT.id
+                  ? OFFICIAL_TRANSCRIPT_SHORTCUT.description
+                  : resourceTool.description,
+              label: resourceTool.label,
+            };
+          }
+
+          return undefined;
+        })()
+      : undefined;
   const hasFilteredResults = filteredResultCount > 0;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && !hasFilteredResults;
@@ -1369,7 +1404,7 @@ export function AppShell({
                   aria-describedby={`${taskFinderId}-search-status${
                     normalizedTaskSearchQuery.length > 0 &&
                     filteredResultCount === 1
-                      ? ` ${taskFinderId}-search-hint`
+                      ? ` ${taskFinderId}-search-destination ${taskFinderId}-search-hint`
                       : ""
                   }`}
                   autoComplete="off"
@@ -1473,12 +1508,24 @@ export function AppShell({
               </p>
               {normalizedTaskSearchQuery.length > 0 &&
                 filteredResultCount === 1 && (
-                  <p
-                    className="ba-task-finder-search-hint"
-                    id={`${taskFinderId}-search-hint`}
-                  >
-                    Press Enter to open this verified destination.
-                  </p>
+                  <>
+                    {singleTaskSearchResult && (
+                      <p
+                        className="ba-task-finder-search-result"
+                        id={`${taskFinderId}-search-destination`}
+                      >
+                        <strong>Verified destination:</strong>{" "}
+                        {singleTaskSearchResult.label}
+                        <span> — {singleTaskSearchResult.description}</span>
+                      </p>
+                    )}
+                    <p
+                      className="ba-task-finder-search-hint"
+                      id={`${taskFinderId}-search-hint`}
+                    >
+                      Press Enter to open this verified destination.
+                    </p>
+                  </>
                 )}
             </div>
 
