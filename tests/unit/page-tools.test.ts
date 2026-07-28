@@ -73,6 +73,33 @@ describe("page-family native tools", () => {
     expect(openNativePageTool(document, "weekly-schedule")).toBe(false);
   });
 
+  it("exposes a uniquely verified pronoun destination only in task search", () => {
+    document.body.innerHTML = `
+      <section class="isSSS_Main selected">
+        <span id="IS_AC_RESPONSE">
+          <section class="isSSS_PersInfTop">
+        <a href="#pronouns">Indicate My Pronouns</a>
+          </section>
+        </span>
+      </section>
+    `;
+    const pronouns = document.querySelector<HTMLAnchorElement>(
+      'a[href="#pronouns"]',
+    );
+    const click = vi.fn((event: Event) => event.preventDefault());
+    pronouns?.addEventListener("click", click);
+
+    expect(getAvailablePageTools(document, "personal")).toEqual([]);
+    expect(
+      getAvailableTaskTools(document).map(({ id, pageFamily }) => ({
+        id,
+        pageFamily,
+      })),
+    ).toEqual([{ id: "pronouns", pageFamily: "personal" }]);
+    expect(openNativePageTool(document, "pronouns")).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
   it("identifies only native directories fully mirrored by verified tools", () => {
     document.body.innerHTML = `
       <section class="is_bb_LinkContainer" id="complete">

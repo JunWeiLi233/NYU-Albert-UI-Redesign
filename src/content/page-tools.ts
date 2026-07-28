@@ -28,6 +28,7 @@ export type PageToolId =
   | "account-statement"
   | "financial-aid-status"
   | "demographic-information"
+  | "pronouns"
   | "addresses"
   | "phone-numbers"
   | "email-addresses"
@@ -874,6 +875,13 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       nativeLabels: ["Demographic Information"],
     },
     {
+      description: "Review or update pronouns in Albert",
+      id: "pronouns",
+      label: "Update Pronouns",
+      nativeLabels: ["Indicate My Pronouns"],
+      taskOnly: true,
+    },
+    {
       description: "Change or review a saved address in Albert",
       id: "addresses",
       keywords: [
@@ -966,6 +974,7 @@ const VERIFIED_TOOL_CONTAINERS = [
   ".isSSS_Main.selected #IS_AC_RESPONSE .isSSS_FullW.isSSS_ShopCart.selected",
   ".isSSS_Main.selected #IS_AC_RESPONSE #NYUBursarDisplay",
   ".isSSS_Main.selected #IS_AC_RESPONSE #NYUFinancialAidDisplay",
+  ".isSSS_Main.selected #IS_AC_RESPONSE .isSSS_PersInfTop",
   ".isSSS_Main.selected #IS_AC_RESPONSE [data-better-albert-region='advising-section']",
   ".isSSS_Main.selected #IS_AC_RESPONSE [data-better-albert-region='address-section']",
   ".isSSS_Main.selected #IS_AC_RESPONSE [data-better-albert-region='phone-section']",
