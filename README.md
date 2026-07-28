@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.103 includes:
+Version 0.5.104 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an accessible one-step “Open …” action that announces the verified destination and keyboard handoff hint to assistive technology;
@@ -45,9 +45,9 @@ Version 0.5.103 includes:
   verified Find Classes destination instead of mixing in unrelated course
   feedback, learning-platform, or summer-program links;
 - concise student wording such as “browse classes,” “find course offerings,”
-  “look for classes,” “search for classes,” “what classes are available,” and
-  “which courses are offered” now uses the same verified one-step Course Search
-  handoff;
+  “look for a course,” “look for classes,” “search for classes,” “where can I
+  find a course,” “what classes are available,” and “which courses are offered”
+  now uses the same verified one-step Course Search handoff;
 - a precise conversational support query that opens Student Services only when
   its exact native anchor is verified, avoiding unrelated links when it is not;
 - a resource-search empty state that points students to Albert’s official

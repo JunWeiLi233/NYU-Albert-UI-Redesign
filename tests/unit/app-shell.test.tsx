@@ -452,8 +452,10 @@ describe("AppShell cross-area task handoffs", () => {
           keywords: [
             "browse classes",
             "find course offerings",
+            "look for a course",
             "look for classes",
             "search for classes",
+            "where can I find a course",
             "what classes are available",
             "which courses are offered",
           ],
