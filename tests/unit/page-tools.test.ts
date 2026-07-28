@@ -607,6 +607,35 @@ describe("page-family native tools", () => {
     expect(nativePlannerClick).toHaveBeenCalledOnce();
   });
 
+  it("allows explicitly non-transactional academic javascript destinations", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <a href="javascript:isOpenLink('https://sis.portal.nyu.edu/academic-planner')">Academic Planner</a>
+      </section>
+    `;
+    const nativePlanner = document.querySelector<HTMLAnchorElement>(
+      'a[href^="javascript:isOpenLink"]',
+    );
+    expect(nativePlanner).not.toBeNull();
+
+    vi.stubGlobal("chrome", {});
+    const postMessage = vi
+      .spyOn(window, "postMessage")
+      .mockImplementation(() => undefined);
+
+    expect(openNativePageTool(document, "academic-planner")).toBe(true);
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowJavascriptUrl: true,
+        type: "better-albert:activate-native-control",
+      }),
+      window.location.origin,
+    );
+
+    postMessage.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
   it("presents Grades tools as student jobs and delegates to native Albert labels", () => {
     document.body.innerHTML = `
       <section class="is_bb_LinkContainer">

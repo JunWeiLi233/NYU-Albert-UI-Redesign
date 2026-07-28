@@ -59,6 +59,12 @@ export type PageToolId =
   | "student-life";
 
 export interface PageToolDefinition {
+  /**
+   * Permit the original page-owned javascript: URL to run for an exact,
+   * non-transactional destination. Most javascript: controls stay guarded so
+   * a shortcut cannot accidentally submit a form or trigger an unknown action.
+   */
+  allowJavascriptUrl?: boolean;
   compactDescription?: boolean;
   description: string;
   fallbackFocusRegion?: string;
@@ -986,6 +992,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
   ],
   academics: [
     {
+      allowJavascriptUrl: true,
       description: "Open Albert's Academic Planner",
       id: "academic-planner",
       label: "Plan Future Courses",
@@ -1023,6 +1030,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       nativeLabels: ["Schedule an Advisor Appointment"],
     },
     {
+      allowJavascriptUrl: true,
       description: "Review remaining degree requirements",
       id: "degree-progress",
       keywords: ["classes need", "degree requirements", "remaining requirements"],
@@ -1032,11 +1040,13 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
     {
       compactDescription: true,
       description: "Use Albert's What If Report",
+      allowJavascriptUrl: true,
       id: "what-if-report",
       label: "Explore Another Program",
       nativeLabels: ["What If Report"],
     },
     {
+      allowJavascriptUrl: true,
       description: "Review your graduation progress",
       id: "graduation-status",
       label: "Check Graduation Status",
@@ -1492,7 +1502,9 @@ export function openNativePageTool(
     return true;
   }
 
-  activateNativeControl(target);
+  activateNativeControl(target, {
+    ...(definition.allowJavascriptUrl ? { allowJavascriptUrl: true } : {}),
+  });
   return true;
 }
 
