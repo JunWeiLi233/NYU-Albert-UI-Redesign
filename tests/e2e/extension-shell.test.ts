@@ -6344,6 +6344,7 @@ test("themes the proven cross-origin class-search frame and preserves transactio
     stackedPositions.filterBottom,
   );
 
+  await page.setViewportSize({ height: 900, width: 200 });
   await page.goto(CLASS_SEARCH_URL);
   await expect(page.locator("html")).toHaveAttribute(
     "data-better-albert-page",
@@ -6351,6 +6352,20 @@ test("themes the proven cross-origin class-search frame and preserves transactio
   );
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
   await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+  const initialSearchVisibility = await page
+    .locator('[data-better-albert-region="primary-search-input"]')
+    .evaluate((input) => {
+      const bounds = input.getBoundingClientRect();
+      return {
+        bottom: Math.round(bounds.bottom),
+        top: Math.round(bounds.top),
+        viewportHeight: window.innerHeight,
+      };
+    });
+  expect(initialSearchVisibility.top).toBeGreaterThanOrEqual(0);
+  expect(initialSearchVisibility.bottom).toBeLessThanOrEqual(
+    initialSearchVisibility.viewportHeight,
+  );
 
   for (const width of [200, 400, 600, 768, 899, 900, 1200, 1440] as const) {
     await page.setViewportSize({ height: 900, width });
