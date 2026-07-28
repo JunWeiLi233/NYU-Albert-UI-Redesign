@@ -142,6 +142,17 @@ describe("page-family task vocabulary", () => {
         "writing center",
         "student complaint information",
         "speaking freely",
+        "financial education",
+        "opportunity programs",
+        "mlk jr scholars program",
+        "resources and support for students",
+        "programs to inspire success",
+        "surveys for success",
+        "about student success",
+        "center for student success insights",
+        "wellbeing across nyu",
+        "get inspired",
+        "watch a video",
       ]),
     );
   });

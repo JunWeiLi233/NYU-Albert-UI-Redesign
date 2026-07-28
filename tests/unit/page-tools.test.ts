@@ -873,8 +873,15 @@ describe("page-family native tools", () => {
     ).toEqual(
       expect.arrayContaining([
         "access clinical care",
+        "clinical services",
         "get 24/7 support",
         "student health center",
+        "find a pop up flu clinic or make an appointment",
+        "tune in to your wellbeing",
+        "infuse wellbeing",
+        "land in the nest",
+        "safety and respect",
+        "holistic care",
       ]),
     );
     expect(

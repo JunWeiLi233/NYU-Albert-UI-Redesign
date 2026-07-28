@@ -1822,6 +1822,33 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Speaking Freely",
       "Open Other Resources — NYU services, offices, and support",
     ],
+    [
+      "Resources and Support for Students",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Financial Education",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Opportunity Programs",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "MLK, Jr. Scholars Program",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Wellbeing Across NYU",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    ["Clinical Services", "Open Wellness Center"],
+    ["Tune In To Your Wellbeing", "Open Wellness Center"],
+    ["Infuse Wellbeing", "Open Wellness Center"],
+    [
+      "Find a Pop-Up Flu Clinic or Make an Appointment",
+      "Open Wellness Center",
+    ],
     ["access clinical care", "Open Wellness Center"],
     ["book an appointment with nyu connect", "Open NYU Connect"],
     ["leadership opportunities", "Open Student Life"],
