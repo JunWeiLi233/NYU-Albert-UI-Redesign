@@ -498,20 +498,6 @@ export function AppShell({
     );
   const filterTaskSearchResults = (query: string) => {
     const findResults = (searchQuery: string, allowTypos = false) => {
-      const taskTools = isResourceSearchMode
-        ? []
-        : availableTaskTools.filter((tool) =>
-            matchesTool(tool, searchQuery, allowTypos),
-          );
-      const hasDirectTaskResult =
-        searchQuery.length > 0 && taskTools.length > 0;
-      const taskFamilies = isResourceSearchMode
-        ? []
-        : availableTaskFamilies.filter(
-            (pageFamily) =>
-              !hasDirectTaskResult &&
-              matchesFamily(pageFamily, searchQuery, allowTypos),
-          );
       const matchingResourceTools = availableResourceTools.filter((tool) =>
         matchesResource(tool, searchQuery, allowTypos),
       );
@@ -526,6 +512,26 @@ export function AppShell({
         exactResourceTools.length > 0
           ? exactResourceTools
           : matchingResourceTools;
+
+      // An exact official resource label is already an actionable destination.
+      // Prefer it over a broad area match so common requests such as
+      // “financial aid” open the NYU resource on Enter instead of making a
+      // new student choose between Finances and Financial Aid.
+      const hasExactResourceResult = exactResourceTools.length > 0;
+      const taskTools = isResourceSearchMode || hasExactResourceResult
+        ? []
+        : availableTaskTools.filter((tool) =>
+            matchesTool(tool, searchQuery, allowTypos),
+          );
+      const hasDirectTaskResult =
+        searchQuery.length > 0 && taskTools.length > 0;
+      const taskFamilies = isResourceSearchMode || hasExactResourceResult
+        ? []
+        : availableTaskFamilies.filter(
+            (pageFamily) =>
+              !hasDirectTaskResult &&
+              matchesFamily(pageFamily, searchQuery, allowTypos),
+          );
 
       return { resourceTools, taskFamilies, taskTools };
     };
