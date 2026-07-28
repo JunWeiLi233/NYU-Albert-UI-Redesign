@@ -829,6 +829,29 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-personal"]
 }
 
 /*
+ * PeopleSoft's advisor cards size themselves to the full compact column and
+ * then add a right margin, which makes the advising region 8px wider than
+ * the viewport at phone widths. Keep the card gap when there is room, but
+ * let the card and its long names shrink inside the marked region so the
+ * document never gains a horizontal scrollbar.
+ */
+@media (max-width: 899px) {
+  html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+    [data-better-albert-region="advising-section"]
+    .isSSS_Advs {
+    box-sizing: border-box;
+    max-width: calc(100% - 8px);
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
+    [data-better-albert-region="advising-section"]
+    .isSSS_AdvsName {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}
+
+/*
  * Academics is easiest to learn as one five-stage journey. Only when the
  * adapter verifies exactly one Planning, Degree, Advising, Enrollment, and
  * Graduation section does it publish these reversible stage labels. The

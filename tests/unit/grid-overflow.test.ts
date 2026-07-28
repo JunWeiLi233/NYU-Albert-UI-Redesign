@@ -104,6 +104,23 @@ describe("Grid overflow containment contract", () => {
     expect(THEME_CSS.slice(idx, idx + 160)).toContain("width: auto !important");
   });
 
+  it("shrinks compact Academics advisor cards and wraps long names", () => {
+    const cardIdx = THEME_CSS.indexOf(
+      '[data-better-albert-region="advising-section"] .isSSS_Advs',
+    );
+    expect(cardIdx).toBeGreaterThan(-1);
+    const cardBlock = THEME_CSS.slice(cardIdx, cardIdx + 260);
+    expect(cardBlock).toContain("max-width: calc(100% - 8px)");
+
+    const nameIdx = THEME_CSS.indexOf(
+      '[data-better-albert-region="advising-section"] .isSSS_AdvsName',
+    );
+    expect(nameIdx).toBeGreaterThan(-1);
+    const nameBlock = THEME_CSS.slice(nameIdx, nameIdx + 220);
+    expect(nameBlock).toContain("overflow-wrap: anywhere");
+    expect(nameBlock).toContain("white-space: normal");
+  });
+
   it("fills directory groups to their grid columns so link labels do not clip", () => {
     // PeopleSoft .is_bb_LinkColumn groups ship at a fixed narrow width that
     // under-fills the directory grid, so long labels (e.g. "Demographic
