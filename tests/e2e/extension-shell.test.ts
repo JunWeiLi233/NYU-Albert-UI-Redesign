@@ -601,7 +601,7 @@ test("exposes task-first discovery at every supported width and delegates throug
 
   await expect(taskFinderToggle).toBeVisible();
   await expect(taskFinderToggle).toContainText(
-    "Find classes, tasks, and NYU resources",
+    "Find classes, resources, and new-student help",
   );
   await expect(taskFinder).toBeHidden();
   await expect(taskFinderToggle).toHaveAttribute("aria-keyshortcuts", "/");

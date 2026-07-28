@@ -1107,7 +1107,7 @@ export function AppShell({
                 <span>
                   {isResourceSearchMode
                     ? "Search all official links in this directory"
-                    : "Find classes, tasks, and NYU resources"}
+                    : "Find classes, resources, and new-student help"}
                 </span>
               </span>
               <span
