@@ -76,6 +76,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
     description: "Grades, transcripts, and enrollment verification",
     keywords: [
       "check grades",
+      "enrollment letter",
       "get transcript",
       "prove enrolled",
       "see grades",

@@ -60,6 +60,22 @@ describe("page-family native tools", () => {
     );
   });
 
+  it("keeps enrollment-letter language on the Proof of Enrollment task", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <div class="is_bb_LinkItem"><a href="#verification">Enrollment Verification</a></div>
+      </section>
+    `;
+
+    const proofOfEnrollment = getAvailableTaskTools(document).find(
+      ({ id }) => id === "enrollment-verification",
+    );
+
+    expect(proofOfEnrollment?.keywords).toEqual(
+      expect.arrayContaining(["enrollment letter"]),
+    );
+  });
+
   it("dispatches page-owned clicks without evaluating javascript URLs in the extension", () => {
     const search = document.querySelector<HTMLAnchorElement>('a[href="#search"]');
     search?.setAttribute("href", "javascript:void(0)");

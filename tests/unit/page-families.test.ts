@@ -25,6 +25,12 @@ describe("page-family task vocabulary", () => {
     );
   });
 
+  it("keeps enrollment-letter requests on records", () => {
+    expect(PAGE_FAMILY_DEFINITIONS.grades.keywords).toEqual(
+      expect.arrayContaining(["enrollment letter"]),
+    );
+  });
+
   it("recognizes student-language contact-update requests for Personal Info", () => {
     expect(PAGE_FAMILY_DEFINITIONS.personal.keywords).toEqual(
       expect.arrayContaining([

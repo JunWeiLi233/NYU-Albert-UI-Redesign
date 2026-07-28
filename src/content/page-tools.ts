@@ -786,6 +786,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       description: "Request proof through National Student Clearinghouse",
       id: "enrollment-verification",
       keywords: [
+        "enrollment letter",
         "enrollment verification letter",
         "get proof of enrollment",
         "proof of student status",
