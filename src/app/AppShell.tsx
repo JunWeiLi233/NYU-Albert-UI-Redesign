@@ -1697,10 +1697,10 @@ export function AppShell({
                     id={`${taskFinderId}-common-label`}
                   >
                     {isResourceSearchMode
-                      ? resourceFinderIntent === "new-student"
-                        ? "Start here"
-                        : hasNoTaskSearchResults
-                          ? "Try a verified starter"
+                      ? hasNoTaskSearchResults
+                        ? "Try a verified starter"
+                        : resourceFinderIntent === "new-student"
+                          ? "Start here"
                           : "Popular resources"
                       : "Common tasks"}
                     <span className="ba-task-finder-common-scroll-hint">

@@ -341,6 +341,28 @@ describe("content-script lifecycle", () => {
       "Student support",
     ]);
 
+    const resourceSearchInput = resourceSearch?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(resourceSearchInput).not.toBeNull();
+    if (resourceSearchInput) {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        resourceSearchInput,
+        "parking permit",
+      );
+      resourceSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await settleLifecycle();
+    }
+    const updatedResourceSearch = document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLElement>(
+        '.ba-task-finder[data-resource-search="true"]',
+      );
+    expect(
+      updatedResourceSearch?.querySelector(".ba-task-finder-common-label")
+        ?.textContent,
+    ).toContain("Try a verified starter");
+
     lifecycle.stop();
   });
 
