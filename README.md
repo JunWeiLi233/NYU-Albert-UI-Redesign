@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.92 includes:
+Version 0.5.93 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an inline verified-destination cue for single search matches, so Enter
@@ -46,6 +46,9 @@ Version 0.5.92 includes:
   its exact native anchor is verified, avoiding unrelated links when it is not;
 - a resource-search empty state that points students to Albert’s official
   directory instead of asking them to broaden an unsupported need blindly;
+- a clearly labelled “Try a verified starter” recovery group when a typed
+  resource need has no exact native link, so fallback chips are not mistaken
+  for search matches;
 - conservative orientation disambiguation that sends generic orientation
   requests to Albert's resource directory while preserving international and
   pre-arrival orientation matches for OGS;

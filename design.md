@@ -333,3 +333,6 @@ Capture and compare full-page screenshots at 400, 768, 899, 900, 1199, 1200, 143
 - Are focus, contrast, alt text, reduced motion, and semantic structure preserved?
 - Does “need help with NYU” resolve only to an exact Student Services anchor,
   with no unrelated resource matches when that anchor is absent?
+- When a typed resource need has no exact native match, are retained recovery
+  chips labelled “Try a verified starter” so they cannot be mistaken for
+  filtered results?

@@ -1699,7 +1699,9 @@ export function AppShell({
                     {isResourceSearchMode
                       ? resourceFinderIntent === "new-student"
                         ? "Start here"
-                        : "Popular resources"
+                        : hasNoTaskSearchResults
+                          ? "Try a verified starter"
+                          : "Popular resources"
                       : "Common tasks"}
                     <span className="ba-task-finder-common-scroll-hint">
                       Scroll for more
