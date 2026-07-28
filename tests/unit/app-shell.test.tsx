@@ -451,9 +451,12 @@ describe("AppShell cross-area task handoffs", () => {
           id: "course-search",
           keywords: [
             "browse classes",
+            "class search",
             "find course offerings",
+            "find classes",
             "look for a course",
             "look for classes",
+            "search for a course",
             "search for classes",
             "where can I find a course",
             "what classes are available",
@@ -482,8 +485,11 @@ describe("AppShell cross-area task handoffs", () => {
 
     for (const phrase of [
       "browse classes",
+      "class search",
       "find course offerings",
+      "find classes",
       "look for classes",
+      "search for a course",
       "search for classes",
       "what classes are available",
       "which courses are offered",
@@ -525,7 +531,7 @@ describe("AppShell cross-area task handoffs", () => {
       });
     }
 
-    expect(onOpenTool).toHaveBeenCalledTimes(6);
+    expect(onOpenTool).toHaveBeenCalledTimes(9);
     expect(onOpenTool).toHaveBeenCalledWith("course-search");
   });
 

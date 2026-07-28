@@ -6,11 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.105 includes:
+Version 0.5.106 includes:
 
 - native PeopleSoft lightboxes suppress the fixed extension shell while open,
   keeping What-If and other modal content unobscured at high zoom;
-
+- plain-language “class search,” “find classes,” and “search for a course”
+  queries use the same one-step verified Course Search handoff;
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an accessible one-step “Open …” action that announces the verified destination and keyboard handoff hint to assistive technology;
 - a visible one-step “Open …” action beside every unique verified search result, so pointer users can activate the same safe handoff without scrolling to the result card;
