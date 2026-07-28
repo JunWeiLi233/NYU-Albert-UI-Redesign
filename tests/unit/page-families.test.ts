@@ -24,8 +24,11 @@ describe("page-family task vocabulary", () => {
     expect(PAGE_FAMILY_DEFINITIONS.finances.keywords).toEqual(
       expect.arrayContaining([
         "amount due",
+        "bills payments and refunds",
         "how much owe",
+        "manage your personal finances",
         "review charges",
+        "tuition and fees",
         "what owe",
         "payment plan",
       ]),

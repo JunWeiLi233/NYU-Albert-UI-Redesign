@@ -98,8 +98,10 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
     description: "Tuition balances, bills, statements, and financial aid",
     keywords: [
       "amount due",
+      "bills payments and refunds",
       "check balance",
       "how much owe",
+      "manage your personal finances",
       "need help financial aid",
       "pay bill",
       "payment plan",
@@ -108,6 +110,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "see tuition bill",
       "student account",
       "tuition due",
+      "tuition and fees",
       "view tuition bill",
       "what owe",
     ],

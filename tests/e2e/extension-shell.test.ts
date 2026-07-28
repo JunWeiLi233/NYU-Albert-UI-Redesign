@@ -1702,6 +1702,23 @@ test("exposes task-first discovery at every supported width and delegates throug
   await expect(taskFinder).toBeHidden();
   await taskFinderToggle.press("Enter");
 
+  for (const query of [
+    "tuition and fees",
+    "bills payments and refunds",
+    "manage your personal finances",
+  ]) {
+    await taskSearch.fill(query);
+    await expect(
+      taskFinder.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      taskFinder.getByRole("button", {
+        exact: true,
+        name: "Open Finances — Check balances, pay tuition, view bills, and manage financial aid",
+      }),
+    ).toBeVisible();
+  }
+
   for (const [query, destinationName] of [
     [
       "How can I drop a class",
