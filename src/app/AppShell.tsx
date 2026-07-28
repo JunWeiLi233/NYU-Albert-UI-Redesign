@@ -734,16 +734,19 @@ export function AppShell({
           );
         })
       : [];
-  const availableResourceSearchSuggestions =
-    isResourceSearchMode && normalizedTaskSearchQuery.length === 0
-      ? RESOURCE_SEARCH_SUGGESTIONS.filter(({ toolId }) =>
-          availableResourceTools.some((tool) => tool.id === toolId),
-        )
-      : [];
   const filteredResultCount =
     filteredTaskFamilies.length +
     filteredTaskTools.length +
     filteredResourceTools.length;
+  const hasNoTaskSearchResults =
+    normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
+  const availableResourceSearchSuggestions =
+    isResourceSearchMode &&
+    (normalizedTaskSearchQuery.length === 0 || hasNoTaskSearchResults)
+      ? RESOURCE_SEARCH_SUGGESTIONS.filter(({ toolId }) =>
+          availableResourceTools.some((tool) => tool.id === toolId),
+        )
+      : [];
   const singleTaskSearchResult =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1
       ? (() => {
@@ -780,8 +783,6 @@ export function AppShell({
         })()
       : undefined;
   const hasFilteredResults = filteredResultCount > 0;
-  const hasNoTaskSearchResults =
-    normalizedTaskSearchQuery.length > 0 && !hasFilteredResults;
   const taskSearchResultSummary =
     normalizedTaskSearchQuery.length === 0
       ? `${filteredResultCount} verified destinations available`

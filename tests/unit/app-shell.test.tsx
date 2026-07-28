@@ -108,4 +108,86 @@ describe("AppShell cross-area task handoffs", () => {
     expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
     expect(onNavigate).toHaveBeenCalledWith("home");
   });
+
+  it("keeps verified resource starters available after an empty resource search", async () => {
+    document.body.innerHTML = `
+      <nav id="IS_BB_HEADER_MENU">
+        <li
+          id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+          class="megaMenuSelected"
+          onclick="toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected');"
+        >
+          <a href="#">Other Resources</a>
+        </li>
+        <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
+          <a href="#calendar">Academic Calendar</a>
+        </div>
+      </nav>
+    `;
+
+    const onOpenResource = vi.fn();
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "academic-records",
+          description: "Check NYU academic dates and deadlines",
+          featured: true,
+          id: "academic-calendar",
+          keywords: ["academic calendar", "dates"],
+          label: "Academic Calendar",
+          nativeLabels: ["Academic Calendar"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "resources",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource,
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(shadowRoot?.textContent).toContain("Popular resources");
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "student support",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '0 results for “student support”',
+    );
+    const popularStarter = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(
+        ".ba-task-finder-common-task",
+      ) ?? [],
+    ).find((button) => button.textContent === "Academic dates");
+    expect(popularStarter).not.toBeUndefined();
+
+    await act(async () => {
+      popularStarter?.click();
+      await Promise.resolve();
+    });
+    expect(onOpenResource).toHaveBeenCalledWith("academic-calendar");
+  });
 });
