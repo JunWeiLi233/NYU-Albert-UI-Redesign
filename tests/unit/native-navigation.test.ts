@@ -43,13 +43,14 @@ describe("native Albert navigation delegation", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
-  it("preserves native click handlers while blocking javascript URL evaluation", () => {
+  it("dispatches page-owned clicks without evaluating javascript URLs in the extension", () => {
     const nativeControl = document.querySelector<HTMLAnchorElement>(
       'nav a[href="#finances"]',
     );
     nativeControl?.setAttribute("href", "javascript:void(0)");
     const click = vi.fn((event: Event) => {
-      expect(event.defaultPrevented).toBe(true);
+      expect(event.defaultPrevented).toBe(false);
+      event.preventDefault();
     });
     nativeControl?.addEventListener("click", click);
 

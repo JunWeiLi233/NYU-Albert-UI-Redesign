@@ -46,6 +46,7 @@ const TASK_SEARCH_SUGGESTIONS = [
   { label: "Class schedule", query: "class schedule" },
   { label: "Course materials", query: "course materials" },
   { label: "Academic dates", query: "academic calendar" },
+  { label: "Housing", query: "housing" },
   { label: "Check holds", query: "check holds" },
   { label: "When can I register?", query: "when can I register" },
   { label: "To-do list", query: "to do list" },
@@ -1061,8 +1062,7 @@ export function AppShell({
               ? { contextualResourceShortcut }
               : {})}
             isHomeStarter={currentPageFamily === "home"}
-            {...(currentPageFamily === "home" &&
-            availablePageFamilies.includes("resources")
+            {...(availablePageFamilies.includes("resources")
               ? {
                   onOpenResourceDirectory: () =>
                     handlePrimaryNavigation("resources"),
@@ -1212,7 +1212,7 @@ export function AppShell({
                   placeholder={
                     isResourceSearchMode
                       ? "Try financial aid, counseling, or ID card"
-                      : "Try “find a course,” “financial aid,” or “housing”"
+                      : "Try “find a course” for one-step class search, then “financial aid” or “housing”"
                   }
                   ref={taskFinderSearchRef}
                   spellCheck={false}

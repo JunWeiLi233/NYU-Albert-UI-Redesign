@@ -724,6 +724,7 @@ describe("content-script lifecycle", () => {
       "Check Account Balance",
       "Get Account Statement",
       "Check Financial Aid Status",
+      "Browse NYU resources",
     ]);
     lifecycle.stop();
   });

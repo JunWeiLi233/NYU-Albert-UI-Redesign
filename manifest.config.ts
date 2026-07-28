@@ -3,7 +3,7 @@ import { defineManifest } from "@crxjs/vite-plugin";
 export default defineManifest({
   manifest_version: 3,
   name: "Better Albert",
-  version: "0.5.4",
+  version: "0.5.6",
   description:
     "A local-first, NYU-aligned interface enhancement for NYU Albert.",
   permissions: ["storage"],
@@ -30,6 +30,17 @@ export default defineManifest({
       js: ["src/content/bootstrap.ts"],
       run_at: "document_idle",
       all_frames: true,
+    },
+    {
+      matches: [
+        "https://sis.portal.nyu.edu/*",
+        "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL*",
+        "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL*",
+      ],
+      js: ["src/content/page-world-bridge.ts"],
+      run_at: "document_start",
+      all_frames: true,
+      world: "MAIN",
     },
   ],
 });

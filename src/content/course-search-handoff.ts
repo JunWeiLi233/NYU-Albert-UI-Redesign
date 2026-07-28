@@ -188,16 +188,17 @@ function getChildFrames(document: Document): HTMLIFrameElement[] {
 
 function getFrameTargetOrigin(frame: HTMLIFrameElement): string {
   const source = parseLocation(frame.src);
-  if (source?.origin === COMPONENT_ORIGIN) {
-    return COMPONENT_ORIGIN;
-  }
-
   try {
-    if (frame.contentWindow?.location.origin === PORTAL_ORIGIN) {
-      return PORTAL_ORIGIN;
+    const currentOrigin = frame.contentWindow?.location.origin;
+    if (currentOrigin === COMPONENT_ORIGIN || currentOrigin === PORTAL_ORIGIN) {
+      return currentOrigin;
     }
   } catch {
-    // Cross-origin frames are addressed only at the allowlisted component host.
+    // Cross-origin frames fall back to their allowlisted source host.
+  }
+
+  if (source?.origin === COMPONENT_ORIGIN) {
+    return COMPONENT_ORIGIN;
   }
 
   return PORTAL_ORIGIN;
@@ -205,10 +206,15 @@ function getFrameTargetOrigin(frame: HTMLIFrameElement): string {
 
 function postOpenRequestToChildFrames(document: Document): void {
   for (const frame of getChildFrames(document)) {
-    frame.contentWindow?.postMessage(
-      { type: COURSE_SEARCH_FRAME_OPEN_MESSAGE },
-      getFrameTargetOrigin(frame),
-    );
+    try {
+      frame.contentWindow?.postMessage(
+        { type: COURSE_SEARCH_FRAME_OPEN_MESSAGE },
+        getFrameTargetOrigin(frame),
+      );
+    } catch {
+      // PeopleSoft may navigate a modal frame between origin detection and
+      // delivery. The bounded retry loop will send again once it settles.
+    }
   }
 }
 
@@ -245,10 +251,14 @@ export function createCourseSearchFrameHandoff(
       return;
     }
 
-    frame.contentWindow.postMessage(
-      { type: COURSE_SEARCH_FRAME_OPEN_MESSAGE },
-      COMPONENT_ORIGIN,
-    );
+    try {
+      frame.contentWindow.postMessage(
+        { type: COURSE_SEARCH_FRAME_OPEN_MESSAGE },
+        COMPONENT_ORIGIN,
+      );
+    } catch {
+      // The frame can be navigating between the ready event and delivery.
+    }
     expiresAt = 0;
   };
 
@@ -322,6 +332,53 @@ export function startCourseSearchFrameReceiver(
   }
 
   let handled = false;
+  let retryObserver: MutationObserver | undefined;
+  let retryTimer: number | undefined;
+
+  const stopRetry = (): void => {
+    retryObserver?.disconnect();
+    retryObserver = undefined;
+    if (retryTimer !== undefined) {
+      window.clearTimeout(retryTimer);
+      retryTimer = undefined;
+    }
+  };
+
+  const tryAdvance = (): void => {
+    if (handled) {
+      stopRetry();
+      return;
+    }
+
+    if (advanceToNativeClassSearch(document)) {
+      handled = true;
+      stopRetry();
+      return;
+    }
+
+    if (!retryObserver && document.documentElement && window.MutationObserver) {
+      retryObserver = new window.MutationObserver(() => tryAdvance());
+      retryObserver.observe(document.documentElement, {
+        attributeFilter: [
+          "aria-checked",
+          "aria-hidden",
+          "aria-selected",
+          "checked",
+          "class",
+          "disabled",
+          "hidden",
+          "style",
+        ],
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+    }
+
+    if (retryTimer === undefined) {
+      retryTimer = window.setTimeout(stopRetry, COURSE_SEARCH_INTENT_TTL_MS);
+    }
+  };
 
   const handleOpenRequest = (event: MessageEvent): void => {
     if (
@@ -333,7 +390,7 @@ export function startCourseSearchFrameReceiver(
       return;
     }
 
-    handled = advanceToNativeClassSearch(document);
+    tryAdvance();
   };
 
   window.addEventListener("message", handleOpenRequest);
@@ -342,5 +399,8 @@ export function startCourseSearchFrameReceiver(
     PORTAL_ORIGIN,
   );
 
-  return () => window.removeEventListener("message", handleOpenRequest);
+  return () => {
+    stopRetry();
+    window.removeEventListener("message", handleOpenRequest);
+  };
 }
