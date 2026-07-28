@@ -82,6 +82,22 @@ const RESOURCE_SEARCH_SUGGESTIONS = [
   toolId: PageToolId;
 }[];
 
+const NEW_STUDENT_RESOURCE_STARTER_ORDER = [
+  "academic-calendar",
+  "nyu-brightspace",
+  "financial-aid-resources",
+  "nyu-card-center",
+  "ogs",
+  "wellness-center",
+  "housing",
+  "nyu-connect",
+  "campus-safety",
+] as const satisfies readonly PageToolId[];
+
+const NEW_STUDENT_RESOURCE_STARTER_RANK = new Map<PageToolId, number>(
+  NEW_STUDENT_RESOURCE_STARTER_ORDER.map((toolId, index) => [toolId, index]),
+);
+
 const OFFICIAL_TRANSCRIPT_SHORTCUT = {
   afterToolId: "unofficial-transcript",
   description:
@@ -789,13 +805,29 @@ export function AppShell({
     filteredResourceTools.length;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
-  const availableResourceSearchSuggestions =
-    isResourceSearchMode &&
-    (normalizedTaskSearchQuery.length === 0 || hasNoTaskSearchResults)
-      ? RESOURCE_SEARCH_SUGGESTIONS.filter(({ toolId }) =>
-          availableResourceTools.some((tool) => tool.id === toolId),
-        )
-      : [];
+  const availableResourceSearchSuggestions = (() => {
+    if (
+      !isResourceSearchMode ||
+      (normalizedTaskSearchQuery.length > 0 && !hasNoTaskSearchResults)
+    ) {
+      return [];
+    }
+
+    const suggestions = RESOURCE_SEARCH_SUGGESTIONS.filter(({ toolId }) =>
+      availableResourceTools.some((tool) => tool.id === toolId),
+    );
+    if (resourceFinderIntent !== "new-student") {
+      return suggestions;
+    }
+
+    return [...suggestions].sort(
+      ({ toolId: leftToolId }, { toolId: rightToolId }) =>
+        (NEW_STUDENT_RESOURCE_STARTER_RANK.get(leftToolId) ??
+          NEW_STUDENT_RESOURCE_STARTER_ORDER.length) -
+        (NEW_STUDENT_RESOURCE_STARTER_RANK.get(rightToolId) ??
+          NEW_STUDENT_RESOURCE_STARTER_ORDER.length),
+    );
+  })();
   const singleTaskSearchResult =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1
       ? (() => {

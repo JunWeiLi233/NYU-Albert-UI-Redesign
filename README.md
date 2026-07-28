@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.87 includes:
+Version 0.5.88 includes:
 
 - a Vite, CRXJS, React, and TypeScript MV3 build;
 - an inline verified-destination cue for single search matches, so Enter
@@ -34,6 +34,9 @@ Version 0.5.87 includes:
 - a newcomer-aware resource handoff that keeps the “New student help” intent
   visible when Albert's verified directory opens, with a clear “Start here”
   cue for first-week services;
+- a first-week starter order that puts academic dates, course materials,
+  financial aid, ID cards, international-student help, health, housing, and
+  student success before broader resource categories in newcomer search;
 - conservative orientation disambiguation that sends generic orientation
   requests to Albert's resource directory while preserving international and
   pre-arrival orientation matches for OGS;

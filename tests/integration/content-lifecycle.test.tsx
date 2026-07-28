@@ -318,6 +318,28 @@ describe("content-script lifecycle", () => {
     expect(
       resourceSearch?.querySelector(".ba-task-finder-common-label")?.textContent,
     ).toContain("Start here");
+    expect(
+      Array.from(
+        resourceSearch?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-common-task",
+        ) ?? [],
+      ).map((button) => button.textContent),
+    ).toEqual([
+      "Academic dates",
+      "Course materials",
+      "Financial aid",
+      "ID card",
+      "International students",
+      "Health & counseling",
+      "Housing",
+      "Student success",
+      "Campus safety",
+      "Academic support",
+      "Student life",
+      "Career help",
+      "Tech & Wi-Fi",
+      "Student support",
+    ]);
 
     lifecycle.stop();
   });
