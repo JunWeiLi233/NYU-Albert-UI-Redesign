@@ -600,6 +600,12 @@ test("exposes task-first discovery at every supported width and delegates throug
   const nativeHomeDirectory = page.locator("#nyuSSSHomeLinksStatic");
 
   await expect(taskFinderToggle).toBeVisible();
+  await expect(
+    page.getByText(
+      "Your starting point for classes, first-week help, and time-sensitive tasks",
+      { exact: true },
+    ),
+  ).toBeVisible();
   await expect(taskFinderToggle).toContainText(
     "Find classes, resources, and new-student help",
   );

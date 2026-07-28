@@ -31,7 +31,8 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
   },
   home: {
     label: "Home",
-    description: "Your Albert overview and time-sensitive tasks",
+    description:
+      "Your starting point for classes, first-week help, and time-sensitive tasks",
     keywords: [
       "class schedule",
       "check holds",
