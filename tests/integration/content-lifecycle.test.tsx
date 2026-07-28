@@ -22,6 +22,10 @@ const fixture = readFileSync(
   resolve(process.cwd(), "tests/fixtures/albert-shell.html"),
   "utf8",
 );
+const genericDeepFixture = readFileSync(
+  resolve(process.cwd(), "tests/fixtures/albert-generic-deep-page.html"),
+  "utf8",
+);
 
 const portalUrl = new URL(
   "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/?cmd=start",
@@ -673,6 +677,37 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       false,
     );
+  });
+
+  it("mounts the shell on a headed generic PeopleSoft utility page", async () => {
+    const parsed = new DOMParser().parseFromString(
+      genericDeepFixture,
+      "text/html",
+    );
+    document.documentElement.innerHTML = parsed.documentElement.innerHTML;
+
+    const lifecycle = await startContentScript({
+      document,
+      location: new URL(
+        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open",
+      ),
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    expect(document.documentElement.dataset.betterAlbertAdapter).toBe(
+      "peoplesoft-deep",
+    );
+    expect(shadowRoot?.querySelector(".ba-page-title")?.textContent).toBe(
+      "Personal Info",
+    );
+    expect(shadowRoot?.textContent).toContain("Official data stays in Albert");
+    expect(document.querySelector("form")?.getAttribute("action")).toBe(
+      "/synthetic/pronouns",
+    );
+
+    lifecycle.stop();
   });
 
   it("re-evaluates delayed same-origin parent evidence and authentication", async () => {
