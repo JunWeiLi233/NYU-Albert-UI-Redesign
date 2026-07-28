@@ -146,6 +146,16 @@ describe("page-family native tools", () => {
       { id: "financial-aid-status", pageFamily: "finances" },
       { id: "addresses", pageFamily: "personal" },
     ]);
+    expect(
+      getAvailableTaskTools(document).find(
+        ({ id }) => id === "advisor-appointment",
+      )?.keywords,
+    ).toEqual(
+      expect.arrayContaining([
+        "advisor appointment",
+        "schedule advisor appointment",
+      ]),
+    );
     expect(openNativePageTool(document, "financial-aid-status")).toBe(true);
     expect(click).toHaveBeenCalledOnce();
     expect(document.activeElement).not.toBe(

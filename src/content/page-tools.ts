@@ -732,9 +732,13 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       description: "Schedule time with your academic advisor",
       id: "advisor-appointment",
       keywords: [
+        "academic advisor appointment",
+        "advisor appointment",
         "advising help",
         "meet advisor",
         "schedule advisor",
+        "schedule advisor appointment",
+        "schedule meeting with advisor",
         "talk to advisor",
       ],
       label: "Schedule Advisor Meeting",
