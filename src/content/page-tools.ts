@@ -638,6 +638,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "academic help",
       "academic tutoring",
       "academic tutoring at nyu",
+      "the writing center hosted by cas",
       "help with classes",
       "study help",
       "tutoring",

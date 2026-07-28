@@ -26,6 +26,8 @@ describe("page-family task vocabulary", () => {
         "academic advisor",
         "academic planning",
         "academic planning and support",
+        "accelerated studies",
+        "undergraduate advisement",
         "your academic advisor",
       ]),
     );
@@ -138,6 +140,8 @@ describe("page-family task vocabulary", () => {
         "public transportation discounts",
         "report an incident",
         "writing center",
+        "student complaint information",
+        "speaking freely",
       ]),
     );
   });

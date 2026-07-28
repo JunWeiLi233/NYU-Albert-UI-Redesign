@@ -1803,7 +1803,25 @@ test("exposes task-first discovery at every supported width and delegates throug
       "your academic advisor",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
     ],
+    [
+      "undergraduate advisement",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    ["accelerated studies", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["academic tutoring at nyu", "Open Academic Support"],
+    ["The Writing Center hosted by CAS", "Open Academic Support"],
+    [
+      "student complaint information",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Kaplan All Access",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Speaking Freely",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
     ["access clinical care", "Open Wellness Center"],
     ["book an appointment with nyu connect", "Open NYU Connect"],
     ["leadership opportunities", "Open Student Life"],
