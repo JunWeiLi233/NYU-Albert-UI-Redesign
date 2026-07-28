@@ -70,8 +70,13 @@ describe("page-family task vocabulary", () => {
     expect(PAGE_FAMILY_DEFINITIONS.grades.keywords).toEqual(
       expect.arrayContaining([
         "enrollment letter",
+        "enrollment proof",
         "graduation",
         "graduation requirements",
+        "national student clearinghouse",
+        "official transcript",
+        "proof of enrollment",
+        "unofficial transcript",
       ]),
     );
   });

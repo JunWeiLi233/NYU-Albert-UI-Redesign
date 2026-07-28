@@ -6,8 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.113 includes:
+Version 0.5.114 includes:
 
+- enrollment and records wording such as “proof of enrollment,” “unofficial
+  transcript,” “official transcript,” and “MyHub enrollment” now reaches the
+  verified Grades & Transcripts workspace from other Albert areas;
 - accessibility and newcomer support phrases such as “disability support,”
   “testing accommodations,” “campus accessibility,” “academic support,”
   “student life,” and “I need help with NYU” now reach the verified Other
