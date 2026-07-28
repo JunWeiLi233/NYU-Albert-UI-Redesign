@@ -477,6 +477,8 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "dorm",
       "room",
       "room assignment",
+      "roommate",
+      "roommate matching",
       "room change",
     ],
     label: "Housing",

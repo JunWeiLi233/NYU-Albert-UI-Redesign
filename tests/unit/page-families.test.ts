@@ -42,6 +42,12 @@ describe("page-family task vocabulary", () => {
         "orientation",
         "new student orientation",
         "parking",
+        "disability services",
+        "accessibility",
+        "bookstore",
+        "campus map",
+        "transit",
+        "shuttle",
       ]),
     );
   });
