@@ -1792,6 +1792,26 @@ test("exposes task-first discovery at every supported width and delegates throug
   await expect(taskFinder).toBeVisible();
   await expect(taskSearch).toBeFocused();
 
+  await taskSearch.fill("new address");
+  await expect(
+    taskFinder.getByText('1 result for “new address”', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    taskFinder.getByRole("button", {
+      exact: true,
+      name: "Open Update Addresses — Change or review a saved address in Albert",
+    }),
+  ).toBeVisible();
+  await expect(
+    taskFinder.getByRole("button", {
+      exact: true,
+      name: "Open Update Email Addresses — Change or review a saved email in Albert",
+    }),
+  ).toHaveCount(0);
+  await taskSearch.press("Enter");
+  await expect(taskFinder).toBeVisible();
+  await expect(taskSearch).toBeFocused();
+
   await taskSearch.fill("finacial aid");
   await expect(
     taskFinder.getByText('2 results for “finacial aid”', { exact: true }),

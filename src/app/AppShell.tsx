@@ -496,11 +496,19 @@ export function AppShell({
       // “financial aid” open the NYU resource on Enter instead of making a
       // new student choose between Finances and Financial Aid.
       const hasExactResourceResult = exactResourceTools.length > 0;
-      const taskTools = isResourceSearchMode || hasExactResourceResult
-        ? []
-        : availableTaskTools.filter((tool) =>
-            matchesTool(tool, searchQuery, allowTypos),
-          );
+      const matchingTaskTools =
+        isResourceSearchMode || hasExactResourceResult
+          ? []
+          : availableTaskTools.filter((tool) =>
+              matchesTool(tool, searchQuery, allowTypos),
+            );
+      const exactTaskTools = matchingTaskTools.filter((tool) =>
+        [tool.label, ...(tool.keywords ?? [])].some(
+          (value) => normalizeTaskSearchValue(value) === meaningfulQuery,
+        ),
+      );
+      const taskTools =
+        exactTaskTools.length > 0 ? exactTaskTools : matchingTaskTools;
       const hasDirectTaskResult =
         searchQuery.length > 0 && taskTools.length > 0;
       const taskFamilies = isResourceSearchMode || hasExactResourceResult
