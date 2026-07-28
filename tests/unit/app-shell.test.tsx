@@ -438,6 +438,91 @@ describe("AppShell cross-area task handoffs", () => {
     expect(onOpenTool).toHaveBeenCalledWith("course-search");
   });
 
+  it("accepts concise student wording for one-step class search", async () => {
+    const onOpenTool = vi.fn();
+
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [
+        {
+          description: "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          keywords: [
+            "browse classes",
+            "find course offerings",
+            "look for classes",
+            "search for classes",
+          ],
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+          pageFamily: "home",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool,
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const finderToggle = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Find a task"]',
+    );
+    expect(finderToggle).not.toBeNull();
+
+    for (const phrase of [
+      "browse classes",
+      "find course offerings",
+      "look for classes",
+      "search for classes",
+    ]) {
+      await act(async () => {
+        finderToggle?.click();
+        await Promise.resolve();
+      });
+      const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+        'input[type="search"]',
+      );
+      expect(taskSearch).not.toBeNull();
+      if (!taskSearch) {
+        return;
+      }
+
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          phrase,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      expect(shadowRoot?.textContent).toContain(`1 result for “${phrase}”`);
+      expect(shadowRoot?.textContent).toContain(
+        "Verified destination: Find Classes",
+      );
+
+      await act(async () => {
+        taskSearch.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            bubbles: true,
+            cancelable: true,
+            key: "Enter",
+          }),
+        );
+      });
+    }
+
+    expect(onOpenTool).toHaveBeenCalledTimes(4);
+    expect(onOpenTool).toHaveBeenCalledWith("course-search");
+  });
+
   it("keeps verified resource starters available after an empty resource search", async () => {
     document.body.innerHTML = `
       <nav id="IS_BB_HEADER_MENU">
