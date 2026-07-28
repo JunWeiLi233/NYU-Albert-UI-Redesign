@@ -4309,6 +4309,16 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     });
   await page
     .locator(
+      '#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR > ul > li > a[href="/fixture-wasserman"]',
+    )
+    .evaluate((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        document.body.dataset.nativeResourceSearchActivated = "wasserman";
+      });
+    });
+  await page
+    .locator(
       '#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR > ul > li > a[href="/fixture-ogs"]',
     )
     .evaluate((link) => {
@@ -4608,6 +4618,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "commuter student",
     "LGBTQ center",
     "spiritual life",
+    "student activities board",
     "student parent",
     "veteran student",
   ]) {
@@ -4627,6 +4638,30 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-resource-search-activated",
     "student-life",
+  );
+  await expect(resourceSearch).toBeHidden();
+  await expect(nativeOverlay).toBeVisible();
+  await resourceSearchToggle.click();
+  await expect(resourceSearch).toBeVisible();
+  await expect(resourceSearchInput).toBeFocused();
+
+  for (const query of ["career development", "career center", "internships"]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Wasserman",
+      }),
+    ).toBeVisible();
+  }
+  await resourceSearchInput.fill("career development");
+  await resourceSearchInput.press("Enter");
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-resource-search-activated",
+    "wasserman",
   );
   await expect(resourceSearch).toBeHidden();
   await expect(nativeOverlay).toBeVisible();

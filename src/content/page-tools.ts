@@ -275,6 +275,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
     keywords: [
       "career",
       "career center",
+      "career development",
       "career help",
       "jobs",
       "internships",
@@ -622,6 +623,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "religious life",
       "spiritual life",
       "student activities",
+      "student activities board",
       "student clubs",
       "student organizations",
       "student parent",
