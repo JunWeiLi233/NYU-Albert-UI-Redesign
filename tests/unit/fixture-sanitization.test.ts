@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 const fixtureFiles = [
   "tests/fixtures/albert-shell.html",
   "tests/fixtures/albert-deep-page.html",
+  "tests/fixtures/albert-generic-deep-page.html",
   "tests/fixtures/albert-class-search.html",
   "tests/fixtures/albert-class-search-empty.html",
   "tests/fixtures/albert-class-search-error.html",

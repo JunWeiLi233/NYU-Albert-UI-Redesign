@@ -333,6 +333,39 @@ describe("structural adapter manager", () => {
     expect(document.documentElement.outerHTML).toBe(before);
   });
 
+  it("adapts a trusted generic PeopleSoft response wrapper", () => {
+    const document = fixture("tests/fixtures/albert-generic-deep-page.html");
+    const manager = new AdapterManager();
+    const root = document.querySelector("#IS_AC_RESPONSE > .ptprtlcontainer");
+    const form = document.querySelector("form");
+    const before = document.documentElement.outerHTML;
+
+    expect(
+      manager.reconcile({
+        document,
+        location: new URL(
+          "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open",
+        ),
+        pageFamily: "personal",
+        topLevel: true,
+      }),
+    ).toBe("peoplesoft-deep");
+    expect(document.documentElement.dataset.betterAlbertAdapter).toBe(
+      "peoplesoft-deep",
+    );
+    const title = document.querySelector('[data-better-albert-region="page-title"]');
+    expect(title?.textContent).toContain("Pronouns");
+    expect(document.querySelector('[data-better-albert-region="form"]')).toBe(
+      form,
+    );
+    expect(root?.getAttribute("data-better-albert-layout")).toBe(
+      "peoplesoft-page",
+    );
+
+    manager.rollback();
+    expect(document.documentElement.outerHTML).toBe(before);
+  });
+
   it("creates the exact Class Search workspace and preserves transaction controls", () => {
     const document = fixture("tests/fixtures/albert-class-search.html");
     const manager = new AdapterManager();

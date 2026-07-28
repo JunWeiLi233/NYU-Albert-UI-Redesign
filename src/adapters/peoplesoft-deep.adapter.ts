@@ -27,13 +27,21 @@ export class PeopleSoftDeepAdapter implements StructuralAdapter<DeepPagePlan> {
   readonly priority = 200;
 
   prepare(context: AdapterContext): DeepPagePlan | undefined {
-    const root = uniqueElement(context.document, ".ps_box-page");
+    // Classic deep components expose a stable `.ps_box-page` root. A small
+    // set of authenticated Albert utility pages (for example Pronouns & Name
+    // Pronunciation) uses the same PeopleSoft response contract without that
+    // class, so use its single response wrapper as the bounded fallback. The
+    // document detector still requires positive Albert evidence or a trusted
+    // related opener before this adapter can run.
+    const root =
+      uniqueElement(context.document, ".ps_box-page") ??
+      uniqueElement(context.document, "#IS_AC_RESPONSE > .ptprtlcontainer");
     if (!root) {
       return undefined;
     }
 
     const title = root.querySelector(
-      ":scope > .ps_box-pagetitle, :scope > .PAPAGETITLE, :scope > h1",
+      ".ps_box-pagetitle, .PAPAGETITLE, h1, [role='heading']",
     ) ?? undefined;
     const groups = Array.from(
       root.querySelectorAll(":scope > .PSGROUPBOX, :scope > .ps_box-group"),
