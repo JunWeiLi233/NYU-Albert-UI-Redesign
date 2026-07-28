@@ -1778,6 +1778,29 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Other Resources — NYU services, offices, and support",
     ],
     [
+      "trainings and workshops",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "inclusive dialogue institute",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "community standards",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "office of the dean of students",
+      "Open Student Services",
+    ],
+    ["report a concern", "Open Campus Safety"],
+    ["wellness workshops", "Open Wellness Center"],
+    ["mindfulnyu", "Open Student Life"],
+    [
+      "centers for connection and community",
+      "Open Student Life",
+    ],
+    [
       "housing and dining",
       "Open Other Resources — NYU services, offices, and support",
     ],
@@ -4574,6 +4597,8 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "multicultural education and programs",
     "veteran services",
     "global spiritual life",
+    "MindfulNYU",
+    "Centers for Connection and Community",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -5043,6 +5068,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "wellness exchange",
     "counseling services",
     "health education",
+    "Wellness Workshops",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -5059,6 +5085,20 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await resourceSearchInput.fill("I need help");
   await expect(
     resourceSearch.getByText('1 result for “I need help”', { exact: true }),
+  ).toBeVisible();
+
+  await resourceSearchInput.fill("Office of the Dean of Students");
+  await expect(
+    resourceSearch.getByText(
+      '1 result for “Office of the Dean of Students”',
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    resourceSearch.getByRole("button", {
+      exact: true,
+      name: "Open Student Services",
+    }),
   ).toBeVisible();
   await expect(
     resourceSearch.getByRole("button", {
@@ -5116,6 +5156,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     ["counselor", "Open Wellness Center"],
     ["career center", "Open Wasserman"],
     ["I feel unsafe", "Open Campus Safety"],
+    ["Report a Concern", "Open Campus Safety"],
   ] as const) {
     await resourceSearchInput.fill(query);
     await expect(
