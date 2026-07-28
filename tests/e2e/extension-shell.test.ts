@@ -1710,6 +1710,18 @@ test("exposes task-first discovery at every supported width and delegates throug
       "student guides",
       "Open Other Resources — NYU services, offices, and support",
     ],
+    [
+      "key links",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "student information and resources",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "getting around campus",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
     ["browse the course catalog", "Open Find Classes — Search by subject, course number, title, or instructor"],
     [
       "new student",

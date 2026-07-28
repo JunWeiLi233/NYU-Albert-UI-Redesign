@@ -92,6 +92,12 @@ describe("page-family task vocabulary", () => {
         "studentlink",
         "student guides",
         "resources for students",
+        "key links",
+        "student information and resources",
+        "academic and campus resources",
+        "getting around campus",
+        "get support",
+        "wellbeing",
       ]),
     );
   });
