@@ -65,6 +65,8 @@ describe("page-family task vocabulary", () => {
         "student support",
         "technology help",
         "wifi",
+        "advice for your first semester",
+        "advice for transfer students",
         "printing",
         "libraries",
         "maps",

@@ -1796,6 +1796,14 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Other Resources — NYU services, offices, and support",
     ],
     [
+      "Advice for Your First Semester",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Advice for Transfer Students",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
       "Where do I see my tuition bill",
       "Open Finances — Check balances, pay tuition, view bills, and manage financial aid",
     ],

@@ -162,6 +162,8 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "counseling",
       "disability services",
       "accessibility",
+      "advice for your first semester",
+      "advice for transfer students",
       "feeling unsafe",
       "first year student",
       "get help",
