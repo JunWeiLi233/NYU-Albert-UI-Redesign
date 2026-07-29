@@ -736,6 +736,80 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("carries Home class search through verified Academics when Home has no Course Search link", async () => {
+    const nativeHome = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-home"]',
+    );
+    const nativeAcademics = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-academics"]',
+    );
+    const nativeCourseSearch = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-course-search"]',
+    );
+    const nativeCourseSearchParent = nativeCourseSearch?.parentNode;
+    const nativeCourseSearchNextSibling = nativeCourseSearch?.nextSibling;
+    nativeCourseSearch?.remove();
+
+    const nativeAcademicsClick = vi.fn((event: Event) => {
+      event.preventDefault();
+      nativeHome?.removeAttribute("aria-current");
+      nativeAcademics?.setAttribute("aria-current", "page");
+
+      const linkColumn = document.querySelector<HTMLElement>(
+        "#nyuSSSHomeLinksStatic .is_bb_LinkColumn",
+      );
+      const item = document.createElement("div");
+      item.className = "is_bb_LinkItem";
+      const courseSearch = document.createElement("a");
+      courseSearch.href = "/fixture-course-search";
+      courseSearch.textContent = "Course Search";
+      item.append(courseSearch);
+      linkColumn?.prepend(item);
+    });
+    nativeAcademics?.addEventListener("click", nativeAcademicsClick);
+
+    const nativeCourseSearchClick = vi.fn((event: Event) =>
+      event.preventDefault(),
+    );
+    document
+      .getElementById("nyuSSSHomeLinksStatic")
+      ?.addEventListener("click", (event) => {
+        if (
+          event.target instanceof HTMLAnchorElement &&
+          event.target.textContent?.trim() === "Course Search"
+        ) {
+          nativeCourseSearchClick(event);
+        }
+      });
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shortcut = document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-course-search-shortcut",
+      );
+
+    expect(shortcut?.dataset.courseSearchMode).toBe("home");
+    expect(shortcut?.textContent).toContain("Open Academics to find classes");
+    shortcut?.click();
+    await settleLifecycle();
+
+    expect(nativeAcademicsClick).toHaveBeenCalledOnce();
+    expect(nativeCourseSearchClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+    if (nativeCourseSearch && nativeCourseSearchParent) {
+      nativeCourseSearchParent.insertBefore(
+        nativeCourseSearch,
+        nativeCourseSearchNextSibling ?? null,
+      );
+    }
+  });
+
   it("delegates a universal resource shortcut to the original hidden native link", async () => {
     const nativeWellness = document.querySelector<HTMLAnchorElement>(
       'a[href="/fixture-wellness"]',
