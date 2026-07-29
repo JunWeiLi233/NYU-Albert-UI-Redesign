@@ -3355,7 +3355,11 @@ describe("AppShell cross-area task handoffs", () => {
           "Get help with your bill, financial aid, registration, and more",
         featured: false,
         id: "studentlink" as const,
-        keywords: ["studentlink", "student link"],
+        keywords: [
+          "studentlink",
+          "student link",
+          "help with you bill financial aid registration and more",
+        ],
         label: "StudentLink",
         nativeLabels: ["StudentLink"],
       },
@@ -3470,6 +3474,7 @@ describe("AppShell cross-area task handoffs", () => {
       "Student supportFind general student services and support›",
     ]);
     expect(shadowRoot?.textContent).toContain("Start here");
+
     const supportLinks = shadowRoot?.querySelector<HTMLElement>(
       '[aria-label="Get Support"]',
     );
@@ -3485,6 +3490,7 @@ describe("AppShell cross-area task handoffs", () => {
       "Student successSchedule support appointments and view your Success Network›",
       "Get involvedFind clubs, activities, and community support›",
     ]);
+
     expect(
       Array.from(
         studentGuides?.querySelectorAll<HTMLButtonElement>(
@@ -3537,6 +3543,21 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).toContain("Try a verified starter");
     expect(shadowRoot?.textContent).not.toContain(
       "Verified destination: Academic Calendar",
+    );
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "Help with you bill, financial aid, registration, and more",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “Help with you bill, financial aid, registration, and more”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: StudentLink",
     );
 
   });
