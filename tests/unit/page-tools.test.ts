@@ -81,11 +81,15 @@ describe("page-family native tools", () => {
       <section class="is_bb_LinkContainer">
         <a href="#degree">Degree Progress Report</a>
       </section>
+      <section data-better-albert-region="holds-status"></section>
+      <section data-better-albert-region="registration-time"></section>
       <section data-better-albert-region="grade-viewer"></section>
     `;
 
     const resourceTools = getAvailableResourceTools(document);
     const tools = getAvailableTaskTools(document);
+    const holds = tools.find(({ id }) => id === "holds-status");
+    const registrationTime = tools.find(({ id }) => id === "registration-time");
     const degreeProgress = tools.find(({ id }) => id === "degree-progress");
     const viewGrades = tools.find(({ id }) => id === "view-grades");
 
@@ -97,6 +101,14 @@ describe("page-family native tools", () => {
         "additional important dates and deadlines",
         "pass fail grade option deadline",
       ]),
+    );
+    expect(holds?.keywords).toEqual(
+      expect.arrayContaining([
+        "make sure you don't have any registration holds that will block you from registering",
+      ]),
+    );
+    expect(registrationTime?.keywords).toEqual(
+      expect.arrayContaining(["check your registration date and time"]),
     );
     expect(degreeProgress?.keywords).toEqual(
       expect.arrayContaining([

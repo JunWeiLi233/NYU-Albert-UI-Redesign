@@ -2035,6 +2035,9 @@ describe("AppShell cross-area task handoffs", () => {
           description: "Search by subject, course number, title, or instructor",
           id: "course-search",
           keywords: [
+            "add and validate your classes to your shopping cart",
+            "browse available classes",
+            "enroll in classes for the next term at your designated registration day and time",
             "register",
             "where can i register",
             "registering for classes",
@@ -2075,6 +2078,9 @@ describe("AppShell cross-area task handoffs", () => {
       "how do I register",
       "registering for classes",
       "navigate the registration process",
+      "browse available classes",
+      "add and validate your classes to your Shopping Cart",
+      "enroll in classes for the next term at your designated registration day and time",
     ]) {
       await act(async () => {
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
@@ -2099,11 +2105,96 @@ describe("AppShell cross-area task handoffs", () => {
           ?.click();
       });
     }
-    expect(onOpenTool).toHaveBeenCalledTimes(4);
+    expect(onOpenTool).toHaveBeenCalledTimes(7);
     expect(onOpenTool).toHaveBeenNthCalledWith(1, "course-search");
     expect(onOpenTool).toHaveBeenNthCalledWith(2, "course-search");
     expect(onOpenTool).toHaveBeenNthCalledWith(3, "course-search");
     expect(onOpenTool).toHaveBeenNthCalledWith(4, "course-search");
+  });
+
+  it("routes live registration checklist wording to the shortest safe destination", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics", "finances", "personal"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [
+        {
+          description: "Review current registration holds",
+          id: "holds-status",
+          keywords: [
+            "make sure you don't have any registration holds that will block you from registering",
+          ],
+          label: "Check Holds",
+          nativeLabels: [],
+          pageFamily: "home",
+        },
+        {
+          description: "Check when you can register",
+          id: "registration-time",
+          keywords: ["check your registration date and time"],
+          label: "When Can I Register?",
+          nativeLabels: [],
+          pageFamily: "home",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    for (const [query, destination] of [
+      [
+        "Check your registration date and time",
+        "Verified destination: When Can I Register?",
+      ],
+      [
+        "Make sure you don't have any registration holds that will block you from registering",
+        "Verified destination: Check Holds",
+      ],
+      [
+        "Meet with your advisor to discuss your class schedule and review your degree requirements",
+        "Verified destination: Academics",
+      ],
+      [
+        "Make sure your contact information is up-to-date in Albert",
+        "Verified destination: Personal Info",
+      ],
+      [
+        "Check your Bursar and Financial Aid Accounts",
+        "Verified destination: Finances",
+      ],
+      ["Waitlists, Swap, and Edit Swap", "Verified destination: Academics"],
+    ] as const) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(destination);
+    }
   });
 
   it("routes plain planning and graduation wording to verified academic tasks", async () => {
