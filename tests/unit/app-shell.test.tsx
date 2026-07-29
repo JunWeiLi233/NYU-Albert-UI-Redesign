@@ -1019,7 +1019,7 @@ describe("AppShell cross-area task handoffs", () => {
       "Verified destination: Other Resources",
     );
     expect(shadowRoot?.querySelectorAll(".ba-task-finder-resource")).toHaveLength(
-      0,
+      1,
     );
     const openResource = shadowRoot?.querySelector<HTMLButtonElement>(
       ".ba-task-finder-search-action",

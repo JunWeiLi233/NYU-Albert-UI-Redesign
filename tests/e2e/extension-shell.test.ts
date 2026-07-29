@@ -2154,7 +2154,10 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Waitlists, Swap, and Edit Swap", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["Track Your Degree Progress", "Open Check Degree Progress — Review remaining degree requirements"],
     ["Stay on track for graduation", "Open Check Degree Progress — Review remaining degree requirements"],
-    ["Check Your Grades", "Open View Grades — Choose an academic career and term"],
+    [
+      "Check Your Grades",
+      "Open Grades & Transcripts — View grades, get transcripts, and prove enrollment",
+    ],
     ["Learn about your FERPA rights", "Open FERPA"],
     ["FERPA privacy rights and how to grant consent to disclose information", "Open FERPA"],
     ["How to request your official transcript", "Open University Registrar"],

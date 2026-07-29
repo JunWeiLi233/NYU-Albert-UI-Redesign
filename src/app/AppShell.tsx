@@ -336,6 +336,8 @@ const EXACT_PAGE_FAMILY_INTENTS = new Map<string, PrimaryPageFamily>([
   ["advisor", "academics"],
   ["student records and transcripts", "grades"],
   ["verify your enrollment or degree", "grades"],
+  ["where are my grades", "grades"],
+  ["where can i get my grades", "grades"],
   ["graduation and diplomas", "academics"],
   ["graduation checklist", "academics"],
   ["applying to graduate", "academics"],
@@ -351,6 +353,10 @@ const EXACT_PAGE_FAMILY_INTENTS = new Map<string, PrimaryPageFamily>([
   ["financial aid refunds", "finances"],
   ["when to expect a refund", "finances"],
   ["housing payments and tax documents", "finances"],
+  ["managing guest users", "personal"],
+  ["update your student records", "personal"],
+  ["updating your student records", "personal"],
+  ["certify your eligibility for ny state tap", "resources"],
   ["contact the bursar team", "finances"],
   ["uaw students", "finances"],
   ["time management", "resources"],
@@ -848,6 +854,7 @@ export function AppShell({
   const taskAreaHeadingRef = useRef<HTMLHeadingElement>(null);
   const taskShortcutHeadingRef = useRef<HTMLHeadingElement>(null);
   const resourceSectionHeadingRef = useRef<HTMLHeadingElement>(null);
+  const singleResourceContextHeadingRef = useRef<HTMLHeadingElement>(null);
   const shellRef = useRef<HTMLElement>(null);
   const primaryNavigationRef = useRef<HTMLElement>(null);
   const resourceCategoryHeadingRefs = useRef<
@@ -1197,7 +1204,7 @@ export function AppShell({
         : undefined;
       if (
         exactPageFamily &&
-        matchingTaskTools.length === 0 &&
+        (matchingTaskTools.length === 0 || exactPageFamily === "resources") &&
         !isResourceSearchMode &&
         exactResourceLabelTools.length === 0 &&
         exactResourceAliasTools.length === 0
@@ -1273,7 +1280,15 @@ export function AppShell({
                 matchesFamily(pageFamily, searchQuery, allowTypos),
             );
 
-      return { resourceTools, taskFamilies, taskTools };
+      return {
+        resourceTools:
+          searchQuery.trim().length > 0 &&
+          taskTools.some((tool) => tool.id === "course-search")
+            ? []
+            : resourceTools,
+        taskFamilies,
+        taskTools,
+      };
     };
     const strictResults = findResults(query);
     const countResults = ({
@@ -1557,6 +1572,12 @@ export function AppShell({
 
           return undefined;
         })()
+      : undefined;
+  const singleResourceTool =
+    normalizedTaskSearchQuery.length > 0 &&
+    filteredResultCount === 1 &&
+    filteredResourceTools.length === 1
+      ? filteredResourceTools[0]
       : undefined;
   const hasFilteredResults = filteredResultCount > 0;
   const taskSearchResultSummary =
@@ -2530,7 +2551,7 @@ export function AppShell({
                             filteredTaskTools[0]?.id !== "course-search"
                               ? " ba-task-finder-tool"
                               : ""
-                          }`}
+                          }${singleResourceTool ? " ba-task-finder-resource" : ""}`}
                           type="button"
                           aria-label={`Open ${singleTaskSearchResult.label}${
                             filteredResourceTools.length === 0
@@ -2546,6 +2567,15 @@ export function AppShell({
                         >
                           Open {singleTaskSearchResult.label}
                         </button>
+                        {singleResourceTool && (
+                          <section className="ba-task-finder-single-resource-context">
+                            <h3 ref={singleResourceContextHeadingRef} tabIndex={-1}>
+                              {RESOURCE_CATEGORY_DEFINITIONS[
+                                singleResourceTool.category
+                              ].label}
+                            </h3>
+                          </section>
+                        )}
                       </>
                     )}
                     <p
@@ -2640,28 +2670,50 @@ export function AppShell({
                     </>
                   )
                 ) : (
-                  !isSingleResultSearch && filteredResourceTools.length > 0 && (
-                    <button
-                      className="ba-task-finder-jump"
-                      type="button"
-                      aria-label="NYU resources"
-                      onClick={() =>
-                        focusTaskFinderTarget(
-                          resourceSectionHeadingRef.current,
-                        )
-                      }
-                    >
-                      <span className="ba-task-finder-jump-full">
-                        NYU resources
-                      </span>
-                      <span
-                        className="ba-task-finder-jump-compact"
-                        aria-hidden="true"
+                  <>
+                    {isSingleResultSearch && singleResourceTool && (
+                      <button
+                        className="ba-task-finder-jump"
+                        type="button"
+                        aria-label={
+                          RESOURCE_CATEGORY_DEFINITIONS[
+                            singleResourceTool.category
+                          ].label
+                        }
+                        onClick={() =>
+                          focusTaskFinderTarget(
+                            singleResourceContextHeadingRef.current,
+                          )
+                        }
                       >
-                        Resources
-                      </span>
-                    </button>
-                  )
+                        {RESOURCE_CATEGORY_DEFINITIONS[
+                          singleResourceTool.category
+                        ].label}
+                      </button>
+                    )}
+                    {!isSingleResultSearch && filteredResourceTools.length > 0 && (
+                      <button
+                        className="ba-task-finder-jump"
+                        type="button"
+                        aria-label="NYU resources"
+                        onClick={() =>
+                          focusTaskFinderTarget(
+                            resourceSectionHeadingRef.current,
+                          )
+                        }
+                      >
+                        <span className="ba-task-finder-jump-full">
+                          NYU resources
+                        </span>
+                        <span
+                          className="ba-task-finder-jump-compact"
+                          aria-hidden="true"
+                        >
+                          Resources
+                        </span>
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
               <button
