@@ -675,6 +675,23 @@ function isExplicitCourseSearchQuery(query: string): boolean {
   );
 }
 
+function isLikelyClassSearchRecoveryQuery(query: string): boolean {
+  const normalizedQuery = normalizeTaskSearchValue(query);
+  if (normalizedQuery.length < 3) {
+    return false;
+  }
+
+  // A free-form subject, catalog number, title, or instructor search is not
+  // necessarily a verified task alias. Keep the recovery conservative enough
+  // to avoid treating short navigation words as courses, while still making
+  // the common "biology" / "BIO 101" path one action away.
+  const words = normalizedQuery.split(/\s+/).filter(Boolean);
+  return (
+    /\d/.test(normalizedQuery) ||
+    (words.length <= 2 && words.some((word) => word.length >= 4))
+  );
+}
+
 function PageToolNavigation({
   isHomeStarter = false,
   onOpenResourceDirectory,
@@ -1435,6 +1452,11 @@ export function AppShell({
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
+  const shouldOfferCourseSearchRecovery =
+    !isResourceSearchMode &&
+    hasNoTaskSearchResults &&
+    hasCourseSearchDestination &&
+    isLikelyClassSearchRecoveryQuery(normalizedTaskSearchQuery);
   const shouldOfferNewStudentGuide =
     isResourceSearchMode &&
     resourceFinderIntent !== "new-student" &&
@@ -1832,6 +1854,11 @@ export function AppShell({
     event.preventDefault();
     if (shouldOfferNewStudentGuide) {
       openNewStudentGuide();
+      return;
+    }
+    if (shouldOfferCourseSearchRecovery) {
+      closeTaskFinder();
+      onNavigateToCourseSearch();
       return;
     }
     if (filteredResultCount !== 1) {
@@ -2532,6 +2559,31 @@ export function AppShell({
               >
                 {taskSearchResultSummary}
               </p>
+              {shouldOfferCourseSearchRecovery && (
+                <section
+                  className="ba-task-finder-course-recovery"
+                  aria-labelledby={`${taskFinderId}-course-recovery-title`}
+                >
+                  <strong id={`${taskFinderId}-course-recovery-title`}>
+                    Looking for a class?
+                  </strong>
+                  <span>
+                    Search Albert by subject, course number, title, or
+                    instructor in the verified Course Search form.
+                  </span>
+                  <button
+                    className="ba-task-finder-search-action"
+                    type="button"
+                    aria-label={`Open Find classes with ${normalizedTaskSearchQuery}`}
+                    onClick={() => {
+                      closeTaskFinder();
+                      onNavigateToCourseSearch();
+                    }}
+                  >
+                    Open Find classes
+                  </button>
+                </section>
+              )}
               {normalizedTaskSearchQuery.length > 0 &&
                 filteredResultCount === 1 && (
                   <>

@@ -692,6 +692,43 @@ button {
   color: var(--ba-color-muted-ink);
 }
 
+.ba-task-finder-course-recovery,
+.ba-task-finder-single-resource-context {
+  display: grid;
+  max-width: 38rem;
+  gap: var(--ba-space-1);
+  padding-top: var(--ba-space-2);
+  border-top: 1px solid var(--ba-color-rule);
+}
+
+.ba-task-finder-course-recovery > strong {
+  color: var(--ba-color-nyu-violet);
+  font-size: var(--ba-font-size-sm);
+}
+
+.ba-task-finder-course-recovery > span {
+  color: var(--ba-color-muted-ink);
+  font-size: var(--ba-font-size-sm);
+  line-height: 1.4;
+}
+
+.ba-task-finder-course-recovery .ba-task-finder-search-action {
+  margin-top: var(--ba-space-1);
+}
+
+.ba-task-finder-single-resource-context {
+  margin-top: calc(var(--ba-space-1) * -1);
+}
+
+.ba-task-finder-single-resource-context > h3 {
+  margin: 0;
+  color: var(--ba-color-muted-ink);
+  font-size: var(--ba-font-size-xs);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .ba-task-finder-search-action {
   width: 100%;
   max-width: 38rem;
