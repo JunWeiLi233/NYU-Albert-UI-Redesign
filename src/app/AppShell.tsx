@@ -124,6 +124,12 @@ const NEW_STUDENT_GUIDE_SEARCHES = [
   { label: "Student Tech Guide", query: "student tech guide" },
 ] as const;
 
+const NEW_STUDENT_KEY_LINKS = [
+  { label: "Academic dates", toolId: "academic-calendar" },
+  { label: "Course materials", toolId: "nyu-brightspace" },
+  { label: "Student support", toolId: "student-services" },
+] as const satisfies readonly { label: string; toolId: PageToolId }[];
+
 const NEW_STUDENT_RESOURCE_BROWSE_SUGGESTIONS = [
   { label: "Academic Services", toolId: "academic-support" },
   { label: "Getting Around Campus", toolId: "campus-resources" },
@@ -1300,14 +1306,28 @@ export function AppShell({
       return suggestions;
     }
 
-    return [...suggestions].sort(
-      ({ toolId: leftToolId }, { toolId: rightToolId }) =>
-        (NEW_STUDENT_RESOURCE_STARTER_RANK.get(leftToolId) ??
-          NEW_STUDENT_RESOURCE_STARTER_ORDER.length) -
-        (NEW_STUDENT_RESOURCE_STARTER_RANK.get(rightToolId) ??
-          NEW_STUDENT_RESOURCE_STARTER_ORDER.length),
+    const keyLinkIds = new Set<PageToolId>(
+      NEW_STUDENT_KEY_LINKS.map(({ toolId }) => toolId),
     );
+    return suggestions
+      .filter(({ toolId }) => !keyLinkIds.has(toolId))
+      .sort(
+        ({ toolId: leftToolId }, { toolId: rightToolId }) =>
+          (NEW_STUDENT_RESOURCE_STARTER_RANK.get(leftToolId) ??
+            NEW_STUDENT_RESOURCE_STARTER_ORDER.length) -
+          (NEW_STUDENT_RESOURCE_STARTER_RANK.get(rightToolId) ??
+            NEW_STUDENT_RESOURCE_STARTER_ORDER.length),
+      );
   })();
+  const availableNewStudentKeyLinks =
+    isResourceSearchMode &&
+    resourceFinderIntent === "new-student" &&
+    normalizedTaskSearchQuery.length === 0
+      ? NEW_STUDENT_KEY_LINKS.flatMap(({ label, toolId }) => {
+          const tool = availableResourceTools.find(({ id }) => id === toolId);
+          return tool ? [{ description: tool.description, label, toolId }] : [];
+        })
+      : [];
   const availableNewStudentBrowseSuggestions =
     isResourceSearchMode &&
     resourceFinderIntent === "new-student" &&
@@ -2064,6 +2084,41 @@ export function AppShell({
                   Albert’s Course Search, then enter a subject, course number,
                   title, or instructor.
                 </p>
+              )}
+              {availableNewStudentKeyLinks.length > 0 && (
+                <div
+                  className="ba-task-finder-key-links"
+                  role="group"
+                  aria-label="NYU Key Links"
+                >
+                  <div className="ba-task-finder-guides-heading">
+                    <span className="ba-task-finder-key-link-label">
+                      Key links
+                    </span>
+                    <span>
+                      Start with the essentials NYU highlights for students.
+                    </span>
+                  </div>
+                  <div className="ba-task-finder-key-link-list">
+                    {availableNewStudentKeyLinks.map(
+                      ({ description, label, toolId }) => (
+                        <button
+                          className="ba-task-finder-key-link"
+                          type="button"
+                          aria-label={`${label} — ${description}`}
+                          key={toolId}
+                          onClick={() => handleTaskFinderResource(toolId)}
+                        >
+                          <span className="ba-task-finder-item-copy">
+                            <strong>{label}</strong>
+                            <span>{description}</span>
+                          </span>
+                          <span aria-hidden="true">›</span>
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </div>
               )}
               {(availableTaskSearchSuggestions.length > 0 ||
                 availableResourceSearchSuggestions.length > 0) && (
