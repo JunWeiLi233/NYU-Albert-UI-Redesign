@@ -1234,15 +1234,12 @@ export function AppShell({
     filteredTaskFamilies.length +
     filteredTaskTools.length +
     filteredResourceTools.length;
-  const isSingleCourseSearchResult =
-    normalizedTaskSearchQuery.length > 0 &&
-    filteredResultCount === 1 &&
-    ((filteredTaskTools.length === 1 &&
-      filteredTaskTools[0]?.id === "course-search") ||
-      (filteredTaskFamilies.length === 1 &&
-        filteredTaskFamilies[0] === "home" &&
-        isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery)));
-  const isSingleResultSearch = isSingleCourseSearchResult;
+  // Keep every unique verified destination in the same compact, one-step
+  // result treatment. Course Search benefits most from the shortcut, but a
+  // newcomer who searches for one office or workspace should not have to
+  // scroll past the inventory to find the safe pointer action either.
+  const isSingleResultSearch =
+    normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
   const availableResourceSearchSuggestions = (() => {
@@ -2092,21 +2089,19 @@ export function AppShell({
                           {singleTaskSearchResult.label}
                           <span> — {singleTaskSearchResult.description}</span>
                         </p>
-                        {isSingleCourseSearchResult && (
-                          <button
-                            className="ba-task-finder-search-action"
-                            type="button"
-                            aria-label={`Open ${singleTaskSearchResult.label} — ${singleTaskSearchResult.description}`}
-                            aria-describedby={`${taskFinderId}-search-destination ${taskFinderId}-search-hint`}
-                            onClick={() =>
-                              openSingleVerifiedTaskResult(
-                                normalizedTaskSearchQuery,
-                              )
-                            }
-                          >
-                            Open {singleTaskSearchResult.label}
-                          </button>
-                        )}
+                        <button
+                          className="ba-task-finder-search-action"
+                          type="button"
+                          aria-label={`Open ${singleTaskSearchResult.label} — ${singleTaskSearchResult.description}`}
+                          aria-describedby={`${taskFinderId}-search-destination ${taskFinderId}-search-hint`}
+                          onClick={() =>
+                            openSingleVerifiedTaskResult(
+                              normalizedTaskSearchQuery,
+                            )
+                          }
+                        >
+                          Open {singleTaskSearchResult.label}
+                        </button>
                       </>
                     )}
                     <p
