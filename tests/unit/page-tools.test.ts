@@ -890,6 +890,10 @@ describe("page-family native tools", () => {
       expect.arrayContaining([
         "book an appointment with nyu connect",
         "resources for student success",
+        "make a one on one appointment and find tips for remote learning",
+        "find tips for remote learning",
+        "centralized online platform",
+        "individualized guidance",
       ]),
     );
     expect(studentServices?.keywords).not.toContain("student success");
