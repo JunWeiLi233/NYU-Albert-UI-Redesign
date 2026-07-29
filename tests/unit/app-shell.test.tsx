@@ -2993,6 +2993,24 @@ describe("AppShell cross-area task handoffs", () => {
         label: "Student Services",
         nativeLabels: ["Student Services"],
       },
+      {
+        category: "learning-career" as const,
+        description: "Schedule support appointments and view your Success Network",
+        featured: false,
+        id: "nyu-connect" as const,
+        keywords: ["student success"],
+        label: "NYU Connect",
+        nativeLabels: ["NYU Connect"],
+      },
+      {
+        category: "wellbeing-campus" as const,
+        description: "Find clubs, activities, and community support",
+        featured: false,
+        id: "student-life" as const,
+        keywords: ["clubs", "getting involved"],
+        label: "Student Life",
+        nativeLabels: ["Student Life"],
+      },
     ];
     const onNavigate = vi.fn(() => {
       document
@@ -3076,6 +3094,21 @@ describe("AppShell cross-area task handoffs", () => {
       "Student supportFind general student services and support›",
     ]);
     expect(shadowRoot?.textContent).toContain("Start here");
+    const supportLinks = shadowRoot?.querySelector<HTMLElement>(
+      '[aria-label="Get Support"]',
+    );
+    expect(supportLinks).not.toBeNull();
+    expect(
+      Array.from(
+        supportLinks?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-key-link",
+        ) ?? [],
+      ).map((button) => button.textContent?.replace(/\s+/g, " ").trim()),
+    ).toEqual([
+      "Academic supportFind tutoring and academic support›",
+      "Student successSchedule support appointments and view your Success Network›",
+      "Get involvedFind clubs, activities, and community support›",
+    ]);
     expect(
       Array.from(
         studentGuides?.querySelectorAll<HTMLButtonElement>(
@@ -3098,6 +3131,7 @@ describe("AppShell cross-area task handoffs", () => {
       "Academic Services",
       "Getting Around Campus",
       "Housing and Dining",
+      "Communities and Groups",
     ]);
 
     await act(async () => {
