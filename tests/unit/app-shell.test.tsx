@@ -88,7 +88,56 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.querySelector(".ba-task-finder-search-help")?.textContent)
       .toContain(
         "Choose Find classes to open Albert’s Course Search, then enter a subject, course number, title, or instructor.",
+    );
+  });
+
+  it("keeps advisor appointment searches on the verified Academics fallback", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    const searchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(searchInput).not.toBeNull();
+    if (!searchInput) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        searchInput,
+        "schedule advisor appointment",
       );
+      searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “schedule advisor appointment”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Academics",
+    );
   });
 
   it("does not advertise Student support without its exact verified resource", async () => {

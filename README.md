@@ -6,11 +6,15 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.130 includes:
+Version 0.5.131 includes:
 
 - the general task finder now explains the one-step Class Search handoff and
   tells students exactly which native fields they can use: subject, course
   number, title, or instructor;
+
+- specific advisor-meeting searches now fall back to the verified Academics
+  workspace when the exact appointment control is not in the current view;
+  when Albert exposes that control, the direct native action still wins;
 
 - generic newcomer prompts such as “how do I get started” now preserve the
   verified starter recovery instead of relaxing into an unrelated calendar
