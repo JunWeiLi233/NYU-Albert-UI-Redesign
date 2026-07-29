@@ -424,6 +424,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "student guides",
       "student link",
       "studentlink",
+      "studentlink center",
       "student support",
       "student activities board",
       "student services",

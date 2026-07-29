@@ -1807,6 +1807,10 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Other Resources — NYU services, offices, and support",
     ],
     [
+      "StudentLink Center",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
       "financial aid and registration",
       "Open Other Resources — NYU services, offices, and support",
     ],

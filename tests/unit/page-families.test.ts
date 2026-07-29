@@ -198,6 +198,7 @@ describe("page-family task vocabulary", () => {
         "school id",
         "student link",
         "studentlink",
+        "studentlink center",
         "student activities board",
         "academic services",
         "communities and groups",
