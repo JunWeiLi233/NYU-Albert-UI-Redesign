@@ -2065,6 +2065,14 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["NYU Bookstores", "Open Campus Resources"],
     ["Find More Student Guides", "Open Other Resources — NYU services, offices, and support"],
     ["More about StudentLink", "Open Other Resources — NYU services, offices, and support"],
+    [
+      "Help with your bill, financial aid, registration, and more",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "For answers about your bill, financial aid, registration, international student services, and more",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
     ["access clinical care", "Open Wellness Center"],
     ["book an appointment with nyu connect", "Open NYU Connect"],
     ["leadership opportunities", "Open Student Life"],

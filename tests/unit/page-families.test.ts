@@ -247,6 +247,8 @@ describe("page-family task vocabulary", () => {
         "nyu bookstores",
         "campus cash and nyu card",
         "financial education",
+        "help with your bill financial aid registration and more",
+        "answers about your bill financial aid registration international student services and more",
         "opportunity programs",
         "mlk jr scholars program",
         "resources and support for students",
