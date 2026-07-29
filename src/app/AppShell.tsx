@@ -279,6 +279,9 @@ const EXACT_TASK_INTENTS = new Map<string, PageToolId>([
 const EXACT_RAW_TASK_INTENTS = new Map<string, PageToolId>([
   ["where can i register", "course-search"],
 ]);
+const EXACT_PAGE_FAMILY_INTENTS = new Map<string, PrimaryPageFamily>([
+  ["advisor", "academics"],
+]);
 
 function normalizeTaskSearchValue(value: string): string {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -500,6 +503,12 @@ function getExactTaskIntentId(query: string): PageToolId | undefined {
     EXACT_RAW_TASK_INTENTS.get(normalizeTaskSearchValue(query)) ??
     EXACT_TASK_INTENTS.get(getMeaningfulTaskSearchValue(query))
   );
+}
+
+function getExactPageFamilyIntent(
+  query: string,
+): PrimaryPageFamily | undefined {
+  return EXACT_PAGE_FAMILY_INTENTS.get(normalizeTaskSearchValue(query));
 }
 
 function isBareBursarIntent(query: string): boolean {
@@ -944,6 +953,24 @@ export function AppShell({
           resourceTools: [],
           taskFamilies: [],
           taskTools: [exactTaskIntentTool],
+        };
+      }
+      const exactPageFamilyIntent = getExactPageFamilyIntent(searchQuery);
+      const exactPageFamily = exactPageFamilyIntent &&
+        availableTaskFamilies.includes(exactPageFamilyIntent)
+        ? exactPageFamilyIntent
+        : undefined;
+      if (
+        exactPageFamily &&
+        matchingTaskTools.length === 0 &&
+        !isResourceSearchMode &&
+        exactResourceLabelTools.length === 0 &&
+        exactResourceAliasTools.length === 0
+      ) {
+        return {
+          resourceTools: [],
+          taskFamilies: [exactPageFamily],
+          taskTools: [],
         };
       }
       const directCourseSearch = matchingTaskTools.find(

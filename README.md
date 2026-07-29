@@ -6,7 +6,10 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.121 includes:
+Version 0.5.122 includes:
+
+- the exact “advisor” search now prefers the verified Academics destination
+  over broad resource vocabulary such as spiritual-life advising;
 
 - generic newcomer prompts such as “what do I do first,” “what should I do
   first,” “where do I start,” and “how do I get started” now resolve to one
