@@ -2511,6 +2511,40 @@ describe("AppShell cross-area task handoffs", () => {
     ).not.toContain("Find classes");
   });
 
+  it("offers a verified Academics handoff for class search from Home", async () => {
+    const onNavigateToCourseSearch = vi.fn();
+
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch,
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const shortcut = shadowRoot?.querySelector<HTMLButtonElement>(
+      ".ba-course-search-shortcut",
+    );
+
+    expect(shortcut?.dataset.courseSearchMode).toBe("home");
+    expect(shortcut?.textContent).toContain("Open Academics to find classes");
+
+    await act(async () => {
+      shortcut?.click();
+      await Promise.resolve();
+    });
+
+    expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
+  });
+
   it("does not advertise Home status starters without their native controls", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],

@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.176 includes:
+Version 0.5.177 includes:
 
 - the live NYU Students hub’s exact “View the Calendar” and “Go to
   Brightspace” wording now resolves to the verified Academic Calendar and NYU
@@ -85,6 +85,10 @@ Version 0.5.176 includes:
 - newcomer resource search now mirrors the live NYU Students Key Links Albert
   card with a verified “Find classes — Open Albert Course Search” action, so a
   new student can reach one-step course search from the resource directory;
+
+- Home now exposes the same one-action class-search handoff when Albert's
+  native Course Search appears only after entering Academics; the extension
+  activates native Academics and opens its verified Course Search control;
 
 
 - newcomer resource search now adds NYU-style “Browse by student need” cues
@@ -458,7 +462,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.176` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.177` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

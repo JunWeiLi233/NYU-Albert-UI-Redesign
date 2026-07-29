@@ -884,24 +884,46 @@ export function AppShell({
   const verifiedCourseSearch = availableTaskTools.find(
     ({ id }) => id === "course-search",
   );
-  const courseSearchShortcut =
-    !isResourceSearchMode && currentPageFamily !== "home"
-      ? verifiedCourseSearch
-        ? {
-            description: verifiedCourseSearch.description,
-            mode: "direct" as const,
-          }
-        : availablePageFamilies.includes("home")
-          ? {
-              description: "Open Course Search",
-              mode: "home" as const,
-            }
-          : undefined
-      : undefined;
+  const canReachCourseSearchThroughAcademics =
+    currentPageFamily !== "academics" &&
+    availablePageFamilies.includes("academics");
+  const courseSearchShortcut = (() => {
+    if (isResourceSearchMode) {
+      return undefined;
+    }
+
+    if (verifiedCourseSearch) {
+      return {
+        description: verifiedCourseSearch.description,
+        mode: "direct" as const,
+      };
+    }
+
+    if (canReachCourseSearchThroughAcademics) {
+      return {
+        description: "Open Academics to find classes",
+        mode: "home" as const,
+      };
+    }
+
+    if (currentPageFamily !== "home" && availablePageFamilies.includes("home")) {
+      return {
+        description: "Open Course Search",
+        mode: "home" as const,
+      };
+    }
+
+    return undefined;
+  })();
   const hasCourseSearchDestination = Boolean(
     verifiedCourseSearch ||
+      canReachCourseSearchThroughAcademics ||
       (currentPageFamily !== "home" && availablePageFamilies.includes("home")),
   );
+  const courseSearchHelpDestination =
+    courseSearchShortcut?.description === "Open Academics to find classes"
+      ? "Albert’s verified class-search path"
+      : "Albert’s Course Search";
   const isCrossAreaCourseSearchIntent = (query: string): boolean =>
     courseSearchShortcut?.mode === "home" &&
     (isExplicitCourseSearchQuery(query) ||
@@ -1359,9 +1381,7 @@ export function AppShell({
             if (toolId === "course-search") {
               if (verifiedCourseSearch || hasCourseSearchDestination) {
                 links.push({
-                  description:
-                    verifiedCourseSearch?.description ??
-                    "Open Albert Course Search",
+                  description: "Open Albert Course Search",
                   label,
                   toolId,
                 });
@@ -1406,7 +1426,8 @@ export function AppShell({
               isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery)
             ) {
               return {
-                description: "Open Course Search",
+                description:
+                  courseSearchShortcut?.description ?? "Open Course Search",
                 label: "Find classes",
               };
             }
@@ -2140,8 +2161,7 @@ export function AppShell({
                   id={`${taskFinderId}-search-help`}
                 >
                   Need a class? Choose <strong>Find classes</strong> to open
-                  Albert’s Course Search, then enter a subject, course number,
-                  title, or instructor.
+                  {` ${courseSearchHelpDestination}, then enter a subject, course number, title, or instructor.`}
                 </p>
               )}
               {availableNewStudentKeyLinks.length > 0 && (
