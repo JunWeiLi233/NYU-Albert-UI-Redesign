@@ -197,6 +197,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
     id: "ferpa",
     keywords: [
       "ferpa privacy rights",
+      "ferpa privacy rights and how to grant consent to disclose information",
       "privacy",
       "student record privacy",
       "student records",

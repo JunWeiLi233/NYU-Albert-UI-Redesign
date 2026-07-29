@@ -1713,6 +1713,7 @@ describe("AppShell cross-area task handoffs", () => {
           id: "ferpa",
           keywords: [
             "ferpa privacy rights",
+            "ferpa privacy rights and how to grant consent to disclose information",
             "learn about your ferpa rights",
             "ferpa rights",
           ],
@@ -1772,6 +1773,10 @@ describe("AppShell cross-area task handoffs", () => {
 
     for (const [query, destination] of [
       ["Learn about your FERPA rights", "FERPA"],
+      [
+        "FERPA privacy rights and how to grant consent to disclose information",
+        "FERPA",
+      ],
       ["How to request your official transcript", "University Registrar"],
       [
         "Request official enrollment and degree verification",
