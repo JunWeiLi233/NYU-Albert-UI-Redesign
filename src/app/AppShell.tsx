@@ -227,6 +227,10 @@ const NEW_STUDENT_RESOURCE_INTENTS = [
   "new student",
   "first year student",
   "newly admitted student",
+  "what do i do first",
+  "what should i do first",
+  "where do i start",
+  "how do i get started",
   "welcome week",
   "advice for your first semester",
   "first semester advice",
@@ -252,6 +256,12 @@ const OGS_ORIENTATION_CUES = new Set([
 ]);
 
 const OGS_GENERIC_RESOURCE_INTENTS = new Set(["event", "events"]);
+const GENERIC_NEW_STUDENT_RESOURCE_QUERIES = new Set([
+  "what do i do first",
+  "what should i do first",
+  "where do i start",
+  "how do i get started",
+]);
 const GENERIC_APPOINTMENT_RESOURCE_INTENTS = new Set([
   "book appointment",
   "schedule appointment",
@@ -457,6 +467,12 @@ function matchesTaskSearch(
 
 function isNewStudentResourceIntent(query: string): boolean {
   return matchesTaskSearch(query, NEW_STUDENT_RESOURCE_INTENTS);
+}
+
+function isGenericNewStudentResourceIntent(query: string): boolean {
+  return GENERIC_NEW_STUDENT_RESOURCE_QUERIES.has(
+    normalizeTaskSearchValue(query),
+  );
 }
 
 function isGenericOrientationIntent(query: string): boolean {
@@ -807,6 +823,9 @@ export function AppShell({
     query: string,
     allowTypos = false,
   ): boolean => {
+    if (isGenericNewStudentResourceIntent(query)) {
+      return false;
+    }
     if (isGenericAppointmentResourceIntent(query)) {
       return false;
     }
@@ -986,12 +1005,14 @@ export function AppShell({
         prefersResourceAlias ||
         prefersUniqueResource
         ? []
-        : availableTaskFamilies.filter(
-            (pageFamily) =>
-              !hasDirectTaskResult &&
-              (!prefersOtherResourcesFallback || pageFamily === "resources") &&
-              matchesFamily(pageFamily, searchQuery, allowTypos),
-          );
+          : availableTaskFamilies.filter(
+              (pageFamily) =>
+                !hasDirectTaskResult &&
+                (!isGenericNewStudentResourceIntent(searchQuery) ||
+                  pageFamily === "resources") &&
+                (!prefersOtherResourcesFallback || pageFamily === "resources") &&
+                matchesFamily(pageFamily, searchQuery, allowTypos),
+            );
 
       return { resourceTools, taskFamilies, taskTools };
     };

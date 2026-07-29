@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.120 includes:
+Version 0.5.121 includes:
+
+- generic newcomer prompts such as “what do I do first,” “what should I do
+  first,” “where do I start,” and “how do I get started” now resolve to one
+  verified Other Resources destination instead of being mistaken for dates or
+  the already-open Home area;
 
 - Personal Info now understands “home address,” “mobile phone,” and
   “nationality” as direct native destinations, while broad “personal

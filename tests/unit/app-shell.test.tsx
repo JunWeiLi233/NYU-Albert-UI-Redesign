@@ -432,6 +432,66 @@ describe("AppShell cross-area task handoffs", () => {
     expect(scholarshipText).not.toContain("Verified destination: Wasserman");
   });
 
+  it("keeps generic newcomer questions on the verified resources area", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "academic-records",
+          description: "Check NYU academic dates and deadlines",
+          featured: true,
+          id: "academic-calendar",
+          keywords: ["first day classes", "dates"],
+          label: "Academic Calendar",
+          nativeLabels: ["Academic Calendar"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "what do I do first",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “what do I do first”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Other Resources",
+    );
+    expect(shadowRoot?.textContent).not.toContain(
+      "Verified destination: Academic Calendar",
+    );
+  });
+
   it("routes pronoun wording to the verified Personal Info area", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "personal"],
