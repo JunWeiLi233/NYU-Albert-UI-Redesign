@@ -6,7 +6,10 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.123 includes:
+Version 0.5.124 includes:
+
+- single-result searches now keep one emphasized “Open …” handoff instead of
+  repeating the same verified destination in the inventory below;
 
 - generic campus-service searches such as “parking,” “campus map,” and
   “shuttle” no longer typo-match unrelated international-student wording;

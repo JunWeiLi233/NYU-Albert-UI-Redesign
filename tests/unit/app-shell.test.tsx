@@ -203,6 +203,14 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).not.toContain(
       "Verified destination: Other Resources",
     );
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-task-finder-search-action",
+      )?.textContent,
+    ).toBe("Open Wasserman");
+    expect(shadowRoot?.querySelectorAll(".ba-task-finder-resource")).toHaveLength(
+      0,
+    );
   });
 
   it("keeps a generic events query out of OGS", async () => {
@@ -1567,7 +1575,9 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).toContain(
       "Verified destination: Find classes — Open Course Search",
     );
-    expect(shadowRoot?.textContent).toContain("Open Course SearchFind classes");
+    expect(shadowRoot?.querySelectorAll(".ba-task-finder-tool")).toHaveLength(
+      0,
+    );
 
     const openResult = shadowRoot?.querySelector<HTMLButtonElement>(
       ".ba-task-finder-search-action",

@@ -1189,6 +1189,8 @@ export function AppShell({
     filteredTaskFamilies.length +
     filteredTaskTools.length +
     filteredResourceTools.length;
+  const isSingleResultSearch =
+    normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
   const availableResourceSearchSuggestions = (() => {
@@ -1853,11 +1855,7 @@ export function AppShell({
           }
           aria-modal="true"
           data-resource-search={isResourceSearchMode ? "true" : undefined}
-          data-single-result={
-            normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1
-              ? "true"
-              : undefined
-          }
+            data-single-result={isSingleResultSearch ? "true" : undefined}
           hidden={!isTaskFinderOpen}
           ref={taskFinderRef}
           role="dialog"
@@ -2071,7 +2069,7 @@ export function AppShell({
                 >
                   Search
                 </button>
-                {filteredTaskFamilies.length > 0 && (
+                {!isSingleResultSearch && filteredTaskFamilies.length > 0 && (
                   <button
                     className="ba-task-finder-jump"
                     type="button"
@@ -2082,7 +2080,7 @@ export function AppShell({
                     Areas
                   </button>
                 )}
-                {filteredTaskToolGroups.length > 0 && (
+                {!isSingleResultSearch && filteredTaskToolGroups.length > 0 && (
                   <button
                     className="ba-task-finder-jump"
                     type="button"
@@ -2103,7 +2101,8 @@ export function AppShell({
                   </button>
                 )}
                 {isResourceSearchMode ? (
-                  <>
+                  !isSingleResultSearch && (
+                    <>
                     <button
                       className="ba-task-finder-jump ba-task-finder-jump-resource-results"
                       type="button"
@@ -2130,9 +2129,10 @@ export function AppShell({
                         {RESOURCE_CATEGORY_DEFINITIONS[category].label}
                       </button>
                     ))}
-                  </>
+                    </>
+                  )
                 ) : (
-                  filteredResourceTools.length > 0 && (
+                  !isSingleResultSearch && filteredResourceTools.length > 0 && (
                     <button
                       className="ba-task-finder-jump"
                       type="button"
@@ -2187,7 +2187,7 @@ export function AppShell({
                 </div>
               )}
 
-              {filteredTaskFamilies.length > 0 && (
+              {!isSingleResultSearch && filteredTaskFamilies.length > 0 && (
                 <section
                   className="ba-task-finder-section"
                   aria-labelledby={`${taskFinderId}-areas`}
@@ -2244,7 +2244,7 @@ export function AppShell({
                 </section>
               )}
 
-              {filteredTaskToolGroups.length > 0 && (
+              {!isSingleResultSearch && filteredTaskToolGroups.length > 0 && (
                 <section
                   className="ba-task-finder-section ba-task-finder-task-section"
                   aria-labelledby={`${taskFinderId}-links`}
@@ -2301,7 +2301,7 @@ export function AppShell({
                 </section>
               )}
 
-              {filteredResourceTools.length > 0 && (
+              {!isSingleResultSearch && filteredResourceTools.length > 0 && (
                 <section
                   className="ba-task-finder-section ba-task-finder-resource-section"
                   aria-labelledby={`${taskFinderId}-resources`}
