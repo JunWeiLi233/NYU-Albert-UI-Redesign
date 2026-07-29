@@ -383,6 +383,101 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("closes the native resource menu before a pending Course Search handoff", async () => {
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-course-search"]')
+      ?.remove();
+
+    const resourceMenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const resourceTrigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    if (resourceTrigger) {
+      resourceTrigger.onclick = (event) => {
+        event.preventDefault();
+        const isOpening = resourceMenu?.hasAttribute("hidden") ?? false;
+        resourceMenu?.toggleAttribute("hidden", !isOpening);
+        resourceTrigger.classList.toggle("megaMenuSelected", isOpening);
+      };
+    }
+
+    const nativeAcademics = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-academics"]',
+    );
+    const nativeAcademicsClick = vi.fn((event: Event) => {
+      event.preventDefault();
+      document
+        .querySelector<HTMLAnchorElement>('a[href="/fixture-home"]')
+        ?.removeAttribute("aria-current");
+      nativeAcademics?.setAttribute("aria-current", "page");
+
+      const linkColumn = document.querySelector<HTMLElement>(
+        "#nyuSSSHomeLinksStatic .is_bb_LinkColumn",
+      );
+      const item = document.createElement("div");
+      item.className = "is_bb_LinkItem";
+      const courseSearch = document.createElement("a");
+      courseSearch.href = "/fixture-course-search";
+      courseSearch.textContent = "Course Search";
+      item.append(courseSearch);
+      linkColumn?.prepend(item);
+    });
+    nativeAcademics?.addEventListener("click", nativeAcademicsClick);
+
+    const nativeCourseSearchClick = vi.fn((event: Event) =>
+      event.preventDefault(),
+    );
+    document
+      .querySelector<HTMLElement>("#nyuSSSHomeLinksStatic")
+      ?.addEventListener("click", (event) => {
+        if (
+          event.target instanceof HTMLAnchorElement &&
+          event.target.textContent?.trim() === "Course Search"
+        ) {
+          nativeCourseSearchClick(event);
+        }
+      });
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await settleLifecycle();
+
+    const newcomerStarter = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(
+        ".ba-task-finder-common-task",
+      ) ?? [],
+    ).find((button) => button.textContent === "New student help");
+    newcomerStarter?.click();
+    await settleLifecycle();
+    await settleLifecycle();
+
+    const findClassesKeyLink = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(
+        '[aria-label="NYU Key Links"] .ba-task-finder-key-link',
+      ) ?? [],
+    ).find((button) => button.textContent?.includes("Find classes"));
+    findClassesKeyLink?.click();
+    await settleLifecycle();
+    await settleLifecycle();
+
+    expect(resourceTrigger?.classList.contains("megaMenuSelected")).toBe(
+      false,
+    );
+    expect(nativeAcademicsClick).toHaveBeenCalledOnce();
+    expect(nativeCourseSearchClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
   it("keeps generic orientation searches on the verified resource directory", async () => {
     const lifecycle = await startContentScript({
       document,
