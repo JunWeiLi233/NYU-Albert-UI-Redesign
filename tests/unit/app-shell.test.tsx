@@ -367,6 +367,75 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).toContain("Verified destination: OGS");
   });
 
+  it("routes class-location and international-office wording to exact destinations", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "global",
+          description: "Find visa and immigration guidance",
+          featured: false,
+          id: "ogs",
+          keywords: ["international office"],
+          label: "OGS",
+          nativeLabels: ["OGS"],
+        },
+      ],
+      availableTaskTools: [
+        {
+          description: "Review your class week",
+          id: "weekly-schedule",
+          keywords: ["where are my classes"],
+          label: "Weekly Schedule",
+          nativeLabels: ["Weekly Schedule"],
+          pageFamily: "home",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    for (const [query, destination] of [
+      ["where are my classes", "Weekly Schedule"],
+      ["international office", "OGS"],
+    ] as const) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(
+        `Verified destination: ${destination}`,
+      );
+    }
+  });
+
   it("keeps first-semester records, tuition, and insurance wording discoverable", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "grades", "finances", "resources"],

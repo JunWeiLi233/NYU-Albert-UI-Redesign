@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.134 includes:
+Version 0.5.135 includes:
+
+- “Where are my classes?” now opens the verified Weekly Schedule instead of
+  offering Class Search and Brightspace together, and “international office”
+  now reaches OGS without requiring a student to know the acronym;
 
 - NYU Students labels such as “Accessibility and Accommodations,” “Athletics
   and Fitness,” “Student Government,” “Service Opportunities and Civic

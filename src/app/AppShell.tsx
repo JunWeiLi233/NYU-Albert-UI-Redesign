@@ -289,6 +289,7 @@ const EXACT_TASK_INTENTS = new Map<string, PageToolId>([
 const EXACT_RAW_TASK_INTENTS = new Map<string, PageToolId>([
   ["how do i register", "course-search"],
   ["where can i register", "course-search"],
+  ["where are my classes", "weekly-schedule"],
 ]);
 const EXACT_PAGE_FAMILY_INTENTS = new Map<string, PrimaryPageFamily>([
   ["advisor", "academics"],
