@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.146 includes:
+Version 0.5.147 includes:
 
 - concise newcomer phrases such as “available courses,” “find courses,”
   “find me a course,” “course list,” “course listings,” “course offerings,”
@@ -21,6 +21,11 @@ Version 0.5.146 includes:
 - public StudentLink descriptions such as “Help with your bill, financial aid,
   registration, and more” remain one-step searchable without copying the public
   StudentLink URL;
+
+- current Student Success wording such as “Find tips for remote learning” and
+  “Centralized online platform” now reaches NYU Connect when its exact native
+  anchor is verified; the combined “Class Registration, Transcripts,
+  Graduation” label stays an honest directory fallback;
 
 - generic “accessibility” searches no longer leak into Housing through a
   shared keyword; they use the exact Campus Resources anchor when verified or
