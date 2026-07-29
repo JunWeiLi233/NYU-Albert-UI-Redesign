@@ -1096,6 +1096,29 @@ export function AppShell({
   };
   const filterTaskSearchResults = (query: string) => {
     const findResults = (searchQuery: string, allowTypos = false) => {
+      const registrationCourseSearch =
+        !isResourceSearchMode &&
+        normalizeTaskSearchValue(searchQuery) === "registration" &&
+        courseSearchShortcut;
+      if (registrationCourseSearch) {
+        const directCourseSearch = availableTaskTools.find(
+          (tool) => tool.id === "course-search",
+        );
+        if (registrationCourseSearch.mode === "home") {
+          return {
+            resourceTools: [],
+            taskFamilies: ["home" as const],
+            taskTools: [],
+          };
+        }
+        if (directCourseSearch) {
+          return {
+            resourceTools: [],
+            taskFamilies: [],
+            taskTools: [directCourseSearch],
+          };
+        }
+      }
       let matchingResourceTools = availableResourceTools.filter((tool) =>
         matchesResource(tool, searchQuery, allowTypos),
       );

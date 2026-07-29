@@ -2245,6 +2245,7 @@ describe("AppShell cross-area task handoffs", () => {
             "browse available classes",
             "enroll in classes for the next term at your designated registration day and time",
             "register",
+            "registration",
             "where can i register",
             "registering for classes",
             "registration process",
@@ -2280,6 +2281,7 @@ describe("AppShell cross-area task handoffs", () => {
     }
 
     for (const query of [
+      "registration",
       "where can I register",
       "how do I register",
       "registering for classes",
@@ -2311,7 +2313,7 @@ describe("AppShell cross-area task handoffs", () => {
           ?.click();
       });
     }
-    expect(onOpenTool).toHaveBeenCalledTimes(7);
+    expect(onOpenTool).toHaveBeenCalledTimes(8);
     expect(onOpenTool).toHaveBeenNthCalledWith(1, "course-search");
     expect(onOpenTool).toHaveBeenNthCalledWith(2, "course-search");
     expect(onOpenTool).toHaveBeenNthCalledWith(3, "course-search");

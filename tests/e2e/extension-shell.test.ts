@@ -1973,6 +1973,7 @@ test("exposes task-first discovery at every supported width and delegates throug
     ],
     ["browse the course catalog", "Open Find Classes — Search by subject, course number, title, or instructor"],
     ["Registering for Classes", "Open Find Classes — Search by subject, course number, title, or instructor"],
+    ["registration", "Open Find Classes — Search by subject, course number, title, or instructor"],
     ["Navigate the Registration Process", "Open Find Classes — Search by subject, course number, title, or instructor"],
     ["Student Records and Transcripts", "Open Grades & Transcripts — View grades, get transcripts, and prove enrollment"],
     ["Verify Your Enrollment or Degree", "Open Grades & Transcripts — View grades, get transcripts, and prove enrollment"],
