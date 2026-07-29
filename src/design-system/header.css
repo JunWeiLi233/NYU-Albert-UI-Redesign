@@ -564,7 +564,8 @@ button {
 
 .ba-task-finder-guides,
 .ba-task-finder-browse,
-.ba-task-finder-key-links {
+.ba-task-finder-key-links,
+.ba-task-finder-support-links {
   display: grid;
   max-width: 54rem;
   gap: var(--ba-space-2);

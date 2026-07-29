@@ -130,6 +130,12 @@ const NEW_STUDENT_KEY_LINKS = [
   { label: "Student support", toolId: "student-services" },
 ] as const satisfies readonly { label: string; toolId: PageToolId }[];
 
+const NEW_STUDENT_SUPPORT_LINKS = [
+  { label: "Academic support", toolId: "academic-support" },
+  { label: "Student success", toolId: "nyu-connect" },
+  { label: "Get involved", toolId: "student-life" },
+] as const satisfies readonly { label: string; toolId: PageToolId }[];
+
 const NEW_STUDENT_RESOURCE_BROWSE_SUGGESTIONS = [
   { label: "Academic Services", toolId: "academic-support" },
   { label: "Getting Around Campus", toolId: "campus-resources" },
@@ -1306,24 +1312,34 @@ export function AppShell({
       return suggestions;
     }
 
-    const keyLinkIds = new Set<PageToolId>(
-      NEW_STUDENT_KEY_LINKS.map(({ toolId }) => toolId),
-    );
+    const newcomerHighlightedIds = new Set<PageToolId>([
+      ...NEW_STUDENT_KEY_LINKS.map(({ toolId }) => toolId),
+      ...NEW_STUDENT_SUPPORT_LINKS.map(({ toolId }) => toolId),
+    ]);
     return suggestions
-      .filter(({ toolId }) => !keyLinkIds.has(toolId))
+      .filter(({ toolId }) => !newcomerHighlightedIds.has(toolId))
       .sort(
         ({ toolId: leftToolId }, { toolId: rightToolId }) =>
           (NEW_STUDENT_RESOURCE_STARTER_RANK.get(leftToolId) ??
             NEW_STUDENT_RESOURCE_STARTER_ORDER.length) -
           (NEW_STUDENT_RESOURCE_STARTER_RANK.get(rightToolId) ??
             NEW_STUDENT_RESOURCE_STARTER_ORDER.length),
-      );
+    );
   })();
   const availableNewStudentKeyLinks =
     isResourceSearchMode &&
     resourceFinderIntent === "new-student" &&
     normalizedTaskSearchQuery.length === 0
       ? NEW_STUDENT_KEY_LINKS.flatMap(({ label, toolId }) => {
+          const tool = availableResourceTools.find(({ id }) => id === toolId);
+          return tool ? [{ description: tool.description, label, toolId }] : [];
+        })
+      : [];
+  const availableNewStudentSupportLinks =
+    isResourceSearchMode &&
+    resourceFinderIntent === "new-student" &&
+    normalizedTaskSearchQuery.length === 0
+      ? NEW_STUDENT_SUPPORT_LINKS.flatMap(({ label, toolId }) => {
           const tool = availableResourceTools.find(({ id }) => id === toolId);
           return tool ? [{ description: tool.description, label, toolId }] : [];
         })
@@ -2240,6 +2256,41 @@ export function AppShell({
                           onClick={() => handleTaskFinderResource(toolId)}
                         >
                           {label}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
+              {availableNewStudentSupportLinks.length > 0 && (
+                <div
+                  className="ba-task-finder-support-links"
+                  role="group"
+                  aria-label="Get Support"
+                >
+                  <div className="ba-task-finder-guides-heading">
+                    <span className="ba-task-finder-key-link-label">
+                      Get support
+                    </span>
+                    <span>
+                      Find a verified next step when you need guidance at NYU.
+                    </span>
+                  </div>
+                  <div className="ba-task-finder-key-link-list">
+                    {availableNewStudentSupportLinks.map(
+                      ({ description, label, toolId }) => (
+                        <button
+                          className="ba-task-finder-key-link"
+                          type="button"
+                          aria-label={`${label} — ${description}`}
+                          key={toolId}
+                          onClick={() => handleTaskFinderResource(toolId)}
+                        >
+                          <span className="ba-task-finder-item-copy">
+                            <strong>{label}</strong>
+                            <span>{description}</span>
+                          </span>
+                          <span aria-hidden="true">›</span>
                         </button>
                       ),
                     )}

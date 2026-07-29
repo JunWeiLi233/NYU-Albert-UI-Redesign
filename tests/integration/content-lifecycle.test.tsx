@@ -321,13 +321,24 @@ describe("content-script lifecycle", () => {
     expect(
       Array.from(
         resourceSearch?.querySelectorAll<HTMLButtonElement>(
-          ".ba-task-finder-key-link",
+          '[aria-label="NYU Key Links"] .ba-task-finder-key-link',
         ) ?? [],
       ).map((button) => button.textContent?.replace(/\s+/g, " ").trim()),
     ).toEqual([
       "Academic datesCheck NYU academic dates and deadlines›",
       "Course materialsOpen NYU's learning platform›",
       "Student supportFind general student services and support›",
+    ]);
+    expect(
+      Array.from(
+        resourceSearch?.querySelectorAll<HTMLButtonElement>(
+          '[aria-label="Get Support"] .ba-task-finder-key-link',
+        ) ?? [],
+      ).map((button) => button.textContent?.replace(/\s+/g, " ").trim()),
+    ).toEqual([
+      "Academic supportFind tutoring and academic support›",
+      "Student successSchedule support appointments and view your Success Network›",
+      "Get involvedFind clubs, activities, and community support›",
     ]);
     expect(
       Array.from(
@@ -341,10 +352,7 @@ describe("content-script lifecycle", () => {
       "International students",
       "Health & counseling",
       "Housing",
-      "Student success",
       "Campus safety",
-      "Academic support",
-      "Student life",
       "Career help",
       "Tech & Wi-Fi",
     ]);
