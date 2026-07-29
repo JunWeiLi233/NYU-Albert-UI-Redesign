@@ -39,7 +39,10 @@ function activateNativeControlInPageWorld(
       // value. Without this wrapper, a harmless assignment such as
       // `document.body.dataset.nativeSearchActivated = 'true'` replaces the
       // whole document with the returned string in Chromium.
-      control.setAttribute("href", `javascript:void (${href.slice(href.indexOf(":") + 1)})`);
+      const script = href
+        .slice(href.indexOf(":") + 1)
+        .replace(/;\s*$/, "");
+      control.setAttribute("href", `javascript:void (${script})`);
       control.click();
       control.setAttribute("href", href);
       return;
@@ -59,7 +62,10 @@ function activateNativeControlInPageWorld(
 }
 
 window.addEventListener("message", (event: MessageEvent): void => {
-  if (event.source !== window || event.origin !== window.location.origin) {
+  // Chromium can expose an isolated-world WindowProxy wrapper to the
+  // page-world listener. The origin check remains exact and the token is
+  // still required before any native control is activated.
+  if (event.source === null || event.origin !== window.location.origin) {
     return;
   }
 
@@ -69,4 +75,21 @@ window.addEventListener("message", (event: MessageEvent): void => {
       event.data.allowJavascriptUrl === true,
     );
   }
+});
+
+document.addEventListener(ACTIVATION_MESSAGE, (event: Event): void => {
+  const detail = (event as CustomEvent).detail;
+  if (
+    !detail ||
+    typeof detail !== "object" ||
+    typeof detail.token !== "string" ||
+    typeof detail.allowJavascriptUrl !== "boolean"
+  ) {
+    return;
+  }
+
+  activateNativeControlInPageWorld(
+    detail.token,
+    detail.allowJavascriptUrl,
+  );
 });

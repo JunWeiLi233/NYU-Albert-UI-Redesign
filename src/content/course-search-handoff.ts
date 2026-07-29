@@ -99,6 +99,10 @@ function isCourseSearchRadio(control: HTMLInputElement): boolean {
   return labels.some((label) => normalizeText(label) === "class search");
 }
 
+function isSelectedRadio(control: HTMLInputElement): boolean {
+  return control.checked || control.getAttribute("aria-checked") === "true";
+}
+
 function findNativeSearchModeControl(
   document: Document,
 ): NativeControl | undefined {
@@ -107,7 +111,9 @@ function findNativeSearchModeControl(
       "h1, h2, h3, h4, h5, h6, [role='heading']",
     ),
   ).filter(
-    (heading) => normalizeText(heading.textContent) === SEARCH_MODE_HEADING,
+    (heading) =>
+      normalizeText(heading.textContent).includes(SEARCH_MODE_HEADING) &&
+      isVisibleNativeControl(heading, document),
   );
   if (headings.length !== 1) {
     return undefined;
@@ -118,7 +124,7 @@ function findNativeSearchModeControl(
   ).filter(
     (radio) =>
       isCourseSearchRadio(radio) &&
-      radio.checked &&
+      isSelectedRadio(radio) &&
       isVisibleNativeControl(radio, document),
   );
   if (radios.length !== 1) {
@@ -328,17 +334,25 @@ export function createCourseSearchFrameHandoff(
     const frame = getChildFrames(document).find(
       (candidate) => candidate.contentWindow === event.source,
     );
+    const fallbackFrame =
+      !frame && event.origin === COMPONENT_ORIGIN
+        ? getChildFrames(document).find(
+            (candidate) =>
+              parseLocation(candidate.src)?.origin === COMPONENT_ORIGIN &&
+              isVisibleFrame(candidate),
+          )
+        : undefined;
     if (
       Date.now() >= expiresAt ||
       event.origin !== COMPONENT_ORIGIN ||
       !isMessageType(event.data, COURSE_SEARCH_FRAME_READY_MESSAGE) ||
-      !frame?.contentWindow
+      !(frame ?? fallbackFrame)?.contentWindow
     ) {
       return;
     }
 
     try {
-      frame.contentWindow.postMessage(
+      (frame ?? fallbackFrame)?.contentWindow?.postMessage(
         { type: COURSE_SEARCH_FRAME_OPEN_MESSAGE },
         COMPONENT_ORIGIN,
       );
@@ -467,10 +481,14 @@ export function startCourseSearchFrameReceiver(
   };
 
   const handleOpenRequest = (event: MessageEvent): void => {
+    const sourceIsParent =
+      event.source === window.parent || event.source === window.top;
+    const allowlistedPortalSource =
+      event.origin === PORTAL_ORIGIN && event.source !== null;
     if (
       handled ||
-      (event.source !== window.parent && event.source !== window.top) ||
       !isAllowlistedOrigin(event.origin) ||
+      (!sourceIsParent && !allowlistedPortalSource) ||
       !isMessageType(event.data, COURSE_SEARCH_FRAME_OPEN_MESSAGE)
     ) {
       return;
