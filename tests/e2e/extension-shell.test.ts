@@ -2114,6 +2114,10 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Students with Children", "Open Student Life"],
     ["Students with Disabilities", "Open Campus Resources"],
     ["Class Registration", "Open Find Classes — Search by subject, course number, title, or instructor"],
+    ["Browse available courses for the upcoming term", "Open Find Classes — Search by subject, course number, title, or instructor"],
+    ["Track Your Degree Progress", "Open Check Degree Progress — Review remaining degree requirements"],
+    ["Stay on track for graduation", "Open Check Degree Progress — Review remaining degree requirements"],
+    ["Check Your Grades", "Open View Grades — Choose an academic career and term"],
     ["Student Visa & Immigration", "Open OGS"],
     ["Office of Global Services", "Open OGS"],
     ["Visa Information & Programs", "Open OGS"],
@@ -5354,6 +5358,23 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
       name: "Open Academic Calendar",
     }),
   ).toBeVisible();
+
+  for (const query of [
+    "View important dates and schedules",
+    "Additional important dates and deadlines",
+    "Pass/Fail Grade Option Deadline",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Academic Calendar",
+      }),
+    ).toBeVisible();
+  }
 
   for (const query of [
     "Tutoring and Help with Classes",

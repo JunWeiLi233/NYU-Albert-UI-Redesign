@@ -2661,6 +2661,7 @@ describe("AppShell cross-area task handoffs", () => {
             "class course lookup",
             "class lookup",
             "browse classes",
+            "browse available courses for the upcoming term",
             "class search",
             "class list",
             "class offerings",
@@ -2727,6 +2728,7 @@ describe("AppShell cross-area task handoffs", () => {
 
     for (const phrase of [
       "browse classes",
+      "browse available courses for the upcoming term",
       "class/course lookup",
       "class finder",
       "class lookup",
@@ -2808,7 +2810,7 @@ describe("AppShell cross-area task handoffs", () => {
       });
     }
 
-    expect(onOpenTool).toHaveBeenCalledTimes(44);
+    expect(onOpenTool).toHaveBeenCalledTimes(45);
     expect(onOpenTool).toHaveBeenCalledWith("course-search");
   });
 
