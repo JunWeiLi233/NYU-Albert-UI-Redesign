@@ -6,7 +6,16 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.150 includes:
+Version 0.5.151 includes:
+
+- current registration, records, career, international, Law-residence, and
+  billing/refund wording now routes to the most specific verified Albert area;
+  precise student labels such as “Student Records and Transcripts” no longer
+  compete with the broad Other Resources fallback;
+
+- “Registering for Classes” and “Navigate the Registration Process” now reach
+  the verified one-step Course Search control, preserving the existing
+  subject/course/title/instructor handoff;
 
 - current Online Programming, Services, and Opportunities labels such as
   “Global Services,” “Health, Wellness & Accessibility Services,” “Residential

@@ -63,6 +63,8 @@ describe("page-family native tools", () => {
         "course finder",
         "find available courses",
         "search for a class",
+        "registering for classes",
+        "navigate the registration process",
       ]),
     );
   });
@@ -909,6 +911,12 @@ describe("page-family native tools", () => {
       "solving personal problems that impede academic work",
     );
     expect(housing?.keywords).toContain("on campus living");
+    const lawHousing = getAvailableResourceTools(document).find(
+      ({ id }) => id === "law-housing",
+    );
+    expect(lawHousing?.keywords).toContain(
+      "residence services at the school of law",
+    );
     expect(housing?.keywords).toEqual(
       expect.arrayContaining([
         "resident assistant",
@@ -950,6 +958,7 @@ describe("page-family native tools", () => {
       expect.arrayContaining([
         "student visa and immigration",
         "student visa immigration",
+        "visas for nyu study abroad",
         "office of global services",
         "global services",
         "visa information and programs",
@@ -975,6 +984,10 @@ describe("page-family native tools", () => {
         "social impact career hub",
         "career coaching",
         "career development mentorship entrepreneurship",
+        "employers",
+        "employer services",
+        "alumni career services",
+        "campus partners",
         "handshake",
         "undergraduate students",
         "graduate students",

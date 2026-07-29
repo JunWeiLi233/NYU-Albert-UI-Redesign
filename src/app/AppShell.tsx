@@ -293,6 +293,25 @@ const EXACT_RAW_TASK_INTENTS = new Map<string, PageToolId>([
 ]);
 const EXACT_PAGE_FAMILY_INTENTS = new Map<string, PrimaryPageFamily>([
   ["advisor", "academics"],
+  ["student records and transcripts", "grades"],
+  ["verify your enrollment or degree", "grades"],
+  ["graduation and diplomas", "academics"],
+  ["graduation checklist", "academics"],
+  ["applying to graduate", "academics"],
+  ["tuition and fee rates", "finances"],
+  ["tuition and student charges", "finances"],
+  ["how billing and payment work at nyu", "finances"],
+  ["when and how to pay", "finances"],
+  ["payment due dates", "finances"],
+  ["accessing your bill", "finances"],
+  ["accessing your students bill", "finances"],
+  ["ways to pay", "finances"],
+  ["refund methods", "finances"],
+  ["financial aid refunds", "finances"],
+  ["when to expect a refund", "finances"],
+  ["housing payments and tax documents", "finances"],
+  ["contact the bursar team", "finances"],
+  ["uaw students", "finances"],
   ["time management", "resources"],
 ]);
 
