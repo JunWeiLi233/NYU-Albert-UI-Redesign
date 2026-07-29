@@ -2602,6 +2602,7 @@ describe("AppShell cross-area task handoffs", () => {
           id: "course-search",
           keywords: [
             "class finder",
+            "class course lookup",
             "class lookup",
             "browse classes",
             "class search",
@@ -2619,6 +2620,7 @@ describe("AppShell cross-area task handoffs", () => {
             "browse courses",
             "find course offerings",
             "find available classes",
+            "find available classes courses",
             "find available courses",
             "find me a course",
             "find classes",
@@ -2633,12 +2635,15 @@ describe("AppShell cross-area task handoffs", () => {
             "where can I find a course",
             "what classes are available",
             "what classes can i take",
+            "what classes courses can i take",
             "what courses can i take",
             "what courses are offered",
             "when are classes offered",
             "which courses are offered",
             "show available classes",
+            "show available classes courses",
             "show available courses",
+            "take a class classes courses",
             "take a class",
             "take classes",
             "take courses",
@@ -2666,6 +2671,7 @@ describe("AppShell cross-area task handoffs", () => {
 
     for (const phrase of [
       "browse classes",
+      "class/course lookup",
       "class finder",
       "class lookup",
       "class search",
@@ -2683,6 +2689,7 @@ describe("AppShell cross-area task handoffs", () => {
       "browse courses",
       "find course offerings",
       "find available classes",
+      "find available classes/courses",
       "find available courses",
       "find me a course",
       "find classes",
@@ -2695,12 +2702,15 @@ describe("AppShell cross-area task handoffs", () => {
       "search courses",
       "what classes are available",
       "what classes can i take",
+      "what classes/courses can i take",
       "what courses can i take",
       "what courses are offered",
       "when are classes offered",
       "which courses are offered",
       "show available classes",
+      "show available classes/courses",
       "show available courses",
+      "take a class/classes/courses",
       "take a class",
       "take classes",
       "take courses",
@@ -2742,7 +2752,7 @@ describe("AppShell cross-area task handoffs", () => {
       });
     }
 
-    expect(onOpenTool).toHaveBeenCalledTimes(39);
+    expect(onOpenTool).toHaveBeenCalledTimes(44);
     expect(onOpenTool).toHaveBeenCalledWith("course-search");
   });
 
