@@ -937,6 +937,12 @@ describe("page-family native tools", () => {
     const campusResources = getAvailableResourceTools(document).find(
       ({ id }) => id === "campus-resources",
     );
+    const ferpa = getAvailableResourceTools(document).find(
+      ({ id }) => id === "ferpa",
+    );
+    const registrar = getAvailableResourceTools(document).find(
+      ({ id }) => id === "university-registrar",
+    );
     const cardCenter = getAvailableResourceTools(document).find(
       ({ id }) => id === "nyu-card-center",
     );
@@ -1023,6 +1029,20 @@ describe("page-family native tools", () => {
         "public transportation discounts",
         "green workplace",
         "students with disabilities",
+      ]),
+    );
+    expect(ferpa?.keywords).toEqual(
+      expect.arrayContaining([
+        "ferpa privacy rights",
+        "learn about your ferpa rights",
+        "ferpa rights",
+      ]),
+    );
+    expect(registrar?.keywords).toEqual(
+      expect.arrayContaining([
+        "how to request your official transcript",
+        "request official transcript",
+        "request your official transcript",
       ]),
     );
     expect(cardCenter?.keywords).toEqual(
