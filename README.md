@@ -6,7 +6,15 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.133 includes:
+Version 0.5.134 includes:
+
+- NYU Students labels such as “Accessibility and Accommodations,” “Athletics
+  and Fitness,” “Student Government,” “Service Opportunities and Civic
+  Engagement,” “Sustainability,” and “International Student Employment” now
+  remain discoverable: they use the exact verified anchor when Albert exposes
+  it, otherwise they fall back to the official Other Resources or OGS
+  destination instead of returning zero results; bare “time management” is
+  kept on the newcomer resource path instead of producing two area choices;
 
 - “degree audit” and “audit my degree” now fall back to the verified Academics
   workspace when Albert does not expose the direct Degree Progress control;

@@ -170,7 +170,11 @@ describe("AppShell cross-area task handoffs", () => {
       return;
     }
 
-    for (const query of ["degree audit", "audit my degree"]) {
+    for (const query of [
+      "degree audit",
+      "audit my degree",
+      "degree progress tracking",
+    ]) {
       await act(async () => {
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
           taskSearch,
@@ -243,6 +247,124 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).not.toContain(
       "Verified destination: Campus Safety",
     );
+  });
+
+  it("keeps public student-service wording recoverable without missing anchors", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    for (const query of [
+      "accessibility and accommodations",
+      "athletics and fitness",
+      "gyms and campus recreation",
+      "student government",
+      "service opportunities and civic engagement",
+      "wifi streaming technology",
+      "safety security transportation",
+      "sustainability",
+      "student centers and spaces",
+      "student tech centers",
+      "intramural and club sports",
+      "multicultural education and programs",
+      "veteran services",
+      "center for global spiritual life",
+      "time management",
+    ]) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(
+        "Verified destination: Other Resources",
+      );
+    }
+  });
+
+  it("keeps international employment wording on the verified OGS resource", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "global",
+          description: "Find visa and immigration guidance",
+          featured: false,
+          id: "ogs",
+          keywords: ["international student employment"],
+          label: "OGS",
+          nativeLabels: ["OGS"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "international student employment",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “international student employment”',
+    );
+    expect(shadowRoot?.textContent).toContain("Verified destination: OGS");
   });
 
   it("keeps first-semester records, tuition, and insurance wording discoverable", async () => {

@@ -292,6 +292,7 @@ const EXACT_RAW_TASK_INTENTS = new Map<string, PageToolId>([
 ]);
 const EXACT_PAGE_FAMILY_INTENTS = new Map<string, PrimaryPageFamily>([
   ["advisor", "academics"],
+  ["time management", "resources"],
 ]);
 
 function normalizeTaskSearchValue(value: string): string {
