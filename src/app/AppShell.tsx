@@ -341,6 +341,7 @@ function getMeaningfulTaskSearchValue(value: string): string {
 // example OGS's “international student services” for “student services”).
 const EXACT_RESOURCE_INTENTS = new Map<string, PageToolId>([
   ["academic support", "academic-support"],
+  ["accessibility", "campus-resources"],
   ["campus accessibility", "campus-resources"],
   ["disability support", "campus-resources"],
   ["need help nyu", "student-services"],
@@ -544,6 +545,16 @@ function isConversationalSupportQuery(query: string): boolean {
   const words = getTaskSearchWords(query);
   return (
     words.length >= 3 && words.includes("need") && words.includes("help")
+  );
+}
+
+function getConversationalSupportSubjectWords(
+  query: string,
+): readonly string[] {
+  return getTaskSearchWords(query).filter(
+    (word) =>
+      !TASK_SEARCH_RELAXED_WORDS.has(word) &&
+      !TASK_SEARCH_CONVERSATIONAL_WORDS.has(word),
   );
 }
 
@@ -824,7 +835,8 @@ export function AppShell({
   const isCrossAreaCourseSearchIntent = (query: string): boolean =>
     courseSearchShortcut?.mode === "home" &&
     (isExplicitCourseSearchQuery(query) ||
-      isConversationalCourseSearchIntent(query));
+      isConversationalCourseSearchIntent(query) ||
+      getMeaningfulTaskSearchValue(query) === "class schedule");
   const matchesFamily = (
     pageFamily: PrimaryPageFamily,
     query: string,
@@ -892,9 +904,17 @@ export function AppShell({
       return matchesTaskSearch(query, values, allowTypos);
     }
 
-    const queryWords = getTaskSearchWords(query);
+    const queryWords = getConversationalSupportSubjectWords(query);
+    if (queryWords.length === 0) {
+      return false;
+    }
     return values.some((value) => {
       const searchableValue = normalizeTaskSearchValue(value);
+      const isExactSingleWordSubject =
+        queryWords.length === 1 &&
+        [tool.label, ...tool.keywords].some(
+          (candidate) => normalizeTaskSearchValue(candidate) === queryWords[0],
+        );
       return (
         queryWords.every((word) =>
           matchesTaskSearchWord(word, searchableValue, allowTypos),
@@ -902,7 +922,8 @@ export function AppShell({
           queryWords,
           searchableValue,
           allowTypos,
-        )
+        ) &&
+        (queryWords.length > 1 || isExactSingleWordSubject)
       );
     });
   };
@@ -1148,8 +1169,10 @@ export function AppShell({
       ? OFFICIAL_TRANSCRIPT_SHORTCUT
       : undefined;
   const useOfficialTranscriptGuidance = Boolean(
-    contextualResourceShortcut &&
-      normalizedTaskSearchQuery.includes("transcript") &&
+    availableResourceTools.some(
+      (tool) => tool.id === OFFICIAL_TRANSCRIPT_SHORTCUT.id,
+    ) &&
+      matchesTaskSearch(normalizedTaskSearchQuery, ["transcript"], true) &&
       !normalizedTaskSearchQuery.includes("unofficial"),
   );
   const availableTaskSearchSuggestions =
@@ -1211,8 +1234,15 @@ export function AppShell({
     filteredTaskFamilies.length +
     filteredTaskTools.length +
     filteredResourceTools.length;
-  const isSingleResultSearch =
-    normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1;
+  const isSingleCourseSearchResult =
+    normalizedTaskSearchQuery.length > 0 &&
+    filteredResultCount === 1 &&
+    ((filteredTaskTools.length === 1 &&
+      filteredTaskTools[0]?.id === "course-search") ||
+      (filteredTaskFamilies.length === 1 &&
+        filteredTaskFamilies[0] === "home" &&
+        isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery)));
+  const isSingleResultSearch = isSingleCourseSearchResult;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
   const availableResourceSearchSuggestions = (() => {
@@ -2062,18 +2092,21 @@ export function AppShell({
                           {singleTaskSearchResult.label}
                           <span> — {singleTaskSearchResult.description}</span>
                         </p>
-                        <button
-                          className="ba-task-finder-search-action"
-                          type="button"
-                          aria-describedby={`${taskFinderId}-search-destination ${taskFinderId}-search-hint`}
-                          onClick={() =>
-                            openSingleVerifiedTaskResult(
-                              normalizedTaskSearchQuery,
-                            )
-                          }
-                        >
-                          Open {singleTaskSearchResult.label}
-                        </button>
+                        {isSingleCourseSearchResult && (
+                          <button
+                            className="ba-task-finder-search-action"
+                            type="button"
+                            aria-label={`Open ${singleTaskSearchResult.label} — ${singleTaskSearchResult.description}`}
+                            aria-describedby={`${taskFinderId}-search-destination ${taskFinderId}-search-hint`}
+                            onClick={() =>
+                              openSingleVerifiedTaskResult(
+                                normalizedTaskSearchQuery,
+                              )
+                            }
+                          >
+                            Open {singleTaskSearchResult.label}
+                          </button>
+                        )}
                       </>
                     )}
                     <p

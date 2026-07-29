@@ -6,7 +6,24 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.135 includes:
+Version 0.5.141 includes:
+
+- generic “accessibility” searches no longer leak into Housing through a
+  shared keyword; they use the exact Campus Resources anchor when verified or
+  stay on the honest Other Resources fallback;
+
+- conversational requests such as “I need health insurance help” now retain
+  the specific service phrase and reach the verified Wellness Center without
+  allowing broad “NYU” wording to match unrelated resources;
+
+- verified task actions now expose their outcome description in the accessible
+  action name, and the single-result handoff uses a pale-violet treatment so
+  course search and advising guidance remain readable without competing with
+  the primary Start here action;
+
+- area and resource searches keep their verified cards visible while course
+  search remains the only compact one-step action, including Academics
+  class-schedule handoffs and typo-tolerant transcript guidance;
 
 - “Where are my classes?” now opens the verified Weekly Schedule instead of
   offering Class Search and Brightspace together, and “international office”

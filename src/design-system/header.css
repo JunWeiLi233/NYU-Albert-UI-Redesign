@@ -610,13 +610,15 @@ button {
 }
 
 .ba-task-finder-search-action {
+  width: 100%;
+  max-width: 38rem;
   min-height: 44px;
   margin: calc(var(--ba-space-1) * -1) 0 0;
   padding: var(--ba-space-2) var(--ba-space-3);
   border: 1px solid var(--ba-color-nyu-violet);
   border-radius: var(--ba-radius-control);
-  background: var(--ba-color-nyu-violet);
-  color: var(--ba-color-white);
+  background: var(--ba-color-pale-violet);
+  color: var(--ba-color-nyu-violet);
   cursor: pointer;
   font: inherit;
   font-size: var(--ba-font-size-sm);
@@ -624,7 +626,9 @@ button {
 }
 
 .ba-task-finder-search-action:hover {
-  background: var(--ba-color-nyu-violet-hover);
+  border-color: var(--ba-color-nyu-violet-hover);
+  background: var(--ba-color-white);
+  color: var(--ba-color-nyu-violet-hover);
 }
 
 .ba-task-finder-empty {
@@ -1080,10 +1084,9 @@ button {
 }
 
 /*
- * Ordinary phone and tablet widths have enough vertical space to show every
- * task/resource section jump. Wrap the index instead of hiding later
- * categories in an unannounced horizontal strip. The <=279px zoom layout
- * retains the compact scroller so the sticky index cannot consume the view.
+ * Ordinary phone and tablet widths keep the compact index readable. The
+ * resource finder uses one Results jump at these widths; the general finder
+ * still wraps its area and task jumps instead of hiding them in a scroller.
  */
 @media (min-width: 280px) and (max-width: 899px) {
   .ba-task-finder-jump-nav {
@@ -1737,7 +1740,7 @@ button {
   }
 }
 
-@media (max-width: 599px) {
+@media (max-width: 899px) {
   .ba-task-finder[data-resource-search="true"]
     .ba-task-finder-jump-resource-category {
     display: none;

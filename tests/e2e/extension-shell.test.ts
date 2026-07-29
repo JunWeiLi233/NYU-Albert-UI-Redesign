@@ -5117,6 +5117,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "Printing on Campus",
     "student tech centers",
     "shuttle",
+    "accessibility",
     "accessibility and accommodations",
     "athletics and fitness",
     "sustainability",
