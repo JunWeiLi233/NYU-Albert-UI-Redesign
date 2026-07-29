@@ -3006,6 +3006,13 @@ describe("AppShell cross-area task handoffs", () => {
       return;
     }
 
+    expect(taskSearch.placeholder).toBe(
+      "Try academic dates, course materials, or student support",
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Student guide wording works too: try “first semester,” “transfer student,” “time management,” or “student tech guide.”",
+    );
+
     await act(async () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
         taskSearch,

@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.152 includes:
+Version 0.5.153 includes:
+
+- newcomer resource search now leads with NYU-style Key Links examples and
+  explicitly teaches first-semester, transfer, time-management, and student
+  tech-guide wording, while keeping every result inside Albert’s verified
+  directory boundary;
 
 - Home’s verified Start here group now adds a concise “New to NYU?” cue for
   classes, holds, and registration dates, clarifying the first-week order
