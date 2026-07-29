@@ -88,6 +88,48 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.querySelector(".ba-task-finder-search-help")?.textContent)
       .toContain(
         "Choose Find classes to open Albert’s Course Search, then enter a subject, course number, title, or instructor.",
+      );
+  });
+
+  it("gives Home starters a concise newcomer cue", () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home"],
+      availablePageTools: [
+        {
+          description:
+            "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+        },
+      ],
+      availableResourceTools: [],
+      availableTaskTools: [
+        {
+          description:
+            "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+          pageFamily: "home",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    expect(shadowRoot?.querySelector(".ba-tool-label")?.textContent).toBe(
+      "Start here",
+    );
+    expect(shadowRoot?.querySelector(".ba-tool-guidance")?.textContent).toBe(
+      "New to NYU? Start with classes, holds, and registration dates.",
     );
   });
 

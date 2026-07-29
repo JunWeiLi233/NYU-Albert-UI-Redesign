@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.151 includes:
+Version 0.5.152 includes:
+
+- Home’s verified Start here group now adds a concise “New to NYU?” cue for
+  classes, holds, and registration dates, clarifying the first-week order
+  without changing any native Albert control or destination;
 
 - current registration, records, career, international, Law-residence, and
   billing/refund wording now routes to the most specific verified Albert area;
