@@ -1301,6 +1301,12 @@ describe("AppShell cross-area task handoffs", () => {
       "Verified destination: Academics",
     );
 
+    const advisingCentersText = await search("Advising Centers");
+    expect(advisingCentersText).toContain(
+      '1 result for “Advising Centers”',
+    );
+    expect(advisingCentersText).toContain("Verified destination: Academics");
+
     const studentClubsText = await search("student clubs");
     expect(studentClubsText).toContain('1 result for “student clubs”');
     expect(studentClubsText).toContain(
