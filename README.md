@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.188 includes:
+Version 0.5.189 includes:
+
+- Find classes now advances through Albert's verified enrollment-cart launcher
+  to the native Course Search form in one shell action, including the live
+  cross-origin PeopleSoft JavaScript control;
 
 - unmatched class-like searches such as “biology” now offer an explicit,
   keyboard-accessible Course Search recovery instead of ending at a dead-end
@@ -501,7 +505,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.188` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.189` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 
