@@ -2016,6 +2016,83 @@ describe("AppShell cross-area task handoffs", () => {
     expect(onOpenResource).toHaveBeenCalledWith("academic-calendar");
   });
 
+  it("keeps broad help search on the directory when Student Services is unavailable", async () => {
+    document.body.innerHTML = `
+      <nav id="IS_BB_HEADER_MENU">
+        <li
+          id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+          class="megaMenuSelected"
+          onclick="toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected');"
+        >
+          <a href="#">Other Resources</a>
+        </li>
+        <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
+          <a href="#wasserman">Wasserman</a>
+          <a href="#wellness">Wellness Center</a>
+        </div>
+      </nav>
+    `;
+
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "learning-career",
+          description: "Find career coaching, jobs, and internships",
+          featured: false,
+          id: "wasserman",
+          keywords: ["career coaching", "jobs"],
+          label: "Wasserman",
+          nativeLabels: ["Wasserman"],
+        },
+        {
+          category: "wellbeing-campus",
+          description: "Find NYU health and wellness support",
+          featured: true,
+          id: "wellness-center",
+          keywords: ["counseling", "health"],
+          label: "Wellness Center",
+          nativeLabels: ["Wellness Center"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "resources",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "get help",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain('0 results for “get help”');
+    expect(shadowRoot?.textContent).toContain(
+      'No exact link is available here. Use “View Albert resource directory” below',
+    );
+    expect(shadowRoot?.textContent).not.toContain("Open Wasserman");
+    expect(shadowRoot?.textContent).not.toContain("Open Wellness Center");
+  });
+
   it("resolves the full need-help phrase only to Student Services when verified", async () => {
     document.body.innerHTML = `
       <nav id="IS_BB_HEADER_MENU">
@@ -2045,6 +2122,7 @@ describe("AppShell cross-area task handoffs", () => {
           keywords: [
             "help with nyu",
             "need help with nyu",
+            "need help",
             "student support",
           ],
           label: "Student Services",
@@ -2080,21 +2158,21 @@ describe("AppShell cross-area task handoffs", () => {
       return;
     }
 
-    await act(async () => {
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
-        taskSearch,
-        "need help with NYU",
-      );
-      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
-      await Promise.resolve();
-    });
+    for (const query of ["I need help", "need help with NYU"]) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
 
-    expect(shadowRoot?.textContent).toContain(
-      '1 result for “need help with NYU”',
-    );
-    expect(shadowRoot?.textContent).toContain(
-      "Verified destination: Student Services",
-    );
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(
+        "Verified destination: Student Services",
+      );
+    }
 
     await act(async () => {
       taskSearch.dispatchEvent(

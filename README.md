@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.127 includes:
+Version 0.5.128 includes:
+
+- broad resource-only help searches now stay honest: they open verified
+  Student Services when present, otherwise they point to Albert’s unchanged
+  resource directory instead of surfacing unrelated support links;
 
 - cross-area searches for classroom location, current classes, and enrollment
   verification now hand off to the verified Home or Grades workspace instead

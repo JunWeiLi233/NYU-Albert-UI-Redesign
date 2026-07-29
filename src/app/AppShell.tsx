@@ -265,6 +265,7 @@ const GENERIC_OTHER_RESOURCES_INTENTS = new Set([
   "shuttle",
   "transit",
 ]);
+const GENERIC_RESOURCE_SUPPORT_INTENTS = new Set(["help", "need help"]);
 const GENERIC_NEW_STUDENT_RESOURCE_QUERIES = new Set([
   "what do i do first",
   "what should i do first",
@@ -504,6 +505,12 @@ function isGenericOgsResourceIntent(query: string): boolean {
 
 function isGenericOtherResourcesIntent(query: string): boolean {
   return GENERIC_OTHER_RESOURCES_INTENTS.has(
+    getMeaningfulTaskSearchValue(query),
+  );
+}
+
+function isGenericResourceSupportIntent(query: string): boolean {
+  return GENERIC_RESOURCE_SUPPORT_INTENTS.has(
     getMeaningfulTaskSearchValue(query),
   );
 }
@@ -849,6 +856,12 @@ export function AppShell({
     allowTypos = false,
   ): boolean => {
     if (isGenericNewStudentResourceIntent(query)) {
+      return false;
+    }
+    if (
+      isGenericResourceSupportIntent(query) &&
+      tool.id !== "student-services"
+    ) {
       return false;
     }
     if (isGenericAppointmentResourceIntent(query)) {
