@@ -561,6 +561,51 @@ button {
   background: var(--ba-color-nyu-violet-hover);
 }
 
+.ba-task-finder-guides {
+  display: grid;
+  max-width: 54rem;
+  gap: var(--ba-space-2);
+  padding: var(--ba-space-3);
+  border-left: 4px solid var(--ba-color-nyu-violet);
+  background: var(--ba-color-page);
+}
+
+.ba-task-finder-guides-heading {
+  display: grid;
+  gap: var(--ba-space-1);
+}
+
+.ba-task-finder-guides-heading > span:last-child {
+  color: var(--ba-color-muted-ink);
+  font-size: var(--ba-font-size-xs);
+  line-height: 1.4;
+}
+
+.ba-task-finder-guide-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ba-space-2);
+}
+
+.ba-task-finder-guide {
+  min-height: 44px;
+  padding: var(--ba-space-2) var(--ba-space-3);
+  border: 1px solid var(--ba-color-rule-strong);
+  border-radius: var(--ba-radius-control);
+  background: var(--ba-color-white);
+  color: var(--ba-color-nyu-violet);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--ba-font-size-sm);
+  font-weight: 800;
+  text-align: left;
+}
+
+.ba-task-finder-guide:hover {
+  border-color: var(--ba-color-nyu-violet);
+  background: var(--ba-color-pale-violet);
+}
+
 .ba-task-finder-search-status {
   min-height: 1.2em;
   margin: 0;
@@ -660,6 +705,7 @@ button {
 .ba-task-finder-search input:focus-visible,
 .ba-task-finder-search-clear:focus-visible,
 .ba-task-finder-common-task:focus-visible,
+.ba-task-finder-guide:focus-visible,
 .ba-task-finder-search-action:focus-visible,
 .ba-task-finder-jump:focus-visible {
   outline: 3px solid var(--ba-color-ultraviolet);

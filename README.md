@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.153 includes:
+Version 0.5.154 includes:
+
+- newcomer resource search now mirrors NYU's Student Guides with visible
+  search-language buttons for first-semester, transfer-student,
+  time-management, and student-tech-guide wording; selecting a guide fills the
+  verified finder without creating a public-site destination;
 
 - newcomer resource search now leads with NYU-style Key Links examples and
   explicitly teaches first-semester, transfer, time-management, and student

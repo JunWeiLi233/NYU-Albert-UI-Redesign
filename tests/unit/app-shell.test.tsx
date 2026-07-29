@@ -3012,6 +3012,34 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).toContain(
       "Student guide wording works too: try “first semester,” “transfer student,” “time management,” or “student tech guide.”",
     );
+    const studentGuides = shadowRoot?.querySelector<HTMLElement>(
+      '[aria-label="Student Guides"]',
+    );
+    expect(studentGuides).not.toBeNull();
+    expect(
+      Array.from(
+        studentGuides?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-guide",
+        ) ?? [],
+      ).map((button) => button.textContent),
+    ).toEqual([
+      "Advice for Your First Semester",
+      "Advice for Transfer Students",
+      "Time Management Guide",
+      "Student Tech Guide",
+    ]);
+
+    await act(async () => {
+      Array.from(
+        studentGuides?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-guide",
+        ) ?? [],
+      )
+        .find((button) => button.textContent === "Advice for Your First Semester")
+        ?.click();
+      await Promise.resolve();
+    });
+    expect(taskSearch.value).toBe("first semester");
 
     await act(async () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
