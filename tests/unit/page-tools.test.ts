@@ -56,7 +56,14 @@ describe("page-family native tools", () => {
     );
 
     expect(courseSearch?.keywords).toEqual(
-      expect.arrayContaining(["course registration", "where can i register"]),
+      expect.arrayContaining([
+        "course registration",
+        "where can i register",
+        "class finder",
+        "course finder",
+        "find available courses",
+        "search for a class",
+      ]),
     );
   });
 
@@ -906,6 +913,7 @@ describe("page-family native tools", () => {
       expect.arrayContaining([
         "resident assistant",
         "resident assistant application",
+        "residential life opportunities",
         "nyu meal plan",
         "kosher dining",
         "dietary options",
@@ -943,6 +951,7 @@ describe("page-family native tools", () => {
         "student visa and immigration",
         "student visa immigration",
         "office of global services",
+        "global services",
         "visa information and programs",
         "employment and tax",
         "visa and academic changes",
@@ -965,6 +974,7 @@ describe("page-family native tools", () => {
       expect.arrayContaining([
         "social impact career hub",
         "career coaching",
+        "career development mentorship entrepreneurship",
         "handshake",
         "undergraduate students",
         "graduate students",
@@ -983,13 +993,19 @@ describe("page-family native tools", () => {
     expect(studentLife?.keywords).toEqual(
       expect.arrayContaining([
         "intramural and club sports",
+        "on demand media activities",
         "service opportunities and civic engagement",
         "clubs and organizations",
+        "social justice and diversity opportunities",
+        "student communities organizations",
         "leadership opportunities",
+        "leadership and awards",
         "volunteer service",
+        "volunteering and relief opportunities",
         "commuter students",
         "connect with other students",
         "interfaith supper club",
+        "religious spiritual life",
         "graduate students",
         "lgbtq students",
         "military students and vets",
@@ -1032,6 +1048,7 @@ describe("page-family native tools", () => {
         "clinical services",
         "get 24/7 support",
         "student health center",
+        "health wellness accessibility services",
         "find a pop up flu clinic or make an appointment",
         "listening labs",
         "wellness workshops",

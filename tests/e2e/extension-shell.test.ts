@@ -1893,6 +1893,7 @@ test("exposes task-first discovery at every supported width and delegates throug
     ],
     ["resident assistant application", "Open Housing"],
     ["NYU Meal Plan", "Open Housing"],
+    ["Residential Life Opportunities", "Open Housing"],
     ["Kosher Dining", "Open Housing"],
     ["Food Allergen Guide and Policy", "Open Housing"],
     ["Grubhub Mobile Ordering", "Open Housing"],
@@ -1902,6 +1903,14 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Find a Place to Stay", "Open Housing"],
     ["Incident Response Team", "Open Campus Safety"],
     ["Wifi, Streaming, and Technology", "Open Campus Resources"],
+    ["Health, Wellness & Accessibility Services", "Open Wellness Center"],
+    ["Global Services", "Open OGS"],
+    ["Leadership & Awards", "Open Student Life"],
+    ["On-Demand Media & Activities", "Open Student Life"],
+    ["Religious & Spiritual Life", "Open Student Life"],
+    ["Social Justice & Diversity", "Open Student Life"],
+    ["Student Communities & Organizations", "Open Student Life"],
+    ["Volunteering & Relief", "Open Student Life"],
     ["social impact career hub", "Open Wasserman"],
     ["Wasserman Career Portal", "Open Wasserman"],
     ["career coaching", "Open Wasserman"],
@@ -1927,6 +1936,30 @@ test("exposes task-first discovery at every supported width and delegates throug
     [
       "Career Development",
       "Open Wasserman",
+    ],
+    [
+      "Career Development, Mentorship & Entrepreneurship",
+      "Open Wasserman",
+    ],
+    [
+      "class finder",
+      "Open Find Classes — Search by subject, course number, title, or instructor",
+    ],
+    [
+      "course finder",
+      "Open Find Classes — Search by subject, course number, title, or instructor",
+    ],
+    [
+      "find available courses",
+      "Open Find Classes — Search by subject, course number, title, or instructor",
+    ],
+    [
+      "search for a class",
+      "Open Find Classes — Search by subject, course number, title, or instructor",
+    ],
+    [
+      "what courses can I take",
+      "Open Find Classes — Search by subject, course number, title, or instructor",
     ],
     ["browse the course catalog", "Open Find Classes — Search by subject, course number, title, or instructor"],
     [

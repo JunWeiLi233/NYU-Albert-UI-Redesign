@@ -6,7 +6,18 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.149 includes:
+Version 0.5.150 includes:
+
+- current Online Programming, Services, and Opportunities labels such as
+  “Global Services,” “Health, Wellness & Accessibility Services,” “Residential
+  Life Opportunities,” and “Student Communities & Organizations” now resolve
+  to verified Albert anchors when the intent is unambiguous; broad public-only
+  categories remain on the honest Other Resources fallback;
+
+- course search now understands “class/course finder,” “class/course lookup,”
+  “find available classes/courses,” “show available classes/courses,” “search
+  for a class,” “what classes/courses can I take,” and “take a class” wording as
+  one-step requests for the verified Course Search control;
 
 - current How We Engage wording such as “Listening Labs,” “Interfaith Supper
   Club,” “Multifaith Advisory Council,” and “Violet Voices” now reaches the
