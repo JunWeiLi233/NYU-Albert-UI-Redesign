@@ -438,6 +438,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "studentlink center",
       "help with your bill financial aid registration and more",
       "help with you bill financial aid registration and more",
+      "for answers about your bill financial aid registration international student services and more",
       "financial aid and registration",
     ],
     label: "StudentLink",
