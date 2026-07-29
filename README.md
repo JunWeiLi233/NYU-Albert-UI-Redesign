@@ -6,7 +6,15 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.165 includes:
+Version 0.5.166 includes:
+
+- live NYU Student Records and Transcripts wording such as “Learn about your
+  FERPA rights,” “How to request your official transcript,” “Update your
+  student records,” “Tech Checklist for New Students,” “Certify your
+  eligibility for NY State TAP,” and “Resources for Military-Connected
+  Students” now resolves to the shortest verified FERPA, Registrar, Grades,
+  Personal Info, or Other Resources destination without submitting a record,
+  transcript, eligibility, or benefits action;
 
 - live NYU registration checklist wording such as “Check your registration
   date and time,” registration-hold guidance, advisor planning, contact

@@ -1578,6 +1578,9 @@ describe("AppShell cross-area task handoffs", () => {
       "For answers about your bill, financial aid, registration, international student services, and more",
       "Class Registration, Transcripts, Graduation",
       "Find tips for remote learning",
+      "Learn about your FERPA rights",
+      "How to request your official transcript",
+      "Certify your VA benefits",
     ]) {
       const text = await search(query);
       expect(text).toContain(`1 result for “${query}”`);
@@ -1695,6 +1698,91 @@ describe("AppShell cross-area task handoffs", () => {
       expect(shadowRoot?.textContent).toContain(
         "Verified destination: Grades & Transcripts",
       );
+    }
+  });
+
+  it("routes live student-record wording to the shortest verified destination", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "grades", "personal", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "academic-records",
+          description: "Learn about student-record privacy rights",
+          featured: false,
+          id: "ferpa",
+          keywords: [
+            "ferpa privacy rights",
+            "learn about your ferpa rights",
+            "ferpa rights",
+          ],
+          label: "FERPA",
+          nativeLabels: ["FERPA"],
+        },
+        {
+          category: "academic-records",
+          description: "Open registration and official records resources",
+          featured: true,
+          id: "university-registrar",
+          keywords: [
+            "how to request your official transcript",
+            "request official transcript",
+            "request your official transcript",
+          ],
+          label: "University Registrar",
+          nativeLabels: ["University Registrar"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    const search = async (query: string) => {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      return shadowRoot?.textContent ?? "";
+    };
+
+    for (const [query, destination] of [
+      ["Learn about your FERPA rights", "FERPA"],
+      ["How to request your official transcript", "University Registrar"],
+      [
+        "Request official enrollment and degree verification",
+        "Grades & Transcripts",
+      ],
+      ["Update your student records", "Personal Info"],
+      ["Certify your VA benefits", "Other Resources"],
+    ] as const) {
+      const text = await search(query);
+      expect(text).toContain(`1 result for “${query}”`);
+      expect(text).toContain(`Verified destination: ${destination}`);
     }
   });
 
