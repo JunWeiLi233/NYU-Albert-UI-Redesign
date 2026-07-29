@@ -82,6 +82,9 @@ describe("page-family task vocabulary", () => {
   });
 
   it("keeps enrollment-letter requests on records", () => {
+    expect(PAGE_FAMILY_DEFINITIONS.grades.description).toBe(
+      "View grades, get transcripts, and prove enrollment",
+    );
     expect(PAGE_FAMILY_DEFINITIONS.grades.keywords).toEqual(
       expect.arrayContaining([
         "enrollment letter",
@@ -93,6 +96,12 @@ describe("page-family task vocabulary", () => {
         "proof of enrollment",
         "unofficial transcript",
       ]),
+    );
+  });
+
+  it("leads the Finances context with student outcomes", () => {
+    expect(PAGE_FAMILY_DEFINITIONS.finances.description).toBe(
+      "Check balances, pay tuition, view bills, and manage financial aid",
     );
   });
 

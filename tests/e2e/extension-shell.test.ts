@@ -1554,7 +1554,7 @@ test("exposes task-first discovery at every supported width and delegates throug
   ).toBeVisible();
   await expect(taskFinder).toHaveAttribute("data-single-result", "true");
   await expect(taskFinder.locator(".ba-task-finder-area")).toHaveCount(0);
-  await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(1);
+  await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(0);
   await expect(taskFinder.locator(".ba-task-finder-resource")).toHaveCount(0);
   const courseSearchExactResult = taskFinder.getByRole("button", {
     exact: true,
@@ -1605,6 +1605,26 @@ test("exposes task-first discovery at every supported width and delegates throug
   expect(compactExactResultGeometry.resultRight).toBeLessThanOrEqual(
     compactExactResultGeometry.viewportWidth,
   );
+  await taskFinder
+    .getByRole("button", { exact: true, name: "Clear task search" })
+    .click();
+  await expect(taskFinder).not.toHaveAttribute("data-single-result");
+
+  await taskSearch.fill("how do I register");
+  await expect(
+    taskFinder.getByText('1 result for “how do I register”', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(taskFinder).toHaveAttribute("data-single-result", "true");
+  await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(0);
+  await expect(taskFinder.locator(".ba-task-finder-resource")).toHaveCount(0);
+  await expect(
+    taskFinder.getByRole("button", {
+      exact: true,
+      name: "Open Find Classes — Search by subject, course number, title, or instructor",
+    }),
+  ).toBeVisible();
   await taskFinder
     .getByRole("button", { exact: true, name: "Clear task search" })
     .click();
@@ -3097,7 +3117,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       await page.setViewportSize({ height: 900, width: 1280 });
     } else if (family === "finances") {
       await expect(page.locator(".ba-page-description")).toHaveText(
-        "Tuition balances, bills, statements, and financial aid",
+        "Check balances, pay tuition, view bills, and manage financial aid",
       );
       const nativeAccountNotice = page.locator(".native-account-notice");
       await expect(nativeAccountNotice).toHaveCSS(

@@ -125,7 +125,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
   },
   grades: {
     label: "Grades & Transcripts",
-    description: "Grades, transcripts, and enrollment verification",
+    description: "View grades, get transcripts, and prove enrollment",
     keywords: [
       "check grades",
       "enrollment letter",
@@ -150,7 +150,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
   },
   finances: {
     label: "Finances",
-    description: "Tuition balances, bills, statements, and financial aid",
+    description: "Check balances, pay tuition, view bills, and manage financial aid",
     keywords: [
       "amount due",
       "accept aid",

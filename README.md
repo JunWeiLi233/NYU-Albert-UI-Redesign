@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.125 includes:
+Version 0.5.126 includes:
+
+- Grades & Transcripts and Finances now lead their workspace context with
+  student outcomes—view grades, prove enrollment, check balances, and pay
+  tuition—before system terminology;
 
 - “how do I register” now follows the same one-step Find Classes handoff as
   “where can I register,” removing the competing Registrar result;
