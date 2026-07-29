@@ -1234,6 +1234,10 @@ describe("page-family native tools", () => {
     expect(getAvailableResourceTools(document).map(({ id }) => id)).toEqual([
       "studentlink",
     ]);
+    expect(
+      getAvailableResourceTools(document).find(({ id }) => id === "studentlink")
+        ?.keywords,
+    ).toContain("help with you bill financial aid registration and more");
     expect(openNativeResourceTool(document, "studentlink")).toBe(true);
     expect(click).toHaveBeenCalledOnce();
   });
