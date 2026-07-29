@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.148 includes:
+Version 0.5.149 includes:
+
+- current How We Engage wording such as “Listening Labs,” “Interfaith Supper
+  Club,” “Multifaith Advisory Council,” and “Violet Voices” now reaches the
+  verified Wellness Center or Student Life resource; toolkit and program-news
+  labels stay on the honest Other Resources fallback;
 
 - current NYU community and career labels such as “Undergraduate Students”
   and “Connect with other students” now reach verified Wasserman or Student

@@ -1854,6 +1854,13 @@ test("exposes task-first discovery at every supported width and delegates throug
       "inclusive dialogue institute",
       "Open Other Resources — NYU services, offices, and support",
     ],
+    ["Around The Longest Table", "Open Other Resources — NYU services, offices, and support"],
+    [
+      "Fall 2026 How We Engage Toolkit FAQs",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    ["NYU In Dialogue", "Open Other Resources — NYU services, offices, and support"],
+    ["The Resilient Society", "Open Other Resources — NYU services, offices, and support"],
     [
       "community standards",
       "Open Other Resources — NYU services, offices, and support",
@@ -1864,7 +1871,11 @@ test("exposes task-first discovery at every supported width and delegates throug
     ],
     ["report a concern", "Open Campus Safety"],
     ["wellness workshops", "Open Wellness Center"],
+    ["Listening Labs", "Open Wellness Center"],
     ["mindfulnyu", "Open Student Life"],
+    ["Interfaith Supper Club", "Open Student Life"],
+    ["Multifaith Advisory Council", "Open Student Life"],
+    ["Violet Voices", "Open Student Life"],
     [
       "centers for connection and community",
       "Open Student Life",
