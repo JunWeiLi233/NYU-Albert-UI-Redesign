@@ -299,9 +299,11 @@ const GENERIC_OTHER_RESOURCES_INTENTS = new Set([
   "bookstore",
   "campus map",
   "disability services",
+  "housing dining",
   "parking",
   "shuttle",
   "transit",
+  "wellbeing resources",
 ]);
 const GENERIC_RESOURCE_SUPPORT_INTENTS = new Set(["help", "need help"]);
 const GENERIC_NEW_STUDENT_RESOURCE_QUERIES = new Set([
@@ -316,6 +318,7 @@ const GENERIC_APPOINTMENT_RESOURCE_INTENTS = new Set([
 ]);
 const EXACT_TASK_INTENTS = new Map<string, PageToolId>([
   ["address", "addresses"],
+  ["check your grades", "view-grades"],
   ["date of birth", "demographic-information"],
   ["email", "email-addresses"],
   ["emergency contact", "emergency-contacts"],
@@ -424,6 +427,7 @@ const EXACT_RESOURCE_INTENTS = new Map<string, PageToolId>([
   ["technology help", "campus-resources"],
   ["involved", "student-life"],
   ["campus events", "student-life"],
+  ["graduate students", "student-life"],
 ]);
 
 function getExactResourceIntentId(query: string): PageToolId | undefined {
@@ -1138,9 +1142,46 @@ export function AppShell({
           : availableTaskTools.filter((tool) =>
               matchesTool(tool, searchQuery, allowTypos),
             );
+      if (
+        !isResourceSearchMode &&
+        searchQuery.trim().length > 0 &&
+        isNewStudentResourceIntent(searchQuery) &&
+        availableTaskFamilies.includes("resources")
+      ) {
+        return {
+          resourceTools: [],
+          taskFamilies: ["resources" as const],
+          taskTools: [],
+        };
+      }
+      if (
+        !isResourceSearchMode &&
+        isGenericOtherResourcesIntent(searchQuery) &&
+        availableTaskFamilies.includes("resources")
+      ) {
+        return {
+          resourceTools: [],
+          taskFamilies: ["resources" as const],
+          taskTools: [],
+        };
+      }
+      const conversationalCourseSearch =
+        isConversationalCourseSearchIntent(searchQuery);
+      const crossAreaCourseSearch =
+        courseSearchShortcut?.mode === "home" &&
+        (isExplicitCourseSearchQuery(searchQuery) ||
+          conversationalCourseSearch ||
+          getMeaningfulTaskSearchValue(searchQuery) === "class schedule");
+      if (crossAreaCourseSearch) {
+        return {
+          resourceTools: [],
+          taskFamilies: ["home" as const],
+          taskTools: [],
+        };
+      }
       const exactTaskIntentId = getExactTaskIntentId(searchQuery);
       const exactTaskIntentTool = exactTaskIntentId
-        ? matchingTaskTools.find((tool) => tool.id === exactTaskIntentId)
+        ? availableTaskTools.find((tool) => tool.id === exactTaskIntentId)
         : undefined;
       if (exactTaskIntentTool) {
         return {
@@ -1170,8 +1211,6 @@ export function AppShell({
       const directCourseSearch = matchingTaskTools.find(
         (tool) => tool.id === "course-search",
       );
-      const conversationalCourseSearch =
-        isConversationalCourseSearchIntent(searchQuery);
       if (
         (isExplicitCourseSearchQuery(searchQuery) ||
           conversationalCourseSearch) &&
@@ -1473,6 +1512,11 @@ export function AppShell({
           const pageFamily = filteredTaskFamilies[0];
           if (pageFamily) {
             const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
+            const personalRecordQuery =
+              pageFamily === "personal" &&
+              /contact information|student records|guest users/i.test(
+                normalizedTaskSearchQuery,
+              );
             if (
               pageFamily === "home" &&
               isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery)
@@ -1484,7 +1528,9 @@ export function AppShell({
               };
             }
             return {
-              description: definition.navigationHint,
+              description: personalRecordQuery
+                ? definition.description
+                : definition.navigationHint,
               label: definition.label,
             };
           }
@@ -2317,7 +2363,7 @@ export function AppShell({
                             </button>
                           ),
                         )
-                      : availableTaskSearchSuggestions.map(
+                        : availableTaskSearchSuggestions.map(
                           ({ label, query }) => (
                             <button
                               className="ba-task-finder-common-task"
@@ -2327,6 +2373,24 @@ export function AppShell({
                               }
                               key={query}
                               onClick={() => {
+                                const suggestion = TASK_SEARCH_SUGGESTIONS.find(
+                                  (candidate) => candidate.query === query,
+                                );
+                                const requiredTaskId =
+                                  suggestion &&
+                                  "requiresTaskId" in suggestion
+                                    ? suggestion.requiresTaskId
+                                    : undefined;
+                                if (
+                                  requiredTaskId &&
+                                  availableTaskTools.some(
+                                    ({ id }) => id === requiredTaskId,
+                                  ) &&
+                                  !isCrossAreaCourseSearchIntent(query)
+                                ) {
+                                  handleTaskFinderTool(requiredTaskId);
+                                  return;
+                                }
                                 if (openSingleVerifiedTaskResult(query)) {
                                   return;
                                 }
@@ -2461,9 +2525,18 @@ export function AppShell({
                           <span> — {singleTaskSearchResult.description}</span>
                         </p>
                         <button
-                          className="ba-task-finder-search-action"
+                          className={`ba-task-finder-search-action${
+                            filteredTaskTools.length === 1 &&
+                            filteredTaskTools[0]?.id !== "course-search"
+                              ? " ba-task-finder-tool"
+                              : ""
+                          }`}
                           type="button"
-                          aria-label={`Open ${singleTaskSearchResult.label} — ${singleTaskSearchResult.description}`}
+                          aria-label={`Open ${singleTaskSearchResult.label}${
+                            filteredResourceTools.length === 0
+                              ? ` — ${singleTaskSearchResult.description}`
+                              : ""
+                          }`}
                           aria-describedby={`${taskFinderId}-search-destination ${taskFinderId}-search-hint`}
                           onClick={() =>
                             openSingleVerifiedTaskResult(
