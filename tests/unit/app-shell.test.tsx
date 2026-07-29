@@ -313,6 +313,88 @@ describe("AppShell cross-area task handoffs", () => {
     }
   });
 
+  it("keeps current community and career labels searchable without guessing", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "learning-career",
+          description: "Find career coaching, jobs, and internships",
+          featured: false,
+          id: "wasserman",
+          keywords: ["undergraduate students", "graduate students"],
+          label: "Wasserman",
+          nativeLabels: ["Wasserman"],
+        },
+        {
+          category: "wellbeing-campus",
+          description: "Find clubs, activities, and community support",
+          featured: false,
+          id: "student-life",
+          keywords: ["graduate students", "connect with other students"],
+          label: "Student Life",
+          nativeLabels: ["Student Life"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    for (const [query, expected] of [
+      ["undergraduate students", "Verified destination: Wasserman"],
+      ["connect with other students", "Verified destination: Student Life"],
+    ] as const) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(expected);
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "graduate students",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '2 results for “graduate students”',
+    );
+    expect(shadowRoot?.textContent).toContain("Wasserman");
+    expect(shadowRoot?.textContent).toContain("Student Life");
+  });
+
   it("does not let housing keywords capture generic accessibility requests", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],

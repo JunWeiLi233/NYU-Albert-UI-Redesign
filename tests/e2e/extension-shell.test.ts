@@ -5045,6 +5045,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   for (const query of [
     "intramural and club sports",
     "commuter student",
+    "connect with other students",
     "LGBTQ center",
     "spiritual life",
     "student activities board",
@@ -5076,6 +5077,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
 
   for (const query of [
     "career development",
+    "undergraduate students",
     "career center",
     "internships",
     "find a job or internship",
