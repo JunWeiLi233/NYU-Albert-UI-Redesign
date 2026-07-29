@@ -193,6 +193,7 @@ export async function startContentScript({
   const pendingCourseSearchAttempts = new Set<PrimaryPageFamily>();
   let pendingCourseSearchAwaitingFamily: PrimaryPageFamily | undefined;
   let pendingCourseSearchRetryTimer: number | undefined;
+  let pendingCourseSearchReplayCount = 0;
   let activePageFamily: ShellViewModel["currentPageFamily"] | undefined;
   let activePageFamilies: ShellViewModel["availablePageFamilies"] = [];
   let unsubscribe = (): void => undefined;
@@ -212,6 +213,7 @@ export async function startContentScript({
     activePageFamilies = [];
     pendingCourseSearchAttempts.clear();
     pendingCourseSearchAwaitingFamily = undefined;
+    pendingCourseSearchReplayCount = 0;
     if (pendingCourseSearchRetryTimer !== undefined) {
       window?.clearTimeout(pendingCourseSearchRetryTimer);
       pendingCourseSearchRetryTimer = undefined;
@@ -291,6 +293,7 @@ export async function startContentScript({
     pendingCourseSearch = false;
     pendingCourseSearchAttempts.clear();
     pendingCourseSearchAwaitingFamily = undefined;
+    pendingCourseSearchReplayCount = 0;
     if (pendingCourseSearchRetryTimer !== undefined) {
       window?.clearTimeout(pendingCourseSearchRetryTimer);
       pendingCourseSearchRetryTimer = undefined;
@@ -317,6 +320,27 @@ export async function startContentScript({
     // fallback family.
     if (pendingCourseSearchAwaitingFamily) {
       if (activePageFamily !== pendingCourseSearchAwaitingFamily) {
+        // Some PeopleSoft tenants briefly report a different workspace after
+        // the delegated navigation click (for example, Academics while the
+        // Home shell is still being restored). Re-run the original Home-first
+        // handoff once so a student never has to discover the intermediate
+        // workspace and press Find classes a second time. Keep the replay
+        // bounded; a genuinely unavailable Course Search still fails open.
+        if (pendingCourseSearchReplayCount < 1) {
+          pendingCourseSearchReplayCount += 1;
+          pendingCourseSearchAttempts.clear();
+          pendingCourseSearchAwaitingFamily = undefined;
+          if (pendingCourseSearchRetryTimer !== undefined) {
+            window?.clearTimeout(pendingCourseSearchRetryTimer);
+            pendingCourseSearchRetryTimer = undefined;
+          }
+          if (window) {
+            pendingCourseSearchRetryTimer = window.setTimeout(() => {
+              pendingCourseSearchRetryTimer = undefined;
+              reconcilePendingCourseSearch(nativeControlDocument);
+            }, 100);
+          }
+        }
         return;
       }
       if (pendingCourseSearchRetryTimer !== undefined) {
