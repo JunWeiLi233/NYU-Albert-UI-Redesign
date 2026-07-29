@@ -531,6 +531,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "health and counseling",
       "health education",
       "health insurance",
+      "health insurance waiver",
       "health records",
       "health requirements",
       "get 24/7 support",

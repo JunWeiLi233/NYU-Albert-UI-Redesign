@@ -140,6 +140,72 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("keeps first-semester records, tuition, and insurance wording discoverable", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "grades", "finances", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "wellbeing-campus",
+          description: "Find NYU health and wellness support",
+          featured: true,
+          id: "wellness-center",
+          keywords: ["health insurance", "health insurance waiver"],
+          label: "Wellness Center",
+          nativeLabels: ["Wellness Center"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    const searchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(searchInput).not.toBeNull();
+    if (!searchInput) {
+      return;
+    }
+
+    const search = async (query: string) => {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          searchInput,
+          query,
+        );
+        searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      return shadowRoot?.textContent ?? "";
+    };
+
+    for (const [query, destination] of [
+      ["report card", "Grades & Transcripts"],
+      ["verify enrollment", "Grades & Transcripts"],
+      ["how much is tuition", "Finances"],
+      ["health insurance waiver", "Wellness Center"],
+    ] as const) {
+      const resultText = await search(query);
+      expect(resultText).toContain(`1 result for “${query}”`);
+      expect(resultText).toContain(`Verified destination: ${destination}`);
+    }
+  });
+
   it("does not advertise Student support without its exact verified resource", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],

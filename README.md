@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.131 includes:
+Version 0.5.132 includes:
+
+- first-semester wording such as “report card,” “verify enrollment,” “how
+  much is tuition,” and “health insurance waiver” now reaches the verified
+  Grades, Finances, or Wellness destination instead of returning no results;
 
 - the general task finder now explains the one-step Class Search handoff and
   tells students exactly which native fields they can use: subject, course
