@@ -878,6 +878,9 @@ describe("page-family native tools", () => {
     const nyuConnect = getAvailableResourceTools(document).find(
       ({ id }) => id === "nyu-connect",
     );
+    const wellnessCenter = getAvailableResourceTools(document).find(
+      ({ id }) => id === "wellness-center",
+    );
     const studentServices = getAvailableResourceTools(document).find(
       ({ id }) => id === "student-services",
     );
@@ -917,6 +920,16 @@ describe("page-family native tools", () => {
         "find tips for remote learning",
         "centralized online platform",
         "individualized guidance",
+      ]),
+    );
+    expect(wellnessCenter?.keywords).toEqual(
+      expect.arrayContaining([
+        "schedule appointments with doctors counselors nurses and other experts",
+        "connect with us for urgent mental health needs or medical questions or support after sexual assault",
+        "explore tips and strategies for everyday healthy living",
+        "get expert guidance on bringing wellbeing into your clubs classrooms lounges and more",
+        "student wellbeing team",
+        "free flu shots",
       ]),
     );
     expect(studentServices?.keywords).not.toContain("student success");
