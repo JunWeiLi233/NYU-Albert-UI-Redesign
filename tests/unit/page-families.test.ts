@@ -100,9 +100,14 @@ describe("page-family task vocabulary", () => {
     expect(PAGE_FAMILY_DEFINITIONS.personal.keywords).toEqual(
       expect.arrayContaining([
         "new address",
+        "home address",
         "new email address",
         "new emergency contact",
         "new phone number",
+        "mobile phone",
+        "nationality",
+        "personal information",
+        "edit profile",
         "date of birth",
         "gender",
         "legal name",

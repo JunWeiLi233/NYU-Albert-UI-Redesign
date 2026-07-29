@@ -110,7 +110,7 @@ describe("page-family native tools", () => {
       expect.arrayContaining(["date of birth", "gender", "legal name"]),
     );
     expect(addresses?.keywords).toEqual(
-      expect.arrayContaining(["address"]),
+      expect.arrayContaining(["address", "home address"]),
     );
   });
 

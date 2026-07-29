@@ -897,6 +897,30 @@ describe("AppShell cross-area task handoffs", () => {
           nativeLabels: ["Demographic Information"],
           pageFamily: "personal",
         },
+        {
+          description: "Change or review a saved address in Albert",
+          id: "addresses",
+          keywords: ["home address"],
+          label: "Update Addresses",
+          nativeLabels: ["Edit Addresses"],
+          pageFamily: "personal",
+        },
+        {
+          description: "Change or review a saved phone number in Albert",
+          id: "phone-numbers",
+          keywords: ["mobile phone"],
+          label: "Update Phone Numbers",
+          nativeLabels: ["Edit Phone Numbers"],
+          pageFamily: "personal",
+        },
+        {
+          description: "Review citizenship information in Albert",
+          id: "citizenship-information",
+          keywords: ["nationality"],
+          label: "Review Citizenship Information",
+          nativeLabels: [],
+          pageFamily: "personal",
+        },
       ],
       currentPageFamily: "personal",
       document,
@@ -943,6 +967,24 @@ describe("AppShell cross-area task handoffs", () => {
     expect(genderText).toContain('1 result for “gender”');
     expect(genderText).toContain("Verified destination: Review Personal Details");
     expect(genderText).not.toContain("Verified destination: Housing");
+
+    const addressText = await search("home address");
+    expect(addressText).toContain('1 result for “home address”');
+    expect(addressText).toContain("Verified destination: Update Addresses");
+
+    const phoneText = await search("mobile phone");
+    expect(phoneText).toContain('1 result for “mobile phone”');
+    expect(phoneText).toContain("Verified destination: Update Phone Numbers");
+
+    const nationalityText = await search("nationality");
+    expect(nationalityText).toContain('1 result for “nationality”');
+    expect(nationalityText).toContain(
+      "Verified destination: Review Citizenship Information",
+    );
+
+    const profileText = await search("edit profile");
+    expect(profileText).toContain('1 result for “edit profile”');
+    expect(profileText).toContain("Verified destination: Personal Info");
   });
 
   it("keeps finance wording on the verified billing path", async () => {

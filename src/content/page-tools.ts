@@ -1248,6 +1248,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       keywords: [
         "address",
         "change address",
+        "home address",
         "mailing address",
         "move",
         "new address",
@@ -1261,6 +1262,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       id: "phone-numbers",
       keywords: [
         "change phone number",
+        "mobile phone",
         "mobile number",
         "need change phone number",
         "new phone number",
@@ -1307,7 +1309,7 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       description: "Review citizenship information in Albert",
       focusRegion: "citizenship-section",
       id: "citizenship-information",
-      keywords: ["citizenship", "citizenship status"],
+      keywords: ["citizenship", "citizenship status", "nationality"],
       label: "Review Citizenship Information",
       nativeLabels: [],
       taskOnly: true,

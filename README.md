@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.119 includes:
+Version 0.5.120 includes:
+
+- Personal Info now understands “home address,” “mobile phone,” and
+  “nationality” as direct native destinations, while broad “personal
+  information” and “edit profile” searches open the verified Personal Info
+  workspace;
 
 - everyday records and finance wording such as “report card,” “verify
   enrollment,” “credit transfer,” “current balance,” “print statement,” and
