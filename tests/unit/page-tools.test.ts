@@ -903,6 +903,15 @@ describe("page-family native tools", () => {
     expect(nyuConnect?.keywords).toEqual(
       expect.arrayContaining([
         "book an appointment with nyu connect",
+        "personalized support",
+        "connect with a student success specialist for personalized support",
+        "navigating college and nyu",
+        "organization support",
+        "time management tips",
+        "coaching and mentoring",
+        "success toolbox",
+        "your success toolbox essential guides and resources for navigating nyu",
+        "time management guide",
         "resources for student success",
         "make a one on one appointment and find tips for remote learning",
         "find tips for remote learning",

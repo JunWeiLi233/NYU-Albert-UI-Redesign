@@ -1385,6 +1385,15 @@ describe("AppShell cross-area task handoffs", () => {
           keywords: [
             "book an appointment with nyu connect",
             "find tips for remote learning",
+            "personalized support",
+            "connect with a student success specialist for personalized support",
+            "navigating college and nyu",
+            "organization support",
+            "time management tips",
+            "coaching and mentoring",
+            "success toolbox",
+            "your success toolbox essential guides and resources for navigating nyu",
+            "time management guide",
           ],
           label: "NYU Connect",
           nativeLabels: ["NYU Connect"],
@@ -1465,6 +1474,22 @@ describe("AppShell cross-area task handoffs", () => {
     expect(remoteLearningText).toContain(
       "Verified destination: NYU Connect",
     );
+
+    for (const query of [
+      "personalized support",
+      "connect with a student success specialist for personalized support",
+      "navigating college and nyu",
+      "organization support",
+      "time management tips",
+      "coaching and mentoring",
+      "success toolbox",
+      "your success toolbox essential guides and resources for navigating nyu",
+      "time management guide",
+    ]) {
+      const supportText = await search(query);
+      expect(supportText).toContain(`1 result for “${query}”`);
+      expect(supportText).toContain("Verified destination: NYU Connect");
+    }
 
     const aidAppointmentText = await search("financial aid appointment");
     expect(aidAppointmentText).toContain(
