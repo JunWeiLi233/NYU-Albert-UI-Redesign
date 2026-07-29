@@ -313,7 +313,7 @@ describe("AppShell cross-area task handoffs", () => {
     }
   });
 
-  it("keeps current community and career labels searchable without guessing", async () => {
+  it("keeps current community, career, and engagement labels searchable without guessing", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
       availablePageTools: [],
@@ -332,9 +332,24 @@ describe("AppShell cross-area task handoffs", () => {
           description: "Find clubs, activities, and community support",
           featured: false,
           id: "student-life",
-          keywords: ["graduate students", "connect with other students"],
+          keywords: [
+            "graduate students",
+            "connect with other students",
+            "interfaith supper club",
+            "multifaith advisory council",
+            "violet voices",
+          ],
           label: "Student Life",
           nativeLabels: ["Student Life"],
+        },
+        {
+          category: "wellbeing-campus",
+          description: "Find NYU health and wellness support",
+          featured: false,
+          id: "wellness-center",
+          keywords: ["listening labs"],
+          label: "Wellness Center",
+          nativeLabels: ["Wellness Center"],
         },
       ],
       availableTaskTools: [],
@@ -393,6 +408,48 @@ describe("AppShell cross-area task handoffs", () => {
     );
     expect(shadowRoot?.textContent).toContain("Wasserman");
     expect(shadowRoot?.textContent).toContain("Student Life");
+
+    for (const [query, destination] of [
+      ["listening labs", "Wellness Center"],
+      ["interfaith supper club", "Student Life"],
+      ["multifaith advisory council", "Student Life"],
+      ["violet voices", "Student Life"],
+    ] as const) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(
+        `Verified destination: ${destination}`,
+      );
+    }
+
+    for (const query of [
+      "around the longest table",
+      "fall 2026 how we engage toolkit faqs",
+      "nyu in dialogue",
+      "the resilient society",
+    ]) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(
+        "Verified destination: Other Resources",
+      );
+    }
   });
 
   it("does not let housing keywords capture generic accessibility requests", async () => {
