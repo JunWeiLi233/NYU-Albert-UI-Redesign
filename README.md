@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.142 includes:
+Version 0.5.143 includes:
 
 - generic “accessibility” searches no longer leak into Housing through a
   shared keyword; they use the exact Campus Resources anchor when verified or
@@ -24,6 +24,10 @@ Version 0.5.142 includes:
 - every unique area, task, and resource search now surfaces one compact
   “Open …” action beside the verified-destination cue, so pointer users get
   the same one-step handoff as keyboard users without scrolling the inventory;
+
+- broad “support” and “I need support” searches now prefer the verified
+  Student Services anchor when it exists, keeping a newcomer’s first help
+  request one step and falling back to Albert’s directory when it does not;
 
 - “Where are my classes?” now opens the verified Weekly Schedule instead of
   offering Class Search and Brightspace together, and “international office”
