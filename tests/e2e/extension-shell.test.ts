@@ -5411,6 +5411,12 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "counseling services",
     "health education",
     "Wellness Workshops",
+    "schedule appointments with doctors, counselors, nurses, and other experts",
+    "connect with us for urgent mental health needs or medical questions, or support after sexual assault",
+    "explore tips and strategies for everyday healthy living",
+    "get expert guidance on bringing wellbeing into your clubs, classrooms, lounges, and more",
+    "student wellbeing team",
+    "free flu shots",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(

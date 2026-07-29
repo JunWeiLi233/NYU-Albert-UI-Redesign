@@ -1403,7 +1403,16 @@ describe("AppShell cross-area task handoffs", () => {
           description: "Find NYU health and wellness support",
           featured: true,
           id: "wellness-center",
-          keywords: ["counseling appointment", "mental health appointment"],
+          keywords: [
+            "counseling appointment",
+            "mental health appointment",
+            "schedule appointments with doctors counselors nurses and other experts",
+            "connect with us for urgent mental health needs or medical questions or support after sexual assault",
+            "explore tips and strategies for everyday healthy living",
+            "get expert guidance on bringing wellbeing into your clubs classrooms lounges and more",
+            "student wellbeing team",
+            "free flu shots",
+          ],
           label: "Wellness Center",
           nativeLabels: ["Wellness Center"],
         },
@@ -1495,6 +1504,19 @@ describe("AppShell cross-area task handoffs", () => {
     expect(aidAppointmentText).toContain(
       "Verified destination: Financial Aid",
     );
+
+    for (const query of [
+      "schedule appointments with doctors, counselors, nurses, and other experts",
+      "connect with us for urgent mental health needs or medical questions, or support after sexual assault",
+      "explore tips and strategies for everyday healthy living",
+      "get expert guidance on bringing wellbeing into your clubs, classrooms, lounges, and more",
+      "student wellbeing team",
+      "free flu shots",
+    ]) {
+      const wellbeingText = await search(query);
+      expect(wellbeingText).toContain(`1 result for “${query}”`);
+      expect(wellbeingText).toContain("Verified destination: Wellness Center");
+    }
   });
 
   it("keeps newcomer support aliases on the native resource directory", async () => {

@@ -6,7 +6,13 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.160 includes:
+Version 0.5.161 includes:
+
+- live NYU Wellbeing wording such as “Schedule appointments with doctors,
+  counselors, nurses, and other experts,” urgent mental-health and medical
+  support language, everyday healthy-living guidance, “Student Wellbeing
+  Team,” and “Free flu shots” now routes to the verified Wellness Center
+  anchor in one step without scheduling care or transmitting a text;
 
 - live NYU Student Success wording such as “Personalized Support,”
   “Navigating College and NYU,” “Time Management Tips,” “Coaching and
