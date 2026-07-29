@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.147 includes:
+Version 0.5.148 includes:
+
+- current NYU community and career labels such as “Undergraduate Students”
+  and “Connect with other students” now reach verified Wasserman or Student
+  Life resources; the shared “Graduate Students” label stays visibly
+  ambiguous when both destinations are present instead of guessing;
 
 - concise newcomer phrases such as “available courses,” “find courses,”
   “find me a course,” “course list,” “course listings,” “course offerings,”
