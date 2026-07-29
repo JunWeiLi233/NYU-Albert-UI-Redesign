@@ -70,7 +70,42 @@ describe("page-family native tools", () => {
         "what classes courses can i take",
         "registering for classes",
         "navigate the registration process",
+        "browse available courses for the upcoming term",
       ]),
+    );
+  });
+
+  it("maps registration records wording to verified one-step tasks", () => {
+    document.body.innerHTML = `
+      ${nativeResourceMenu('<li><a href="#calendar">Academic Calendar</a></li>')}
+      <section class="is_bb_LinkContainer">
+        <a href="#degree">Degree Progress Report</a>
+      </section>
+      <section data-better-albert-region="grade-viewer"></section>
+    `;
+
+    const resourceTools = getAvailableResourceTools(document);
+    const tools = getAvailableTaskTools(document);
+    const degreeProgress = tools.find(({ id }) => id === "degree-progress");
+    const viewGrades = tools.find(({ id }) => id === "view-grades");
+
+    expect(
+      resourceTools.find(({ id }) => id === "academic-calendar")?.keywords,
+    ).toEqual(
+      expect.arrayContaining([
+        "view important dates and schedules",
+        "additional important dates and deadlines",
+        "pass fail grade option deadline",
+      ]),
+    );
+    expect(degreeProgress?.keywords).toEqual(
+      expect.arrayContaining([
+        "track your degree progress",
+        "stay on track for graduation",
+      ]),
+    );
+    expect(viewGrades?.keywords).toEqual(
+      expect.arrayContaining(["check your grades"]),
     );
   });
 

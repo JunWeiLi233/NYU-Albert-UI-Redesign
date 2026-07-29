@@ -56,6 +56,8 @@ describe("page-family task vocabulary", () => {
         "securing tutorial and other academic support",
         "tracking and maintaining progress",
         "track your degree progress",
+        "how and when to apply for graduation",
+        "stay on track for graduation",
         "drop courses",
         "course withdrawal",
         "unique academic opportunities",
@@ -112,10 +114,14 @@ describe("page-family task vocabulary", () => {
         "national student clearinghouse",
         "official transcript",
         "request official and unofficial transcripts",
+        "request your transcript",
         "student records and transcripts",
         "verify your enrollment or degree",
         "proof of enrollment",
         "unofficial transcript",
+        "check your grades",
+        "access authentication services like apostilles",
+        "how to receive your diploma",
       ]),
     );
   });

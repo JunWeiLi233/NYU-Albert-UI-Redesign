@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.163 includes:
+Version 0.5.164 includes:
+
+- live NYU registration wording such as “Browse available courses for the
+  upcoming term,” “Track Your Degree Progress,” and “Check Your Grades” now
+  uses the shortest verified Albert destination;
 
 - live NYU Student Information and Resources wording such as “Meet with an
   expert to guide you through NYU student services” now routes to the
