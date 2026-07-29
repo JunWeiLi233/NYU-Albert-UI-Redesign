@@ -1925,6 +1925,10 @@ export function AppShell({
                   type="search"
                   aria-controls={`${taskFinderId}-results`}
                   aria-describedby={`${taskFinderId}-search-status${
+                    !isResourceSearchMode
+                      ? ` ${taskFinderId}-search-help`
+                      : ""
+                  }${
                     normalizedTaskSearchQuery.length > 0 &&
                     filteredResultCount === 1
                       ? ` ${taskFinderId}-search-destination ${taskFinderId}-search-hint`
@@ -1964,6 +1968,16 @@ export function AppShell({
                   </button>
                 )}
               </div>
+              {!isResourceSearchMode && (
+                <p
+                  className="ba-task-finder-search-help"
+                  id={`${taskFinderId}-search-help`}
+                >
+                  Need a class? Choose <strong>Find classes</strong> to open
+                  Albert’s Course Search, then enter a subject, course number,
+                  title, or instructor.
+                </p>
+              )}
               {(availableTaskSearchSuggestions.length > 0 ||
                 availableResourceSearchSuggestions.length > 0) && (
                 <div

@@ -480,6 +480,19 @@ button {
   appearance: none;
 }
 
+.ba-task-finder-search-help {
+  max-width: 38rem;
+  margin: 0;
+  color: var(--ba-color-muted-ink);
+  font-size: var(--ba-font-size-xs);
+  line-height: 1.4;
+}
+
+.ba-task-finder-search-help strong {
+  color: var(--ba-color-nyu-violet);
+  font-weight: 800;
+}
+
 .ba-task-finder-search-clear {
   min-height: 44px;
   padding: var(--ba-space-2) var(--ba-space-3);

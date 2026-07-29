@@ -46,6 +46,51 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("explains the one-step Class Search handoff before typing", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [
+        {
+          description:
+            "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+          pageFamily: "home",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    const searchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(searchInput?.getAttribute("aria-describedby")).toContain(
+      "search-help",
+    );
+    expect(shadowRoot?.querySelector(".ba-task-finder-search-help")?.textContent)
+      .toContain(
+        "Choose Find classes to open Albert’s Course Search, then enter a subject, course number, title, or instructor.",
+      );
+  });
+
   it("does not advertise Student support without its exact verified resource", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
