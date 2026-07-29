@@ -2812,4 +2812,94 @@ describe("AppShell cross-area task handoffs", () => {
 
     expect(onOpenResource).toHaveBeenCalledWith("student-services");
   });
+
+  it("resolves broad support wording to the verified Student Services anchor", async () => {
+    document.body.innerHTML = `
+      <nav id="IS_BB_HEADER_MENU">
+        <li
+          id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+          class="megaMenuSelected"
+          onclick="toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected');"
+        >
+          <a href="#">Other Resources</a>
+        </li>
+        <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
+          <a href="#student-services">Student Services</a>
+          <a href="#connect">NYU Connect</a>
+        </div>
+      </nav>
+    `;
+
+    const onOpenResource = vi.fn();
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "wellbeing-campus",
+          description: "Find general student services and support",
+          featured: false,
+          id: "student-services",
+          keywords: ["need help", "student support", "support"],
+          label: "Student Services",
+          nativeLabels: ["Student Services"],
+        },
+        {
+          category: "learning-career",
+          description: "Schedule support appointments and view your Success Network",
+          featured: false,
+          id: "nyu-connect",
+          keywords: ["student success", "support appointment"],
+          label: "NYU Connect",
+          nativeLabels: ["NYU Connect"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "resources",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource,
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    for (const query of ["support", "I need support"]) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(
+        "Verified destination: Student Services",
+      );
+    }
+
+    await act(async () => {
+      taskSearch.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "Enter",
+        }),
+      );
+    });
+
+    expect(onOpenResource).toHaveBeenCalledWith("student-services");
+  });
 });
