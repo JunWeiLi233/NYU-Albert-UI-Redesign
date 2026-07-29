@@ -73,6 +73,7 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
     keywords: [
       "add classes",
       "academic advisor",
+      "your academic advisor",
       "academic planning",
       "academic planning and support",
       "academic resource center",
