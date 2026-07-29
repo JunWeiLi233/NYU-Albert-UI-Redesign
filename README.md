@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.174 includes:
+Version 0.5.175 includes:
 
 - the live NYU Students hub’s exact “View the Calendar” and “Go to
   Brightspace” wording now resolves to the verified Academic Calendar and NYU
@@ -76,6 +76,11 @@ Version 0.5.174 includes:
   Mentoring,” and “Success Toolbox” now routes to the verified NYU Connect
   anchor in one step; leave-of-absence, glossary, Year 2, midterm-feedback,
   and text-message labels remain honest Other Resources directory cues;
+
+- the live StudentLink Get Support wording “For answers about your bill,
+  financial aid, registration, international student services, and more” now
+  resolves to the same verified StudentLink resource or honest Other
+  Resources fallback as the shorter card copy;
 
 
 - newcomer resource search now adds NYU-style “Browse by student need” cues
@@ -449,7 +454,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.174` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.175` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

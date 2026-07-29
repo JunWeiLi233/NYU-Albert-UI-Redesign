@@ -1238,6 +1238,12 @@ describe("page-family native tools", () => {
       getAvailableResourceTools(document).find(({ id }) => id === "studentlink")
         ?.keywords,
     ).toContain("help with you bill financial aid registration and more");
+    expect(
+      getAvailableResourceTools(document).find(({ id }) => id === "studentlink")
+        ?.keywords,
+    ).toContain(
+      "for answers about your bill financial aid registration international student services and more",
+    );
     expect(openNativeResourceTool(document, "studentlink")).toBe(true);
     expect(click).toHaveBeenCalledOnce();
   });

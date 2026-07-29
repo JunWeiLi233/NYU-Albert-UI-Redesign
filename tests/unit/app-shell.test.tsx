@@ -3359,6 +3359,7 @@ describe("AppShell cross-area task handoffs", () => {
           "studentlink",
           "student link",
           "help with you bill financial aid registration and more",
+          "for answers about your bill financial aid registration international student services and more",
         ],
         label: "StudentLink",
         nativeLabels: ["StudentLink"],
@@ -3555,6 +3556,21 @@ describe("AppShell cross-area task handoffs", () => {
     });
     expect(shadowRoot?.textContent).toContain(
       '1 result for “Help with you bill, financial aid, registration, and more”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: StudentLink",
+    );
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "For answers about your bill, financial aid, registration, international student services, and more",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(shadowRoot?.textContent).toContain(
+      "1 result for “For answers about your bill, financial aid, registration, international student services, and more”",
     );
     expect(shadowRoot?.textContent).toContain(
       "Verified destination: StudentLink",
