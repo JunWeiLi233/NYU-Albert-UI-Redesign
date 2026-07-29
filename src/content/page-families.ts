@@ -94,6 +94,8 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "change major",
       "change program",
       "declare major",
+      "degree audit",
+      "audit my degree",
       "defining educational and career goals",
       "developing skills and time management",
       "developing skills, time management, and other techniques for academic success",

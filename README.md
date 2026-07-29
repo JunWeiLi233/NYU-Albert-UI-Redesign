@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.132 includes:
+Version 0.5.133 includes:
+
+- “degree audit” and “audit my degree” now fall back to the verified Academics
+  workspace when Albert does not expose the direct Degree Progress control;
+  ordinary “transportation” searches stay on the verified Other Resources
+  directory instead of being mistaken for Campus Safety;
 
 - first-semester wording such as “report card,” “verify enrollment,” “how
   much is tuition,” and “health insurance waiver” now reaches the verified

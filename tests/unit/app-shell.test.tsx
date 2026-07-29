@@ -140,6 +140,111 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("keeps degree-audit wording on the verified Academics fallback", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    for (const query of ["degree audit", "audit my degree"]) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(
+        "Verified destination: Academics",
+      );
+    }
+  });
+
+  it("keeps ordinary transportation searches away from Campus Safety", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "wellbeing-campus",
+          description: "Find safety services and emergency guidance",
+          featured: false,
+          id: "campus-safety",
+          keywords: ["campus police", "emergency", "security"],
+          label: "Campus Safety",
+          nativeLabels: ["Campus Safety"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "transportation",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain('1 result for “transportation”');
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Other Resources",
+    );
+    expect(shadowRoot?.textContent).not.toContain(
+      "Verified destination: Campus Safety",
+    );
+  });
+
   it("keeps first-semester records, tuition, and insurance wording discoverable", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "grades", "finances", "resources"],

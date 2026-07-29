@@ -503,7 +503,6 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "report an incident",
       "report a concern",
       "incident response team",
-      "safety security and transportation",
       "security",
       "public safety",
       "safe ride",
