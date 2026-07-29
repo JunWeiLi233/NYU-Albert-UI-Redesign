@@ -988,6 +988,86 @@ describe("AppShell cross-area task handoffs", () => {
     expect(onOpenTool).toHaveBeenCalledWith("course-search");
   });
 
+  it("routes plain planning and graduation wording to verified academic tasks", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["academics", "grades"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [
+        {
+          allowJavascriptUrl: true,
+          description: "Open Albert's Academic Planner",
+          id: "academic-planner",
+          keywords: ["course planning", "plan courses", "plan my courses"],
+          label: "Plan Future Courses",
+          nativeLabels: ["Academic Planner"],
+          pageFamily: "academics",
+        },
+        {
+          allowJavascriptUrl: true,
+          description: "Review your graduation progress",
+          id: "graduation-status",
+          keywords: [
+            "expected graduation",
+            "graduation date",
+            "when do i graduate",
+          ],
+          label: "Check Graduation Status",
+          nativeLabels: ["View My Graduation Status"],
+          pageFamily: "academics",
+        },
+      ],
+      currentPageFamily: "academics",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    const search = async (query: string) => {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      return shadowRoot?.textContent ?? "";
+    };
+
+    const planningText = await search("plan my courses");
+    expect(planningText).toContain('1 result for “plan my courses”');
+    expect(planningText).toContain("Verified destination: Plan Future Courses");
+
+    const graduationText = await search("when do I graduate");
+    expect(graduationText).toContain('1 result for “when do I graduate”');
+    expect(graduationText).toContain(
+      "Verified destination: Check Graduation Status",
+    );
+
+    const majorText = await search("choose a major");
+    expect(majorText).toContain('1 result for “choose a major”');
+    expect(majorText).toContain("Verified destination: Academics");
+  });
+
   it("does not advertise class search without a verified Course Search path", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],

@@ -605,6 +605,18 @@ describe("page-family native tools", () => {
     ]);
     expect(openNativePageTool(document, "academic-planner")).toBe(true);
     expect(nativePlannerClick).toHaveBeenCalledOnce();
+
+    const academicTools = getAvailableTaskTools(document);
+    expect(
+      academicTools.find(({ id }) => id === "academic-planner")?.keywords,
+    ).toEqual(
+      expect.arrayContaining(["course planning", "plan my courses"]),
+    );
+    expect(
+      academicTools.find(({ id }) => id === "graduation-status")?.keywords,
+    ).toEqual(
+      expect.arrayContaining(["expected graduation", "when do i graduate"]),
+    );
   });
 
   it("allows explicitly non-transactional academic javascript destinations", () => {

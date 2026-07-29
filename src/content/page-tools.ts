@@ -1029,6 +1029,11 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       allowJavascriptUrl: true,
       description: "Open Albert's Academic Planner",
       id: "academic-planner",
+      keywords: [
+        "course planning",
+        "plan courses",
+        "plan my courses",
+      ],
       label: "Plan Future Courses",
       nativeLabels: ["Academic Planner"],
     },
@@ -1083,6 +1088,11 @@ const PAGE_TOOLS: Record<PageFamily, readonly PageToolDefinition[]> = {
       allowJavascriptUrl: true,
       description: "Review your graduation progress",
       id: "graduation-status",
+      keywords: [
+        "expected graduation",
+        "graduation date",
+        "when do i graduate",
+      ],
       label: "Check Graduation Status",
       nativeLabels: ["View My Graduation Status"],
     },

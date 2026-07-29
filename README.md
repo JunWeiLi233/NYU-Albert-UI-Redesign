@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.116 includes:
+Version 0.5.117 includes:
+
+- plain-language searches such as “plan my courses,” “when do I graduate,”
+  and “choose a major” now reach the verified Academic Planner, graduation
+  status, or Academics workspace in one step;
 
 - “where can I register” now stays on the verified one-step Course Search
   handoff instead of competing with University Registrar;
