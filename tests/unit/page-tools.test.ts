@@ -1038,6 +1038,7 @@ describe("page-family native tools", () => {
         "intersession housing",
         "off-campus living resources",
         "find a place to stay",
+        "learn more about housing and dining",
       ]),
     );
     expect(campusResources?.keywords).toEqual(

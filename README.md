@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.169 includes:
+Version 0.5.170 includes:
 
 - live NYU Academic Services wording such as “Find Your Advisor,” “What Can
   My Advisor Help With?,” “Visit the Academic Resource Center,” “Improve
@@ -17,6 +17,11 @@ Version 0.5.169 includes:
 - Academic Services subpages now keep their exact tutoring, complaint, SARA,
   and Kaplan labels searchable while preserving the honest Other Resources
   directory fallback for public-only procedures and external services;
+
+- the live NYU Students hub’s “Learn more about academic resources,” “Learn
+  more about housing and dining,” and “Learn more about bills, payments, and
+  refunds” links now follow the same one-step Academics/resources, Housing,
+  and Finances routing as their visible tab destinations;
 
 - live NYU Student Records and Transcripts wording such as “Learn about your
   FERPA rights,” “How to request your official transcript,” “Update your

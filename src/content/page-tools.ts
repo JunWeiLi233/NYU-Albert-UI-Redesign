@@ -728,6 +728,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "room change",
       "basic needs assistance",
       "food accessibility assistance",
+      "learn more about housing and dining",
     ],
     label: "Housing",
     nativeLabels: ["Housing"],
