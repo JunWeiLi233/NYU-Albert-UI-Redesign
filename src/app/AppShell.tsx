@@ -1949,7 +1949,7 @@ export function AppShell({
               <span>
                 {isResourceSearchMode
                   ? resourceFinderIntent === "new-student"
-                    ? "New to NYU? Start with a verified service below. Search only the official links available in Albert’s Other Resources directory."
+                    ? "New to NYU? Start with a verified service below. Search only the official links available in Albert’s Other Resources directory. Student guide wording works too: try “first semester,” “transfer student,” “time management,” or “student tech guide.”"
                     : "Search only the official links already available in Albert’s Other Resources directory."
                   : "Choose a task or a link already available in Albert. Better Albert never invents destinations."}
               </span>
@@ -1992,7 +1992,9 @@ export function AppShell({
                   autoComplete="off"
                   placeholder={
                     isResourceSearchMode
-                      ? "Try financial aid, counseling, or ID card"
+                      ? resourceFinderIntent === "new-student"
+                        ? "Try academic dates, course materials, or student support"
+                        : "Try academic dates, course materials, or financial aid"
                       : "Try “find a course” for one-step class search, “new student,” or “financial aid”"
                   }
                   ref={taskFinderSearchRef}
