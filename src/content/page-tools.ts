@@ -731,6 +731,7 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
       "need help",
       "student help",
       "student services",
+      "meet with an expert to guide you through nyu student services",
       "student support",
       "solving personal problems that impede academic work",
       "support",

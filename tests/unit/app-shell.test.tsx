@@ -3261,6 +3261,7 @@ describe("AppShell cross-area task handoffs", () => {
             "help with nyu",
             "need help with nyu",
             "need help",
+            "meet with an expert to guide you through nyu student services",
             "student support",
           ],
           label: "Student Services",
@@ -3296,7 +3297,11 @@ describe("AppShell cross-area task handoffs", () => {
       return;
     }
 
-    for (const query of ["I need help", "need help with NYU"]) {
+    for (const query of [
+      "I need help",
+      "need help with NYU",
+      "Meet with an expert to guide you through NYU student services",
+    ]) {
       await act(async () => {
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
           taskSearch,

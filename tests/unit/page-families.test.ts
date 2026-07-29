@@ -153,6 +153,8 @@ describe("page-family task vocabulary", () => {
     expect(PAGE_FAMILY_DEFINITIONS.resources.keywords).toEqual(
       expect.arrayContaining([
         "student support",
+        "meet with an expert to guide you through nyu student services",
+        "check this page for links to virtual programming resources and support services across campus",
         "academic support",
         "student life",
         "financial aid and registration",

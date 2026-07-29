@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.162 includes:
+Version 0.5.163 includes:
+
+- live NYU Student Information and Resources wording such as “Meet with an
+  expert to guide you through NYU student services” now routes to the
+  verified Student Services anchor, while broad virtual-programming wording
+  stays on the verified Other Resources directory;
 
 - live NYU Communities and Getting Involved wording such as “Students in
   the Military and Veterans,” “Find clubs and other student organizations on
