@@ -3404,6 +3404,7 @@ describe("AppShell cross-area task handoffs", () => {
         currentPageFamily: "resources",
       });
     });
+    const onNavigateToCourseSearch = vi.fn();
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
       availablePageTools: [],
@@ -3413,7 +3414,7 @@ describe("AppShell cross-area task handoffs", () => {
       document,
       onDisable: vi.fn(async () => undefined),
       onNavigate,
-      onNavigateToCourseSearch: vi.fn(),
+      onNavigateToCourseSearch,
       onOpenResource: vi.fn(),
       onOpenTool: vi.fn(),
       onSkipToContent: vi.fn(),
@@ -3469,6 +3470,7 @@ describe("AppShell cross-area task handoffs", () => {
         ) ?? [],
       ).map((button) => button.textContent?.replace(/\s+/g, " ").trim()),
     ).toEqual([
+      "Find classesOpen Albert Course Search›",
       "Academic datesCheck NYU academic dates and deadlines›",
       "Course materialsOpen NYU's learning platform›",
       "StudentLinkGet help with your bill, financial aid, registration, and more›",
@@ -3575,6 +3577,26 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).toContain(
       "Verified destination: StudentLink",
     );
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    const findClassesKeyLink = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(
+        '[aria-label="NYU Key Links"] .ba-task-finder-key-link',
+      ) ?? [],
+    ).find((button) => button.textContent?.includes("Find classes"));
+    expect(findClassesKeyLink).not.toBeUndefined();
+    await act(async () => {
+      findClassesKeyLink?.click();
+      await Promise.resolve();
+    });
+    expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
 
   });
 

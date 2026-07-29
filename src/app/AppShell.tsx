@@ -124,12 +124,16 @@ const NEW_STUDENT_GUIDE_SEARCHES = [
   { label: "Student Tech Guide", query: "student tech guide" },
 ] as const;
 
-const NEW_STUDENT_KEY_LINKS = [
+const NEW_STUDENT_KEY_LINKS: readonly {
+  label: string;
+  toolId: PageToolId;
+}[] = [
+  { label: "Find classes", toolId: "course-search" },
   { label: "Academic dates", toolId: "academic-calendar" },
   { label: "Course materials", toolId: "nyu-brightspace" },
   { label: "StudentLink", toolId: "studentlink" },
   { label: "Student support", toolId: "student-services" },
-] as const satisfies readonly { label: string; toolId: PageToolId }[];
+];
 
 const NEW_STUDENT_SUPPORT_LINKS = [
   { label: "Academic support", toolId: "academic-support" },
@@ -1337,14 +1341,42 @@ export function AppShell({
             NEW_STUDENT_RESOURCE_STARTER_ORDER.length),
     );
   })();
-  const availableNewStudentKeyLinks =
+  const availableNewStudentKeyLinks: readonly {
+    description: string;
+    label: string;
+    toolId: PageToolId;
+  }[] =
     isResourceSearchMode &&
     resourceFinderIntent === "new-student" &&
     normalizedTaskSearchQuery.length === 0
-      ? NEW_STUDENT_KEY_LINKS.flatMap(({ label, toolId }) => {
-          const tool = availableResourceTools.find(({ id }) => id === toolId);
-          return tool ? [{ description: tool.description, label, toolId }] : [];
-        })
+      ? (() => {
+          const links: {
+            description: string;
+            label: string;
+            toolId: PageToolId;
+          }[] = [];
+          for (const { label, toolId } of NEW_STUDENT_KEY_LINKS) {
+            if (toolId === "course-search") {
+              if (verifiedCourseSearch || hasCourseSearchDestination) {
+                links.push({
+                  description:
+                    verifiedCourseSearch?.description ??
+                    "Open Albert Course Search",
+                  label,
+                  toolId,
+                });
+              }
+              continue;
+            }
+            const tool = availableResourceTools.find(
+              ({ id }) => id === toolId,
+            );
+            if (tool) {
+              links.push({ description: tool.description, label, toolId });
+            }
+          }
+          return links;
+        })()
       : [];
   const availableNewStudentSupportLinks =
     isResourceSearchMode &&
@@ -2134,7 +2166,18 @@ export function AppShell({
                           type="button"
                           aria-label={`${label} — ${description}`}
                           key={toolId}
-                          onClick={() => handleTaskFinderResource(toolId)}
+                          onClick={() => {
+                            if (toolId === "course-search") {
+                              if (verifiedCourseSearch) {
+                                handleTaskFinderTool(toolId);
+                              } else {
+                                closeTaskFinder();
+                                onNavigateToCourseSearch();
+                              }
+                              return;
+                            }
+                            handleTaskFinderResource(toolId);
+                          }}
                         >
                           <span className="ba-task-finder-item-copy">
                             <strong>{label}</strong>
