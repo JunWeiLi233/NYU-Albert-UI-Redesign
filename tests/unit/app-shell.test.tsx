@@ -2948,6 +2948,33 @@ describe("AppShell cross-area task handoffs", () => {
         label: "Academic Calendar",
         nativeLabels: ["Academic Calendar"],
       },
+      {
+        category: "wellbeing-campus" as const,
+        description: "Find tutoring and academic support",
+        featured: false,
+        id: "academic-support" as const,
+        keywords: ["academic support"],
+        label: "Academic Support",
+        nativeLabels: ["Academic Support"],
+      },
+      {
+        category: "wellbeing-campus" as const,
+        description: "Find technology and campus services",
+        featured: false,
+        id: "campus-resources" as const,
+        keywords: ["technology help"],
+        label: "Campus Resources",
+        nativeLabels: ["Campus Resources"],
+      },
+      {
+        category: "wellbeing-campus" as const,
+        description: "Find housing, residence halls, dining, and meal plans",
+        featured: false,
+        id: "housing" as const,
+        keywords: ["housing"],
+        label: "Housing",
+        nativeLabels: ["Housing"],
+      },
     ];
     const onNavigate = vi.fn(() => {
       document
@@ -3027,6 +3054,17 @@ describe("AppShell cross-area task handoffs", () => {
       "Advice for Transfer Students",
       "Time Management Guide",
       "Student Tech Guide",
+    ]);
+    expect(
+      Array.from(
+        shadowRoot?.querySelector<HTMLElement>(
+          '[aria-label="Browse by student need"]',
+        )?.querySelectorAll<HTMLButtonElement>(".ba-task-finder-guide") ?? [],
+      ).map((button) => button.textContent),
+    ).toEqual([
+      "Academic Services",
+      "Getting Around Campus",
+      "Housing and Dining",
     ]);
 
     await act(async () => {

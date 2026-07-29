@@ -124,6 +124,16 @@ const NEW_STUDENT_GUIDE_SEARCHES = [
   { label: "Student Tech Guide", query: "student tech guide" },
 ] as const;
 
+const NEW_STUDENT_RESOURCE_BROWSE_SUGGESTIONS = [
+  { label: "Academic Services", toolId: "academic-support" },
+  { label: "Getting Around Campus", toolId: "campus-resources" },
+  { label: "Housing and Dining", toolId: "housing" },
+  { label: "Financial", toolId: "financial-aid-resources" },
+  { label: "Health and Wellness", toolId: "wellness-center" },
+  { label: "Career Development", toolId: "wasserman" },
+  { label: "Communities and Groups", toolId: "student-life" },
+] as const satisfies readonly { label: string; toolId: PageToolId }[];
+
 const NEW_STUDENT_RESOURCE_STARTER_ORDER = [
   "academic-calendar",
   "nyu-brightspace",
@@ -1298,6 +1308,14 @@ export function AppShell({
           NEW_STUDENT_RESOURCE_STARTER_ORDER.length),
     );
   })();
+  const availableNewStudentBrowseSuggestions =
+    isResourceSearchMode &&
+    resourceFinderIntent === "new-student" &&
+    normalizedTaskSearchQuery.length === 0
+      ? NEW_STUDENT_RESOURCE_BROWSE_SUGGESTIONS.filter(({ toolId }) =>
+          availableResourceTools.some((tool) => tool.id === toolId),
+        )
+      : [];
   const singleTaskSearchResult =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1
       ? (() => {
@@ -2139,9 +2157,40 @@ export function AppShell({
                           {label}
                         </button>
                       ))}
-                    </div>
                   </div>
-                )}
+                </div>
+              )}
+              {availableNewStudentBrowseSuggestions.length > 0 && (
+                <div
+                  className="ba-task-finder-browse"
+                  role="group"
+                  aria-label="Browse by student need"
+                >
+                  <div className="ba-task-finder-guides-heading">
+                    <span className="ba-task-finder-common-label">
+                      Browse by student need
+                    </span>
+                    <span>
+                      Start with the same categories used across NYU’s student
+                      resources.
+                    </span>
+                  </div>
+                  <div className="ba-task-finder-guide-list">
+                    {availableNewStudentBrowseSuggestions.map(
+                      ({ label, toolId }) => (
+                        <button
+                          className="ba-task-finder-guide"
+                          type="button"
+                          key={toolId}
+                          onClick={() => handleTaskFinderResource(toolId)}
+                        >
+                          {label}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
               <p
                 className="ba-task-finder-search-status"
                 id={`${taskFinderId}-search-status`}
