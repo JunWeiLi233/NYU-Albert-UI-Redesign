@@ -327,6 +327,10 @@ describe("AppShell cross-area task handoffs", () => {
             "undergraduate students",
             "graduate students",
             "career development mentorship entrepreneurship",
+            "employers",
+            "employer services",
+            "alumni career services",
+            "campus partners",
           ],
           label: "Wasserman",
           nativeLabels: ["Wasserman"],
@@ -393,6 +397,10 @@ describe("AppShell cross-area task handoffs", () => {
     for (const [query, expected] of [
       ["undergraduate students", "Verified destination: Wasserman"],
       ["connect with other students", "Verified destination: Student Life"],
+      ["employers", "Verified destination: Wasserman"],
+      ["employer services", "Verified destination: Wasserman"],
+      ["alumni career services", "Verified destination: Wasserman"],
+      ["campus partners", "Verified destination: Wasserman"],
     ] as const) {
       await act(async () => {
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
@@ -717,7 +725,14 @@ describe("AppShell cross-area task handoffs", () => {
     for (const [query, destination] of [
       ["report card", "Grades & Transcripts"],
       ["verify enrollment", "Grades & Transcripts"],
+      ["student records and transcripts", "Grades & Transcripts"],
+      ["verify your enrollment or degree", "Grades & Transcripts"],
       ["how much is tuition", "Finances"],
+      ["tuition and fee rates", "Finances"],
+      ["how billing and payment work at NYU", "Finances"],
+      ["payment due dates", "Finances"],
+      ["financial aid refunds", "Finances"],
+      ["housing payments and tax documents", "Finances"],
       ["health insurance waiver", "Wellness Center"],
       ["I need health insurance help", "Wellness Center"],
     ] as const) {
@@ -1921,7 +1936,13 @@ describe("AppShell cross-area task handoffs", () => {
         {
           description: "Search by subject, course number, title, or instructor",
           id: "course-search",
-          keywords: ["register", "where can i register"],
+          keywords: [
+            "register",
+            "where can i register",
+            "registering for classes",
+            "registration process",
+            "navigate the registration process",
+          ],
           label: "Find Classes",
           nativeLabels: ["Course Search"],
           pageFamily: "home",
@@ -1951,7 +1972,12 @@ describe("AppShell cross-area task handoffs", () => {
       return;
     }
 
-    for (const query of ["where can I register", "how do I register"]) {
+    for (const query of [
+      "where can I register",
+      "how do I register",
+      "registering for classes",
+      "navigate the registration process",
+    ]) {
       await act(async () => {
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
           taskSearch,
@@ -1975,9 +2001,11 @@ describe("AppShell cross-area task handoffs", () => {
           ?.click();
       });
     }
-    expect(onOpenTool).toHaveBeenCalledTimes(2);
+    expect(onOpenTool).toHaveBeenCalledTimes(4);
     expect(onOpenTool).toHaveBeenNthCalledWith(1, "course-search");
     expect(onOpenTool).toHaveBeenNthCalledWith(2, "course-search");
+    expect(onOpenTool).toHaveBeenNthCalledWith(3, "course-search");
+    expect(onOpenTool).toHaveBeenNthCalledWith(4, "course-search");
   });
 
   it("routes plain planning and graduation wording to verified academic tasks", async () => {
