@@ -1000,9 +1000,15 @@ export function AppShell({
       if (
         (isExplicitCourseSearchQuery(searchQuery) ||
           conversationalCourseSearch) &&
-        !directCourseSearch &&
-        courseSearchShortcut?.mode !== "home"
+        !directCourseSearch
       ) {
+        if (courseSearchShortcut?.mode === "home") {
+          return {
+            resourceTools: [],
+            taskFamilies: ["home" as const],
+            taskTools: [],
+          };
+        }
         return {
           resourceTools: [],
           taskFamilies: [],
@@ -1014,13 +1020,6 @@ export function AppShell({
           resourceTools: [],
           taskFamilies: [],
           taskTools: [directCourseSearch],
-        };
-      }
-      if (conversationalCourseSearch && courseSearchShortcut?.mode === "home") {
-        return {
-          resourceTools: [],
-          taskFamilies: ["home" as const],
-          taskTools: [],
         };
       }
       const exactTaskTools = matchingTaskTools.filter((tool) =>

@@ -3343,6 +3343,18 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
           name: "Open Find classes — Open Course Search",
         }),
       ).toBeVisible();
+      await academicTaskSearch.fill("where is my classroom");
+      await expect(
+        academicTaskFinder.getByText('1 result for “where is my classroom”', {
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        academicTaskFinder.getByRole("button", {
+          exact: true,
+          name: "Open Find classes — Open Course Search",
+        }),
+      ).toBeVisible();
       await academicTaskSearch.fill("financial aid status");
       await expect(
         academicTaskFinder.getByText('1 result for “financial aid status”', {
@@ -3364,7 +3376,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       await expect(
         academicTaskFinder.getByRole("button", {
           exact: true,
-          name: "Open Home — Find classes, check holds, and review your schedule",
+          name: "Open Find classes — Open Course Search",
         }),
       ).toBeVisible();
       await academicTaskSearch.press("Enter");

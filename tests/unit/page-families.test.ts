@@ -13,10 +13,16 @@ describe("page-family task vocabulary", () => {
     expect(PAGE_FAMILY_DEFINITIONS.home.keywords).toEqual(
       expect.arrayContaining([
         "class schedule",
+        "classes taking",
+        "classes today",
         "course registration",
+        "current classes",
         "class registration",
         "enroll in class",
         "register for classes",
+        "show classes",
+        "timetable",
+        "when are my classes",
       ]),
     );
   });
@@ -88,6 +94,7 @@ describe("page-family task vocabulary", () => {
     expect(PAGE_FAMILY_DEFINITIONS.grades.keywords).toEqual(
       expect.arrayContaining([
         "enrollment letter",
+        "enrollment verification letter",
         "enrollment proof",
         "graduation",
         "graduation requirements",

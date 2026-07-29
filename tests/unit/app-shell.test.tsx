@@ -865,6 +865,7 @@ describe("AppShell cross-area task handoffs", () => {
 
     for (const query of [
       "proof of enrollment",
+      "enrollment verification letter",
       "unofficial transcript",
       "official transcript",
     ]) {
@@ -1628,6 +1629,90 @@ describe("AppShell cross-area task handoffs", () => {
     });
 
     expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
+    expect(onNavigate).toHaveBeenCalledWith("home");
+  });
+
+  it("hands classroom and current-class phrasing through verified Home", async () => {
+    const onNavigate = vi.fn();
+    const onNavigateToCourseSearch = vi.fn();
+
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "academics",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate,
+      onNavigateToCourseSearch,
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const finderToggle = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Find a task"]',
+    );
+    expect(finderToggle).not.toBeNull();
+
+    const searchFor = async (query: string) => {
+      await act(async () => {
+        finderToggle?.click();
+        await Promise.resolve();
+      });
+      const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+        'input[type="search"]',
+      );
+      expect(taskSearch).not.toBeNull();
+      if (!taskSearch) {
+        return undefined;
+      }
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      return taskSearch;
+    };
+
+    const classroomSearch = await searchFor("where is my classroom");
+    expect(classroomSearch).not.toBeUndefined();
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “where is my classroom”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Find classes — Open Course Search",
+    );
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>(".ba-task-finder-search-action")
+        ?.click();
+    });
+    expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
+    expect(onNavigate).not.toHaveBeenCalled();
+
+    const currentClassesSearch = await searchFor("what classes am I taking");
+    expect(currentClassesSearch).not.toBeUndefined();
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “what classes am I taking”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Home — Find classes, check holds, and review your schedule",
+    );
+    await act(async () => {
+      currentClassesSearch?.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "Enter",
+        }),
+      );
+    });
     expect(onNavigate).toHaveBeenCalledWith("home");
   });
 

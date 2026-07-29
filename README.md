@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.126 includes:
+Version 0.5.127 includes:
+
+- cross-area searches for classroom location, current classes, and enrollment
+  verification now hand off to the verified Home or Grades workspace instead
+  of returning an avoidable no-results state;
 
 - Grades & Transcripts and Finances now lead their workspace context with
   student outcomes—view grades, prove enrollment, check balances, and pay
