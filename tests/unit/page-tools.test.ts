@@ -98,7 +98,7 @@ describe("page-family native tools", () => {
 
   it("maps registration records wording to verified one-step tasks", () => {
     document.body.innerHTML = `
-      ${nativeResourceMenu('<li><a href="#calendar">Academic Calendar</a></li>')}
+      ${nativeResourceMenu('<li><a href="#calendar">Academic Calendar</a></li><li><a href="#brightspace">NYU Brightspace</a></li>')}
       <section class="is_bb_LinkContainer">
         <a href="#degree">Degree Progress Report</a>
       </section>
@@ -119,10 +119,14 @@ describe("page-family native tools", () => {
     ).toEqual(
       expect.arrayContaining([
         "view important dates and schedules",
+        "view the calendar",
         "additional important dates and deadlines",
         "pass fail grade option deadline",
       ]),
     );
+    expect(
+      resourceTools.find(({ id }) => id === "nyu-brightspace")?.keywords,
+    ).toEqual(expect.arrayContaining(["go to brightspace"]));
     expect(holds?.keywords).toEqual(
       expect.arrayContaining([
         "make sure you don't have any registration holds that will block you from registering",
