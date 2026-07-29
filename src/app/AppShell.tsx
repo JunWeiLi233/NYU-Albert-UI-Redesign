@@ -393,6 +393,10 @@ const EXACT_RESOURCE_INTENTS = new Map<string, PageToolId>([
   ["campus accessibility", "campus-resources"],
   ["disability support", "campus-resources"],
   ["ferpa privacy rights", "ferpa"],
+  [
+    "ferpa privacy rights and how to grant consent to disclose information",
+    "ferpa",
+  ],
   ["ferpa rights", "ferpa"],
   ["learn about your ferpa rights", "ferpa"],
   ["how to request your official transcript", "university-registrar"],

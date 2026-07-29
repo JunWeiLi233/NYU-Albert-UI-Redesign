@@ -1034,6 +1034,7 @@ describe("page-family native tools", () => {
     expect(ferpa?.keywords).toEqual(
       expect.arrayContaining([
         "ferpa privacy rights",
+        "ferpa privacy rights and how to grant consent to disclose information",
         "learn about your ferpa rights",
         "ferpa rights",
       ]),
