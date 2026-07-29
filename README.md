@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.143 includes:
+Version 0.5.144 includes:
+
+- concise newcomer phrases such as “available courses,” “find courses,”
+  “course list,” “course offerings,” “class list,” and “search courses” now
+  resolve to the uniquely verified native Course Search control in one step;
 
 - generic “accessibility” searches no longer leak into Housing through a
   shared keyword; they use the exact Campus Resources anchor when verified or
