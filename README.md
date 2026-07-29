@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.128 includes:
+Version 0.5.129 includes:
+
+- generic newcomer prompts such as “how do I get started” now preserve the
+  verified starter recovery instead of relaxing into an unrelated calendar
+  result;
 
 - broad resource-only help searches now stay honest: they open verified
   Student Services when present, otherwise they point to Albert’s unchanged

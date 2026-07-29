@@ -1086,6 +1086,13 @@ export function AppShell({
       return strictResults;
     }
 
+    // Keep a generic newcomer request on the verified starter recovery. The
+    // relaxed single-word fallback would otherwise turn “how do I get
+    // started” into “started” and surface an unrelated calendar alias.
+    if (isGenericNewStudentResourceIntent(query)) {
+      return strictResults;
+    }
+
     // Keep a complete “need help …” request precise. Removing the support
     // words would reduce a missing Student Services anchor to a broad “nyu”
     // query and surface unrelated links instead of an honest fallback.
