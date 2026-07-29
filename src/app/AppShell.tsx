@@ -1378,6 +1378,11 @@ export function AppShell({
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
+  const shouldOfferNewStudentGuide =
+    isResourceSearchMode &&
+    resourceFinderIntent !== "new-student" &&
+    hasNoTaskSearchResults &&
+    isNewStudentResourceIntent(normalizedTaskSearchQuery);
   const availableResourceSearchSuggestions = (() => {
     if (
       !isResourceSearchMode ||
@@ -1703,6 +1708,12 @@ export function AppShell({
     onOpenResource(toolId);
   };
 
+  const openNewStudentGuide = (): void => {
+    setResourceFinderIntent("new-student");
+    setTaskSearchQuery("");
+    taskFinderSearchRef.current?.focus();
+  };
+
   const openSingleVerifiedTaskResult = (query: string): boolean => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
     const {
@@ -1749,6 +1760,10 @@ export function AppShell({
     }
 
     event.preventDefault();
+    if (shouldOfferNewStudentGuide) {
+      openNewStudentGuide();
+      return;
+    }
     if (filteredResultCount !== 1) {
       return;
     }
@@ -2597,10 +2612,22 @@ export function AppShell({
                     No verified destination matches “{taskSearchQuery.trim()}”
                   </strong>
                   <span>
-                    {isResourceSearchMode
+                    {shouldOfferNewStudentGuide
+                      ? "New student help is available as a verified guide. Open it to browse NYU key links, student guides, and support."
+                      : isResourceSearchMode
                       ? "No exact link is available here. Use “View Albert resource directory” below to browse Albert’s official list."
                       : "Try a broader term, or choose “Show all” above to browse every verified destination available in this Albert view. Better Albert never invents destinations."}
                   </span>
+                  {shouldOfferNewStudentGuide && (
+                    <button
+                      className="ba-task-finder-search-action"
+                      type="button"
+                      aria-label="Open New student help"
+                      onClick={openNewStudentGuide}
+                    >
+                      Open New student help
+                    </button>
+                  )}
                 </div>
               )}
 
