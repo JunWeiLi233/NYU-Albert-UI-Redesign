@@ -3390,7 +3390,6 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).toContain("Student Guides");
 
     mountedHeader?.unmount();
-    mountedHeader = undefined;
     shadowRoot = renderResourceFinder();
     const enterSearchInput = shadowRoot?.querySelector<HTMLInputElement>(
       'input[type="search"]',
@@ -3403,13 +3402,13 @@ describe("AppShell cross-area task handoffs", () => {
     await act(async () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
         enterSearchInput,
-        "first semester",
+        "tech checklist for new students",
       );
       enterSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
       await Promise.resolve();
     });
     expect(shadowRoot?.textContent).toContain(
-      '0 results for “first semester”',
+      '0 results for “tech checklist for new students”',
     );
 
     await act(async () => {
@@ -3426,6 +3425,31 @@ describe("AppShell cross-area task handoffs", () => {
     expect(enterSearchInput.value).toBe("");
     expect(shadowRoot?.textContent).toContain("New to NYU?");
     expect(shadowRoot?.textContent).toContain("Student Guides");
+
+    mountedHeader?.unmount();
+    mountedHeader = undefined;
+    shadowRoot = renderResourceFinder();
+    const registrationSearchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(registrationSearchInput).not.toBeNull();
+    if (!registrationSearchInput) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        registrationSearchInput,
+        "new student registration guide",
+      );
+      registrationSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '0 results for “new student registration guide”',
+    );
+    expect(shadowRoot?.textContent).toContain("Open New student help");
   });
 
   it("keeps broad help search on the directory when Student Services is unavailable", async () => {

@@ -274,6 +274,8 @@ const NEW_STUDENT_RESOURCE_INTENTS = [
   "advice for transfer students",
   "transfer student",
   "student tech guide",
+  "tech checklist for new students",
+  "new student registration guide",
   "orientation",
 ] as const;
 
