@@ -260,6 +260,7 @@ const COURSE_SEARCH_FILLER_WORDS = new Set([
 
 const NEW_STUDENT_RESOURCE_INTENTS = [
   "new student",
+  "incoming student",
   "first year student",
   "newly admitted student",
   "what do i do first",

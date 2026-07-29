@@ -1415,6 +1415,22 @@ describe("AppShell cross-area task handoffs", () => {
       "Verified destination: Academic Calendar",
     );
 
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "incoming students",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “incoming students”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Other Resources",
+    );
+
   });
 
   it("routes pronoun wording to the verified Personal Info area", async () => {
@@ -3448,6 +3464,20 @@ describe("AppShell cross-area task handoffs", () => {
 
     expect(shadowRoot?.textContent).toContain(
       '0 results for “new student registration guide”',
+    );
+    expect(shadowRoot?.textContent).toContain("Open New student help");
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        registrationSearchInput,
+        "incoming students",
+      );
+      registrationSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '0 results for “incoming students”',
     );
     expect(shadowRoot?.textContent).toContain("Open New student help");
   });

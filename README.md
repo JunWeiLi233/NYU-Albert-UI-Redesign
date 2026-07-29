@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.185 includes:
+Version 0.5.186 includes:
 
 - direct newcomer searches such as “new student” and “first semester” now
   offer a verified New student help guide from the NYU resource finder; Enter
@@ -15,6 +15,9 @@ Version 0.5.185 includes:
 - NYU’s “tech checklist for new students” and “new student registration guide”
   wording now follows that same verified newcomer guide instead of dropping a
   first-week student into an unlabeled resource directory;
+
+- “Incoming students” now follows the same newcomer handoff while preserving
+  the international variant’s more specific OGS destination;
 
 - newcomer resource-mode Find classes now uses the native handoff lifecycle,
   closing Albert's Other Resources directory before opening Course Search so
@@ -490,7 +493,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.185` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.186` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 
