@@ -1290,6 +1290,8 @@ describe("AppShell cross-area task handoffs", () => {
       "testing accommodations",
       "campus accessibility",
       "I need help with NYU",
+      "Help with your bill, financial aid, registration, and more",
+      "For answers about your bill, financial aid, registration, international student services, and more",
     ]) {
       const text = await search(query);
       expect(text).toContain(`1 result for “${query}”`);

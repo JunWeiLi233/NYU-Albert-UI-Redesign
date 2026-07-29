@@ -277,6 +277,8 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "scholarship",
       "scholarships",
       "financial aid and registration",
+      "help with your bill financial aid registration and more",
+      "answers about your bill financial aid registration international student services and more",
       "student government",
       "service opportunities and civic engagement",
       "safety security and transportation",
