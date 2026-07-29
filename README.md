@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.158 includes:
+Version 0.5.159 includes:
 
 - newcomer resource search now adds NYU-style “Browse by student need” cues
   for Academic Services, Getting Around Campus, Housing and Dining, Financial,
@@ -18,6 +18,9 @@ Version 0.5.158 includes:
 - newcomer resource search now adds a verified “Get support” group for
   academic support, student success, and getting involved when those native
   Albert anchors are present;
+
+- public NYU Get Support wording such as “Your Academic Advisor” now routes to
+  the verified Academics area without requiring Albert terminology;
 
 - newcomer resource search now mirrors NYU's Student Guides with visible
   search-language buttons for first-semester, transfer-student,

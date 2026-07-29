@@ -133,7 +133,7 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
-  it("keeps advisor appointment searches on the verified Academics fallback", async () => {
+  it("routes public Get Support advisor wording to Academics", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "academics", "resources"],
       availablePageTools: [],
@@ -165,21 +165,24 @@ describe("AppShell cross-area task handoffs", () => {
       return;
     }
 
-    await act(async () => {
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
-        searchInput,
-        "schedule advisor appointment",
-      );
-      searchInput.dispatchEvent(new Event("input", { bubbles: true }));
-      await Promise.resolve();
-    });
+    for (const query of [
+      "schedule advisor appointment",
+      "Your Academic Advisor",
+    ]) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          searchInput,
+          query,
+        );
+        searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
 
-    expect(shadowRoot?.textContent).toContain(
-      '1 result for “schedule advisor appointment”',
-    );
-    expect(shadowRoot?.textContent).toContain(
-      "Verified destination: Academics",
-    );
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(
+        "Verified destination: Academics",
+      );
+    }
   });
 
   it("keeps degree-audit wording on the verified Academics fallback", async () => {
