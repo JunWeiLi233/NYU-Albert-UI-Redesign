@@ -1199,7 +1199,7 @@ describe("AppShell cross-area task handoffs", () => {
     expect(bursarText).not.toContain("Verified destination: Academic Calendar");
   });
 
-  it("keeps where-can-I-register wording on Course Search", async () => {
+  it("keeps registration wording on Course Search", async () => {
     const onOpenTool = vi.fn();
 
     mountedHeader = mountHeader({
@@ -1250,31 +1250,33 @@ describe("AppShell cross-area task handoffs", () => {
       return;
     }
 
-    await act(async () => {
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
-        taskSearch,
-        "where can I register",
+    for (const query of ["where can I register", "how do I register"]) {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      expect(shadowRoot?.textContent).toContain(`1 result for “${query}”`);
+      expect(shadowRoot?.textContent).toContain(
+        "Verified destination: Find Classes",
       );
-      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
-      await Promise.resolve();
-    });
+      expect(shadowRoot?.textContent).not.toContain(
+        "Verified destination: University Registrar",
+      );
 
-    expect(shadowRoot?.textContent).toContain(
-      '1 result for “where can I register”',
-    );
-    expect(shadowRoot?.textContent).toContain(
-      "Verified destination: Find Classes",
-    );
-    expect(shadowRoot?.textContent).not.toContain(
-      "Verified destination: University Registrar",
-    );
-
-    await act(async () => {
-      shadowRoot
-        ?.querySelector<HTMLButtonElement>(".ba-task-finder-search-action")
-        ?.click();
-    });
-    expect(onOpenTool).toHaveBeenCalledWith("course-search");
+      await act(async () => {
+        shadowRoot
+          ?.querySelector<HTMLButtonElement>(".ba-task-finder-search-action")
+          ?.click();
+      });
+    }
+    expect(onOpenTool).toHaveBeenCalledTimes(2);
+    expect(onOpenTool).toHaveBeenNthCalledWith(1, "course-search");
+    expect(onOpenTool).toHaveBeenNthCalledWith(2, "course-search");
   });
 
   it("routes plain planning and graduation wording to verified academic tasks", async () => {

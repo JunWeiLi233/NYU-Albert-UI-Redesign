@@ -6,7 +6,10 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.124 includes:
+Version 0.5.125 includes:
+
+- “how do I register” now follows the same one-step Find Classes handoff as
+  “where can I register,” removing the competing Registrar result;
 
 - single-result searches now keep one emphasized “Open …” handoff instead of
   repeating the same verified destination in the inventory below;

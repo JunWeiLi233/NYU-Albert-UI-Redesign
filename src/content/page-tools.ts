@@ -952,6 +952,7 @@ export const COURSE_SEARCH_KEYWORDS = [
   "find a class",
   "find a course",
   "find course offerings",
+  "how do i register",
   "look up course",
   "look for a course",
   "look for classes",
