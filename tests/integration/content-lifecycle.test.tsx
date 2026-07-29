@@ -325,6 +325,7 @@ describe("content-script lifecycle", () => {
         ) ?? [],
       ).map((button) => button.textContent?.replace(/\s+/g, " ").trim()),
     ).toEqual([
+      "Find classesOpen Albert Course Search›",
       "Academic datesCheck NYU academic dates and deadlines›",
       "Course materialsOpen NYU's learning platform›",
       "Student supportFind general student services and support›",
