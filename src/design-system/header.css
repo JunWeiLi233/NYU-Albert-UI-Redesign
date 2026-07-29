@@ -561,7 +561,8 @@ button {
   background: var(--ba-color-nyu-violet-hover);
 }
 
-.ba-task-finder-guides {
+.ba-task-finder-guides,
+.ba-task-finder-browse {
   display: grid;
   max-width: 54rem;
   gap: var(--ba-space-2);
