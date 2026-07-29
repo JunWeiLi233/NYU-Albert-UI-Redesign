@@ -2503,7 +2503,16 @@ html[data-better-albert-enabled][data-better-albert-readonly-modal-open]
   background: rgb(11 11 11 / 62%);
 }
 
-html[data-better-albert-enabled] body #pt_modals.PSMODAL[data-better-albert-readonly-modal] {
+html[data-better-albert-enabled][data-better-albert-readonly-modal-open]
+  body
+  #lbBg {
+  position: fixed !important;
+  z-index: 2147483645 !important;
+  inset: 0 !important;
+  background: rgb(11 11 11 / 62%) !important;
+}
+
+html[data-better-albert-enabled] body #pt_modals[data-better-albert-readonly-modal] {
   position: fixed !important;
   z-index: 2147483646 !important;
   top: 50% !important;
@@ -2524,10 +2533,142 @@ html[data-better-albert-enabled] body #pt_modals.PSMODAL[data-better-albert-read
   font-family: var(--ba-native-font);
 }
 
+/* Current Albert Degree Progress reports use the full-page lightbox portal. */
 html[data-better-albert-enabled]
   body
-  #pt_modals.PSMODAL[data-better-albert-readonly-modal]
-  :where(.ptpopuptitlebar, .PTPOPUP_HEADER, .HelppopupTitleBar) {
+  #lbContainer[data-better-albert-readonly-modal] {
+  position: fixed !important;
+  z-index: 2147483646 !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50% !important;
+  box-sizing: border-box !important;
+  width: min(calc(100vw - 32px), 1040px) !important;
+  max-width: calc(100vw - 32px) !important;
+  height: min(calc(100dvh - 32px), 900px) !important;
+  max-height: calc(100dvh - 32px) !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  transform: translate(-50%, -50%) !important;
+  border: 1px solid var(--ba-native-violet) !important;
+  border-radius: 3px !important;
+  background: var(--ba-native-surface) !important;
+  color: var(--ba-native-ink) !important;
+  font-family: var(--ba-native-font) !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #lbContainer[data-better-albert-readonly-modal]
+  #lbWrapper {
+  box-sizing: border-box !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: auto !important;
+  background: var(--ba-native-surface) !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #lbContainer[data-better-albert-readonly-modal]
+  #lbWrapperInner {
+  box-sizing: border-box !important;
+  min-height: 100% !important;
+  background: var(--ba-native-surface) !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #lbContainer[data-better-albert-readonly-modal]
+  #win10divDERIVED_REGFRM1_SS_TRANSACT_TITLE {
+  display: flex !important;
+  min-height: 64px !important;
+  box-sizing: border-box !important;
+  align-items: center !important;
+  padding: 16px 24px !important;
+  background: var(--ba-native-violet) !important;
+  color: #fff !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #lbContainer[data-better-albert-readonly-modal]
+  #app_label {
+  color: #fff !important;
+  font-family: var(--ba-native-font) !important;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.2 !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #lbContainer[data-better-albert-readonly-modal]
+  #win10divPSPAGECONTAINER {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  padding: 0 24px 24px !important;
+  background: var(--ba-native-surface) !important;
+  color: var(--ba-native-ink) !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #lbContainer[data-better-albert-readonly-modal]
+  #lbHeader {
+  box-sizing: border-box !important;
+  min-height: 56px !important;
+  padding: 6px 16px 6px 24px !important;
+  background: var(--ba-native-violet) !important;
+  color: #fff !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #lbContainer[data-better-albert-readonly-modal]
+  #lbCloseWindowButton {
+  display: inline-flex !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #fff !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #lbContainer[data-better-albert-readonly-modal]
+  #isTPIHContainer {
+  box-sizing: border-box !important;
+  padding: 0 24px 12px !important;
+  background: var(--ba-native-violet) !important;
+  color: #fff !important;
+  font-family: var(--ba-native-font) !important;
+  font-weight: 700 !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #lbContainer[data-better-albert-readonly-modal]
+  :where(button, input[type="button"], input[type="submit"], input[type="reset"]) {
+  box-sizing: border-box !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  padding: 10px 16px !important;
+}
+
+html[data-better-albert-enabled]
+  body
+  #pt_modals[data-better-albert-readonly-modal]
+  :where(
+    .ptpopuptitlebar,
+    .PTPOPUP_HEADER,
+    .HelppopupTitleBar,
+    .popupDragFrame
+  ) {
   padding: 12px 16px;
   border-bottom: 1px solid var(--ba-native-violet-dark);
   background: var(--ba-native-violet);
@@ -2536,7 +2677,7 @@ html[data-better-albert-enabled]
 
 html[data-better-albert-enabled]
   body
-  #pt_modals.PSMODAL[data-better-albert-readonly-modal]
+  #pt_modals[data-better-albert-readonly-modal]
   :where(.PTPOPUP_TITLE, .HelppopupTitleBarMiddle) {
   color: #fff;
   font-weight: 900;
@@ -2544,7 +2685,7 @@ html[data-better-albert-enabled]
 
 html[data-better-albert-enabled]
   body
-  #pt_modals.PSMODAL[data-better-albert-readonly-modal]
+  #pt_modals[data-better-albert-readonly-modal]
   :where(.PTPOPUP_INNER, .HelppopupInner, .popupText) {
   max-height: min(76vh, 900px);
   overflow: auto;
@@ -2555,7 +2696,7 @@ html[data-better-albert-enabled]
 
 html[data-better-albert-enabled]
   body
-  #pt_modals.PSMODAL[data-better-albert-readonly-modal]
+  #pt_modals[data-better-albert-readonly-modal]
   :where(button, input[type="button"], input[type="submit"], input[type="reset"]) {
   box-sizing: border-box;
   min-width: 44px;
