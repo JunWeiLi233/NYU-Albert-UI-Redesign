@@ -667,6 +667,8 @@ describe("AppShell cross-area task handoffs", () => {
   });
 
   it("routes student employment to the verified Wasserman resource", async () => {
+    const onOpenResource = vi.fn();
+
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
       availablePageTools: [],
@@ -687,7 +689,7 @@ describe("AppShell cross-area task handoffs", () => {
       onDisable: vi.fn(async () => undefined),
       onNavigate: vi.fn(),
       onNavigateToCourseSearch: vi.fn(),
-      onOpenResource: vi.fn(),
+      onOpenResource,
       onOpenTool: vi.fn(),
       onSkipToContent: vi.fn(),
     });
@@ -721,14 +723,19 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).not.toContain(
       "Verified destination: Other Resources",
     );
-    expect(
-      shadowRoot?.querySelector<HTMLButtonElement>(
-        ".ba-task-finder-resource",
-      )?.getAttribute("aria-label"),
-    ).toBe("Open Wasserman");
-    expect(shadowRoot?.querySelectorAll(".ba-task-finder-search-action")).toHaveLength(
+    expect(shadowRoot?.querySelectorAll(".ba-task-finder-resource")).toHaveLength(
       0,
     );
+    const openResource = shadowRoot?.querySelector<HTMLButtonElement>(
+      ".ba-task-finder-search-action",
+    );
+    expect(openResource?.getAttribute("aria-label")).toBe(
+      "Open Wasserman — Find career coaching, jobs, and internships",
+    );
+    await act(async () => {
+      openResource?.click();
+    });
+    expect(onOpenResource).toHaveBeenCalledWith("wasserman");
   });
 
   it("keeps a generic events query out of OGS", async () => {
