@@ -42,6 +42,7 @@ export interface MountHeaderOptions extends ShellViewModel {
   nativeControlDocument?: Document;
   onDisable: () => Promise<void>;
   onNavigate: (pageFamily: PrimaryPageFamily) => void;
+  onNavigateToCourseSearch: () => void;
   onOpenResource: (toolId: PageToolId) => void;
   onOpenTool: (toolId: PageToolId) => void;
   onSkipToContent: () => void;
@@ -74,6 +75,7 @@ export function mountHeader({
   nativeControlDocument = document,
   onDisable,
   onNavigate,
+  onNavigateToCourseSearch,
   onOpenResource,
   onOpenTool,
   onSkipToContent,
@@ -88,6 +90,9 @@ export function mountHeader({
   host.id = HEADER_HOST_ID;
   host.style.display = "block";
   host.style.isolation = "isolate";
+  // Make the outer stacking context explicit so the modal finder can stay
+  // above Albert's fixed native resource directory at every breakpoint.
+  host.style.position = "fixed";
   host.style.zIndex = SHELL_Z_INDEX;
 
   let root: Root | undefined;
@@ -132,14 +137,47 @@ export function mountHeader({
     rootElement.style.removeProperty(SHELL_HEIGHT_PROPERTY);
   };
 
+  const syncTaskFinderHostGeometry = (): void => {
+    const isCompact =
+      document.defaultView?.matchMedia?.("(max-width: 899px)")?.matches ??
+      false;
+    const isOpen = host.hasAttribute(TASK_FINDER_OPEN_ATTRIBUTE);
+    if (isOpen && isCompact) {
+      host.style.setProperty("inset", "0", "important");
+      host.style.setProperty("width", "100vw", "important");
+      host.style.setProperty("height", "100dvh", "important");
+      return;
+    }
+
+    host.style.removeProperty("inset");
+    host.style.removeProperty("width");
+    host.style.removeProperty("height");
+  };
+
+  const handleWindowResize = (): void => {
+    syncTaskFinderHostGeometry();
+    syncShellHeight();
+  };
+
   const setTaskFinderOpen = (isOpen: boolean): void => {
     host.style.zIndex = isOpen ? TASK_FINDER_Z_INDEX : SHELL_Z_INDEX;
+    host.toggleAttribute(TASK_FINDER_OPEN_ATTRIBUTE, isOpen);
+    syncTaskFinderHostGeometry();
+    if (isOpen) {
+      // Compact mode elevates the shell above native promotional layers with a
+      // stylesheet rule. The modal finder must still win over the native
+      // resource directory, so promote this inline value with equal priority.
+      host.style.setProperty("z-index", TASK_FINDER_Z_INDEX, "important");
+    } else {
+      host.style.setProperty("z-index", SHELL_Z_INDEX);
+    }
     for (const taskFinderStateRoot of taskFinderStateRoots) {
       taskFinderStateRoot.toggleAttribute(
         TASK_FINDER_OPEN_ATTRIBUTE,
         isOpen,
       );
     }
+    syncShellHeight();
   };
 
   const clearTaskFinderOpen = (): void => {
@@ -164,7 +202,7 @@ export function mountHeader({
       resizeObserver = new ResizeObserverConstructor(syncShellHeight);
       resizeObserver.observe(host);
     }
-    document.defaultView?.addEventListener("resize", syncShellHeight);
+    document.defaultView?.addEventListener("resize", handleWindowResize);
 
     root = createRoot(mountRoot);
 
@@ -195,6 +233,7 @@ export function mountHeader({
             isNativeResourcesOpen={isNativeResourcesOpen}
             onDisable={onDisable}
             onNavigate={onNavigate}
+            onNavigateToCourseSearch={onNavigateToCourseSearch}
             onOpenResource={onOpenResource}
             onOpenTool={onOpenTool}
             onSkipToContent={onSkipToContent}
@@ -237,7 +276,7 @@ export function mountHeader({
       unmount() {
         resizeObserver?.disconnect();
         resourcesObserver?.disconnect();
-        document.defaultView?.removeEventListener("resize", syncShellHeight);
+        document.defaultView?.removeEventListener("resize", handleWindowResize);
         clearTaskFinderOpen();
         restoreShellHeight();
         nativeResourcesMenu?.removeAttribute(
@@ -254,7 +293,7 @@ export function mountHeader({
       // Cleanup must not obscure the original rendering failure.
     }
     resizeObserver?.disconnect();
-    document.defaultView?.removeEventListener("resize", syncShellHeight);
+    document.defaultView?.removeEventListener("resize", handleWindowResize);
     clearTaskFinderOpen();
     restoreShellHeight();
     nativeControlDocument

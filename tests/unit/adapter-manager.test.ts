@@ -333,6 +333,39 @@ describe("structural adapter manager", () => {
     expect(document.documentElement.outerHTML).toBe(before);
   });
 
+  it("adapts a trusted generic PeopleSoft response wrapper", () => {
+    const document = fixture("tests/fixtures/albert-generic-deep-page.html");
+    const manager = new AdapterManager();
+    const root = document.querySelector("#IS_AC_RESPONSE > .ptprtlcontainer");
+    const form = document.querySelector("form");
+    const before = document.documentElement.outerHTML;
+
+    expect(
+      manager.reconcile({
+        document,
+        location: new URL(
+          "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open",
+        ),
+        pageFamily: "personal",
+        topLevel: true,
+      }),
+    ).toBe("peoplesoft-deep");
+    expect(document.documentElement.dataset.betterAlbertAdapter).toBe(
+      "peoplesoft-deep",
+    );
+    const title = document.querySelector('[data-better-albert-region="page-title"]');
+    expect(title?.textContent).toContain("Pronouns");
+    expect(document.querySelector('[data-better-albert-region="form"]')).toBe(
+      form,
+    );
+    expect(root?.getAttribute("data-better-albert-layout")).toBe(
+      "peoplesoft-page",
+    );
+
+    manager.rollback();
+    expect(document.documentElement.outerHTML).toBe(before);
+  });
+
   it("creates the exact Class Search workspace and preserves transaction controls", () => {
     const document = fixture("tests/fixtures/albert-class-search.html");
     const manager = new AdapterManager();
@@ -732,6 +765,146 @@ describe("structural adapter manager", () => {
     ).toBe("");
   });
 
+  it("labels an unlabeled native account region without replacing native headings", () => {
+    const document = fixture("tests/fixtures/families/finances.html");
+    document.querySelector("#NYU_SSS_BURSAR_AMOUNTS h1")?.remove();
+    const account = document.querySelector("#NYUBursarDisplay");
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "finances",
+        topLevel: true,
+      }),
+    ).toBe("family-finances");
+    expect(account?.getAttribute("data-better-albert-section-label")).toBe(
+      "Account and billing",
+    );
+    expect(account?.getAttribute("role")).toBe("region");
+    expect(account?.getAttribute("aria-label")).toBe("Account and billing");
+  });
+
+  it("labels an unlabeled Home schedule region without copying schedule values", () => {
+    const document = fixture("tests/fixtures/albert-shell.html");
+    document.querySelector("#schedule-title")?.remove();
+    const schedule = document.querySelector(".isSSS_ShCtSchWrp");
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("family-home");
+    expect(schedule?.getAttribute("data-better-albert-section-label")).toBe(
+      "Today and weekly schedule",
+    );
+    expect(schedule?.getAttribute("role")).toBe("region");
+    expect(schedule?.getAttribute("aria-label")).toBe(
+      "Today and weekly schedule",
+    );
+  });
+
+  it("labels the selected schedule nested inside the Home shopping cart", () => {
+    const document = fixture("tests/fixtures/albert-shell.html");
+    const schedule = document.querySelector(".isSSS_ShCtSchWrp");
+    const contentRoot = document.querySelector(".isDS_Section");
+    if (!schedule || !contentRoot) {
+      throw new Error("Home fixture is missing its schedule content");
+    }
+    schedule.classList.add("selected");
+    schedule.removeAttribute("aria-labelledby");
+    schedule.querySelector("h1")?.replaceChildren(
+      document.createTextNode("Enrolled Courses - Summer 2026"),
+    );
+    const shoppingCart = document.createElement("div");
+    shoppingCart.className = "isSSS_ShopCart";
+    schedule.replaceWith(shoppingCart);
+    shoppingCart.append(schedule);
+    contentRoot.append(shoppingCart);
+
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("family-home");
+    expect(schedule.getAttribute("data-better-albert-region")).toBe(
+      "schedule-section",
+    );
+    expect(schedule.getAttribute("data-better-albert-section-label")).toBe(
+      "Today and weekly schedule",
+    );
+    expect(schedule.getAttribute("role")).toBe("region");
+    expect(schedule.getAttribute("aria-label")).toBe(
+      "Today and weekly schedule",
+    );
+  });
+
+  it("labels the live Home schedule-link cluster when it is the only verified wrapper", () => {
+    const document = fixture("tests/fixtures/albert-shell.html");
+    const contentRoot = document.querySelector(".isDS_Section");
+    if (!contentRoot) {
+      throw new Error("Home fixture is missing its content root");
+    }
+    const shoppingCart = document.createElement("div");
+    shoppingCart.className = "isSSS_ShopCart";
+    const scheduleLinks = document.createElement("div");
+    scheduleLinks.className = "isSSS_ShCtLnkWrp";
+    scheduleLinks.textContent = "Legend Weekly Schedule";
+    shoppingCart.append(scheduleLinks);
+    contentRoot.append(shoppingCart);
+
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("family-home");
+    expect(scheduleLinks.getAttribute("data-better-albert-region")).toBe(
+      "schedule-section",
+    );
+    expect(
+      scheduleLinks.getAttribute("data-better-albert-section-label"),
+    ).toBe("Today and weekly schedule");
+  });
+
+  it("keeps the Home news carousel out of the weekly schedule region", () => {
+    const document = fixture("tests/fixtures/albert-shell.html");
+    const news = document.querySelector(".isSSS_ShCtSchWrp");
+    news?.setAttribute("id", "IS_SSS_SUMMARY_NEWS");
+    news?.removeAttribute("aria-labelledby");
+    news?.querySelector("h1")?.remove();
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("family-home");
+    expect(news?.getAttribute("data-better-albert-region")).toBe(
+      "news-section",
+    );
+    expect(news?.getAttribute("data-better-albert-section-label")).toBe(
+      "Updates and deadlines",
+    );
+  });
+
   it("keeps an incomplete Finances link boundary visible", () => {
     const document = fixture("tests/fixtures/families/finances.html");
     const bursarLinks = document.querySelector("#NYUBursarLinks");
@@ -902,6 +1075,32 @@ describe("structural adapter manager", () => {
     expect(
       recordsDirectory?.getAttribute("data-better-albert-records-guidance"),
     ).toContain("Quick access shows the transcript");
+  });
+
+  it("marks the exact native career chooser link for live Grades pages", () => {
+    const document = fixture("tests/fixtures/families/grades.html");
+    const careerSection = document.querySelector(".isSSS_CareerSelect");
+    careerSection!.innerHTML =
+      '<a href="javascript:void(0);">Undergraduate : /</a>';
+    const manager = new AdapterManager();
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "grades",
+        topLevel: true,
+      }),
+    ).toBe("family-grades");
+
+    const gradeViewerTarget = document.querySelector(
+      '[data-better-albert-region="grade-viewer"]',
+    );
+    expect(gradeViewerTarget?.matches("a")).toBe(true);
+    expect(gradeViewerTarget?.textContent).toContain("Undergraduate");
+    expect(
+      gradeViewerTarget?.hasAttribute("data-better-albert-focus-target"),
+    ).toBe(true);
   });
 
   it("does not label a Personal Info form without an exact Save and Cancel boundary", () => {

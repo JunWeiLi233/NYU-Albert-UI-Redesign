@@ -22,6 +22,10 @@ const fixture = readFileSync(
   resolve(process.cwd(), "tests/fixtures/albert-shell.html"),
   "utf8",
 );
+const genericDeepFixture = readFileSync(
+  resolve(process.cwd(), "tests/fixtures/albert-generic-deep-page.html"),
+  "utf8",
+);
 
 const portalUrl = new URL(
   "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/?cmd=start",
@@ -116,7 +120,7 @@ describe("content-script lifecycle", () => {
       "Check Holds",
       "When Can I Register?",
       "Weekly Schedule",
-      "Browse NYU resources",
+      "Search NYU resources",
     ]);
     expect(
       Array.from(
@@ -182,6 +186,11 @@ describe("content-script lifecycle", () => {
     await settleLifecycle();
     expect(
       document.documentElement.hasAttribute(TASK_FINDER_OPEN_ATTRIBUTE),
+    ).toBe(true);
+    expect(
+      document
+        .getElementById(HEADER_HOST_ID)
+        ?.hasAttribute(TASK_FINDER_OPEN_ATTRIBUTE),
     ).toBe(true);
 
     lifecycle.stop();
@@ -258,6 +267,198 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("keeps newcomer context when task discovery opens Other Resources", async () => {
+    const resourceMenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const resourceTrigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    if (resourceTrigger) {
+      resourceTrigger.onclick = (event) => {
+        event.preventDefault();
+        const isOpening = resourceMenu?.hasAttribute("hidden") ?? false;
+        resourceMenu?.toggleAttribute("hidden", !isOpening);
+        resourceTrigger.classList.toggle("megaMenuSelected", isOpening);
+      };
+    }
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const taskFinderToggle = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Find a task"]',
+    );
+
+    taskFinderToggle?.click();
+    await settleLifecycle();
+
+    const newcomerStarter = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(
+        ".ba-task-finder-common-task",
+      ) ?? [],
+    ).find((button) => button.textContent === "New student help");
+    expect(newcomerStarter).not.toBeUndefined();
+
+    newcomerStarter?.click();
+    await settleLifecycle();
+    await settleLifecycle();
+
+    const resourceSearch = shadowRoot?.querySelector<HTMLElement>(
+      '.ba-task-finder[data-resource-search="true"]',
+    );
+    expect(resourceSearch?.hidden).toBe(false);
+    expect(resourceSearch?.textContent).toContain(
+      "New to NYU? Start with a verified service below.",
+    );
+    expect(
+      resourceSearch?.querySelector(".ba-task-finder-common-label")?.textContent,
+    ).toContain("Start here");
+    expect(
+      Array.from(
+        resourceSearch?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-common-task",
+        ) ?? [],
+      ).map((button) => button.textContent),
+    ).toEqual([
+      "Academic dates",
+      "Course materials",
+      "Financial aid",
+      "ID card",
+      "International students",
+      "Health & counseling",
+      "Housing",
+      "Student success",
+      "Campus safety",
+      "Academic support",
+      "Student life",
+      "Career help",
+      "Tech & Wi-Fi",
+      "Student support",
+    ]);
+
+    const resourceSearchInput = resourceSearch?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(resourceSearchInput).not.toBeNull();
+    if (resourceSearchInput) {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        resourceSearchInput,
+        "parking permit",
+      );
+      resourceSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await settleLifecycle();
+    }
+    const updatedResourceSearch = document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLElement>(
+        '.ba-task-finder[data-resource-search="true"]',
+      );
+    expect(
+      updatedResourceSearch?.querySelector(".ba-task-finder-common-label")
+        ?.textContent,
+    ).toContain("Try a verified starter");
+
+    lifecycle.stop();
+  });
+
+  it("keeps generic orientation searches on the verified resource directory", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const taskFinderToggle = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Find a task"]',
+    );
+
+    taskFinderToggle?.click();
+    await settleLifecycle();
+
+    const taskFinder = shadowRoot?.querySelector<HTMLElement>(
+      '.ba-task-finder[aria-label="Find a task"]',
+    );
+    const taskSearch = taskFinder?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeUndefined();
+    if (!taskSearch) {
+      lifecycle.stop();
+      return;
+    }
+
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+      taskSearch,
+      "orientation",
+    );
+    taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+    await settleLifecycle();
+
+    expect(taskFinder?.textContent).toContain('1 result for “orientation”');
+    expect(taskFinder?.textContent).toContain(
+      "NYU services, offices, and support",
+    );
+    expect(taskFinder?.textContent).not.toContain("Find visa, immigration");
+
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+      taskSearch,
+      "pre orientation events",
+    );
+    taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+    await settleLifecycle();
+
+    expect(taskFinder?.textContent).toContain(
+      '1 result for “pre orientation events”',
+    );
+    expect(taskFinder?.textContent).toContain("Find visa, immigration");
+
+    lifecycle.stop();
+  });
+
+  it("returns the rail to the top when resource search closes", async () => {
+    const resourceMenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const resourceTrigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    resourceMenu?.removeAttribute("hidden");
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const shell = shadowRoot?.querySelector<HTMLElement>(".ba-shell");
+
+    resourceTrigger?.classList.add("megaMenuSelected");
+    await settleLifecycle();
+    expect(
+      shadowRoot?.querySelector<HTMLElement>(
+        '.ba-task-finder[data-resource-search="true"]',
+      ),
+    ).not.toBeUndefined();
+
+    if (shell) {
+      shell.scrollTop = 240;
+    }
+    expect(shell?.scrollTop).toBe(240);
+
+    resourceTrigger?.classList.remove("megaMenuSelected");
+    await settleLifecycle();
+    expect(shell?.scrollTop).toBe(0);
+
+    lifecycle.stop();
+  });
+
   it("reopens task discovery at the top without changing Albert page scroll", async () => {
     const lifecycle = await startContentScript({
       document,
@@ -321,6 +522,46 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("returns the rail to its page context when Albert changes area", async () => {
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const shell = shadowRoot?.querySelector<HTMLElement>(".ba-shell");
+    const primaryNavigation = shadowRoot?.querySelector<HTMLElement>(
+      ".ba-primary-nav",
+    );
+    expect(shell).not.toBeUndefined();
+    expect(primaryNavigation).not.toBeUndefined();
+
+    if (shell) {
+      shell.scrollTop = 240;
+    }
+    if (primaryNavigation) {
+      primaryNavigation.scrollTop = 180;
+    }
+
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-home"]')
+      ?.removeAttribute("aria-current");
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-finances"]')
+      ?.setAttribute("aria-current", "page");
+    await settleLifecycle();
+
+    expect(
+      shadowRoot?.querySelector('[aria-current="page"]')?.getAttribute(
+        "aria-label",
+      ),
+    ).toBe("Finances");
+    expect(shell?.scrollTop).toBe(0);
+    expect(primaryNavigation?.scrollTop).toBe(0);
+    lifecycle.stop();
+  });
+
   it("delegates an allowlisted page tool to the matching native Albert link", async () => {
     const nativeCourseSearch = document.querySelector<HTMLAnchorElement>(
       'a[href="/fixture-course-search"]',
@@ -373,7 +614,7 @@ describe("content-script lifecycle", () => {
 
     expect(shortcut?.dataset.courseSearchMode).toBe("direct");
     expect(shortcut?.textContent).toContain(
-      "Open the original Course Search",
+      "Search by subject, course number, title, or instructor",
     );
     shortcut?.click();
     await settleLifecycle();
@@ -381,7 +622,7 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
-  it("uses Home as the shortest honest Course Search path when the direct control is unavailable", async () => {
+  it("opens Course Search through Home when the direct control is unavailable", async () => {
     const nativeHome = document.querySelector<HTMLAnchorElement>(
       'a[href="/fixture-home"]',
     );
@@ -408,11 +649,73 @@ describe("content-script lifecycle", () => {
       );
 
     expect(shortcut?.dataset.courseSearchMode).toBe("home");
-    expect(shortcut?.textContent).toContain(
-      "Go to Home for Course Search",
-    );
+    expect(shortcut?.textContent).toContain("Open Course Search");
     shortcut?.click();
     expect(nativeClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
+  it("carries the Home Course Search intent through native navigation", async () => {
+    const nativeHome = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-home"]',
+    );
+    const nativeAcademics = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-academics"]',
+    );
+    nativeHome?.removeAttribute("aria-current");
+    nativeAcademics?.setAttribute("aria-current", "page");
+    document
+      .querySelector<HTMLAnchorElement>('a[href="/fixture-course-search"]')
+      ?.remove();
+
+    const nativeHomeClick = vi.fn((event: Event) => {
+      event.preventDefault();
+      nativeHome?.setAttribute("aria-current", "page");
+      nativeAcademics?.removeAttribute("aria-current");
+      const linkColumn = document.querySelector<HTMLElement>(
+        "#nyuSSSHomeLinksStatic .is_bb_LinkColumn",
+      );
+      const item = document.createElement("div");
+      item.className = "is_bb_LinkItem";
+      const courseSearch = document.createElement("a");
+      courseSearch.href = "/fixture-course-search";
+      courseSearch.textContent = "Course Search";
+      item.append(courseSearch);
+      linkColumn?.prepend(item);
+    });
+    nativeHome?.addEventListener("click", nativeHomeClick);
+    const nativeCourseSearchClick = vi.fn((event: Event) =>
+      event.preventDefault(),
+    );
+    document
+      .querySelector<HTMLElement>("#nyuSSSHomeLinksStatic")
+      ?.addEventListener("click", (event) => {
+        if (
+          event.target instanceof HTMLAnchorElement &&
+          event.target.textContent?.trim() === "Course Search"
+        ) {
+          nativeCourseSearchClick(event);
+        }
+      });
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shortcut = document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-course-search-shortcut",
+      );
+
+    expect(shortcut?.dataset.courseSearchMode).toBe("home");
+    shortcut?.click();
+    await settleLifecycle();
+
+    expect(nativeHomeClick).toHaveBeenCalledOnce();
+    expect(nativeCourseSearchClick).toHaveBeenCalledOnce();
     lifecycle.stop();
   });
 
@@ -439,6 +742,62 @@ describe("content-script lifecycle", () => {
 
     wellnessButton?.click();
     expect(nativeClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
+  it("returns focus to the resource opener after Escape closes resource search", async () => {
+    const resourceMenu = document.querySelector<HTMLElement>(
+      "#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    const resourceTrigger = document.querySelector<HTMLElement>(
+      "#MENU_ID_NYU_OTHER_RESOURCES_FLDR",
+    );
+    if (resourceTrigger) {
+      resourceTrigger.onclick = (event) => {
+        event.preventDefault();
+        const isOpening = resourceMenu?.hasAttribute("hidden") ?? false;
+        resourceMenu?.toggleAttribute("hidden", !isOpening);
+        resourceTrigger.classList.toggle("megaMenuSelected", isOpening);
+      };
+    }
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    const resourceOpener = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(".ba-tool-item") ?? [],
+    ).find(
+      (button) => button.getAttribute("aria-label") === "Search NYU resources",
+    );
+
+    expect(resourceOpener).not.toBeUndefined();
+    resourceOpener?.click();
+    await settleLifecycle();
+
+    const resourceSearch = shadowRoot?.querySelector<HTMLElement>(
+      '.ba-task-finder[data-resource-search="true"]',
+    );
+    expect(resourceSearch?.hidden).toBe(false);
+
+    const resourceSearchInput = resourceSearch?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    resourceSearchInput?.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        bubbles: true,
+        cancelable: true,
+        key: "Escape",
+      }),
+    );
+    await settleLifecycle();
+
+    expect(shadowRoot?.activeElement?.getAttribute("aria-label")).toBe(
+      "Search NYU resources",
+    );
     lifecycle.stop();
   });
 
@@ -579,6 +938,37 @@ describe("content-script lifecycle", () => {
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
       false,
     );
+  });
+
+  it("mounts the shell on a headed generic PeopleSoft utility page", async () => {
+    const parsed = new DOMParser().parseFromString(
+      genericDeepFixture,
+      "text/html",
+    );
+    document.documentElement.innerHTML = parsed.documentElement.innerHTML;
+
+    const lifecycle = await startContentScript({
+      document,
+      location: new URL(
+        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open",
+      ),
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+
+    const shadowRoot = document.getElementById(HEADER_HOST_ID)?.shadowRoot;
+    expect(document.documentElement.dataset.betterAlbertAdapter).toBe(
+      "peoplesoft-deep",
+    );
+    expect(shadowRoot?.querySelector(".ba-page-title")?.textContent).toBe(
+      "Personal Info",
+    );
+    expect(shadowRoot?.textContent).toContain("Official data stays in Albert");
+    expect(document.querySelector("form")?.getAttribute("action")).toBe(
+      "/synthetic/pronouns",
+    );
+
+    lifecycle.stop();
   });
 
   it("re-evaluates delayed same-origin parent evidence and authentication", async () => {
@@ -724,7 +1114,7 @@ describe("content-script lifecycle", () => {
       "Check Account Balance",
       "Get Account Statement",
       "Check Financial Aid Status",
-      "Browse NYU resources",
+      "Search NYU resources",
     ]);
     lifecycle.stop();
   });

@@ -50,6 +50,70 @@ describe("page-family native tools", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
+  it("keeps course-registration language on the exact Course Search task", () => {
+    const courseSearch = getAvailableTaskTools(document).find(
+      ({ id }) => id === "course-search",
+    );
+
+    expect(courseSearch?.keywords).toEqual(
+      expect.arrayContaining(["course registration", "where can i register"]),
+    );
+  });
+
+  it("keeps enrollment-letter language on the Proof of Enrollment task", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <div class="is_bb_LinkItem"><a href="#verification">Enrollment Verification</a></div>
+      </section>
+    `;
+
+    const proofOfEnrollment = getAvailableTaskTools(document).find(
+      ({ id }) => id === "enrollment-verification",
+    );
+
+    expect(proofOfEnrollment?.keywords).toEqual(
+      expect.arrayContaining(["enrollment letter", "verify enrollment"]),
+    );
+  });
+
+  it("keeps payment-plan language on the native eSuite account task", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <div class="is_bb_LinkItem"><a href="#bursar">View Bursar Account (log into eSuite)</a></div>
+      </section>
+    `;
+
+    const bursarAccount = getAvailableTaskTools(document).find(
+      ({ id }) => id === "bursar-account",
+    );
+
+    expect(bursarAccount?.keywords).toEqual(
+      expect.arrayContaining(["payment plan", "pay my bill", "pay tuition bill"]),
+    );
+  });
+
+  it("keeps precise identity language on verified Personal Info tasks", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <div class="is_bb_LinkItem"><a href="#demographic">Demographic Information</a></div>
+        <div class="is_bb_LinkItem"><a href="#address">Edit Addresses</a></div>
+      </section>
+    `;
+
+    const taskTools = getAvailableTaskTools(document);
+    const demographic = taskTools.find(
+      ({ id }) => id === "demographic-information",
+    );
+    const addresses = taskTools.find(({ id }) => id === "addresses");
+
+    expect(demographic?.keywords).toEqual(
+      expect.arrayContaining(["date of birth", "gender", "legal name"]),
+    );
+    expect(addresses?.keywords).toEqual(
+      expect.arrayContaining(["address", "home address"]),
+    );
+  });
+
   it("dispatches page-owned clicks without evaluating javascript URLs in the extension", () => {
     const search = document.querySelector<HTMLAnchorElement>('a[href="#search"]');
     search?.setAttribute("href", "javascript:void(0)");
@@ -71,6 +135,33 @@ describe("page-family native tools", () => {
       "weekly-schedule",
     );
     expect(openNativePageTool(document, "weekly-schedule")).toBe(false);
+  });
+
+  it("exposes a uniquely verified pronoun destination only in task search", () => {
+    document.body.innerHTML = `
+      <section class="isSSS_Main selected">
+        <span id="IS_AC_RESPONSE">
+          <section class="isSSS_PersInfTop">
+        <a href="#pronouns">Indicate My Pronouns</a>
+          </section>
+        </span>
+      </section>
+    `;
+    const pronouns = document.querySelector<HTMLAnchorElement>(
+      'a[href="#pronouns"]',
+    );
+    const click = vi.fn((event: Event) => event.preventDefault());
+    pronouns?.addEventListener("click", click);
+
+    expect(getAvailablePageTools(document, "personal")).toEqual([]);
+    expect(
+      getAvailableTaskTools(document).map(({ id, pageFamily }) => ({
+        id,
+        pageFamily,
+      })),
+    ).toEqual([{ id: "pronouns", pageFamily: "personal" }]);
+    expect(openNativePageTool(document, "pronouns")).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
   });
 
   it("identifies only native directories fully mirrored by verified tools", () => {
@@ -146,6 +237,16 @@ describe("page-family native tools", () => {
       { id: "financial-aid-status", pageFamily: "finances" },
       { id: "addresses", pageFamily: "personal" },
     ]);
+    expect(
+      getAvailableTaskTools(document).find(
+        ({ id }) => id === "advisor-appointment",
+      )?.keywords,
+    ).toEqual(
+      expect.arrayContaining([
+        "advisor appointment",
+        "schedule advisor appointment",
+      ]),
+    );
     expect(openNativePageTool(document, "financial-aid-status")).toBe(true);
     expect(click).toHaveBeenCalledOnce();
     expect(document.activeElement).not.toBe(
@@ -341,6 +442,24 @@ describe("page-family native tools", () => {
     expect(nativeCareerSelect?.hasAttribute("tabindex")).toBe(false);
   });
 
+  it("focuses the exact native career chooser link used by live Grades", () => {
+    document.body.innerHTML = `
+      <a
+        href="javascript:void(0);"
+        data-better-albert-region="grade-viewer"
+      >Undergraduate : /</a>
+    `;
+    const nativeCareerLink = document.querySelector<HTMLAnchorElement>(
+      '[data-better-albert-region="grade-viewer"]',
+    );
+
+    expect(getAvailablePageTools(document, "grades").map(({ id }) => id)).toEqual([
+      "view-grades",
+    ]);
+    expect(openNativePageTool(document, "view-grades")).toBe(true);
+    expect(document.activeElement).toBe(nativeCareerLink);
+  });
+
   it("omits an ambiguous or disabled grade-career target", () => {
     document.body.innerHTML = `
       <select data-better-albert-region="grade-viewer"></select>
@@ -486,6 +605,52 @@ describe("page-family native tools", () => {
     ]);
     expect(openNativePageTool(document, "academic-planner")).toBe(true);
     expect(nativePlannerClick).toHaveBeenCalledOnce();
+
+    const academicTools = getAvailableTaskTools(document);
+    expect(
+      academicTools.find(({ id }) => id === "academic-planner")?.keywords,
+    ).toEqual(
+      expect.arrayContaining(["course planning", "plan my courses"]),
+    );
+    expect(
+      academicTools.find(({ id }) => id === "graduation-status")?.keywords,
+    ).toEqual(
+      expect.arrayContaining(["expected graduation", "when do i graduate"]),
+    );
+    expect(
+      academicTools.find(({ id }) => id === "degree-progress")?.keywords,
+    ).toEqual(
+      expect.arrayContaining(["audit my degree", "degree audit", "degree check"]),
+    );
+  });
+
+  it("allows explicitly non-transactional academic javascript destinations", () => {
+    document.body.innerHTML = `
+      <section class="is_bb_LinkContainer">
+        <a href="javascript:isOpenLink('https://sis.portal.nyu.edu/academic-planner')">Academic Planner</a>
+      </section>
+    `;
+    const nativePlanner = document.querySelector<HTMLAnchorElement>(
+      'a[href^="javascript:isOpenLink"]',
+    );
+    expect(nativePlanner).not.toBeNull();
+
+    vi.stubGlobal("chrome", {});
+    const postMessage = vi
+      .spyOn(window, "postMessage")
+      .mockImplementation(() => undefined);
+
+    expect(openNativePageTool(document, "academic-planner")).toBe(true);
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowJavascriptUrl: true,
+        type: "better-albert:activate-native-control",
+      }),
+      window.location.origin,
+    );
+
+    postMessage.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   it("presents Grades tools as student jobs and delegates to native Albert labels", () => {
@@ -521,6 +686,11 @@ describe("page-family native tools", () => {
     ]);
     expect(openNativePageTool(document, "unofficial-transcript")).toBe(true);
     expect(nativeTranscriptClick).toHaveBeenCalledOnce();
+
+    const gradesTasks = getAvailableTaskTools(document);
+    expect(
+      gradesTasks.find(({ id }) => id === "transfer-credit")?.keywords,
+    ).toContain("credit transfer");
   });
 
   it("exposes exact Personal Info edit controls from adapted selected sections", () => {
@@ -691,7 +861,187 @@ describe("page-family native tools", () => {
       "academic-support",
       "student-life",
     ]);
+    const nyuConnect = getAvailableResourceTools(document).find(
+      ({ id }) => id === "nyu-connect",
+    );
+    const studentServices = getAvailableResourceTools(document).find(
+      ({ id }) => id === "student-services",
+    );
+    const housing = getAvailableResourceTools(document).find(
+      ({ id }) => id === "housing",
+    );
+    const campusResources = getAvailableResourceTools(document).find(
+      ({ id }) => id === "campus-resources",
+    );
+    const cardCenter = getAvailableResourceTools(document).find(
+      ({ id }) => id === "nyu-card-center",
+    );
+    const ogs = getAvailableResourceTools(document).find(
+      ({ id }) => id === "ogs",
+    );
+    const officeGlobalPrograms = getAvailableResourceTools(document).find(
+      ({ id }) => id === "office-global-programs",
+    );
+    const wasserman = getAvailableResourceTools(document).find(
+      ({ id }) => id === "wasserman",
+    );
+    expect(nyuConnect?.keywords).toContain("student success");
+    expect(nyuConnect?.keywords).toEqual(
+      expect.arrayContaining([
+        "book an appointment with nyu connect",
+        "resources for student success",
+      ]),
+    );
+    expect(studentServices?.keywords).not.toContain("student success");
+    expect(studentServices?.keywords).toContain("office of the dean of students");
+    expect(studentServices?.keywords).toContain(
+      "solving personal problems that impede academic work",
+    );
+    expect(housing?.keywords).toContain("on campus living");
+    expect(housing?.keywords).toEqual(
+      expect.arrayContaining([
+        "resident assistant",
+        "resident assistant application",
+        "nyu meal plan",
+        "kosher dining",
+        "dietary options",
+        "food allergen guide and policy",
+        "grubhub mobile ordering",
+        "explore the halls",
+        "intersession housing",
+        "off-campus living resources",
+        "find a place to stay",
+      ]),
+    );
+    expect(campusResources?.keywords).toEqual(
+      expect.arrayContaining([
+        "student centers and spaces",
+        "gyms and campus recreation",
+        "student tech guide",
+        "student tech centers",
+        "nyu bookstores",
+        "wifi streaming and technology",
+        "accessibility specialist",
+        "group fitness",
+        "public transportation discounts",
+        "green workplace",
+        "students with disabilities",
+      ]),
+    );
+    expect(cardCenter?.keywords).toEqual(
+      expect.arrayContaining([
+        "campus cash and nyu card",
+        "campus cash and nyucard",
+      ]),
+    );
+    expect(ogs?.keywords).toEqual(
+      expect.arrayContaining([
+        "student visa and immigration",
+        "student visa immigration",
+        "office of global services",
+        "visa information and programs",
+        "employment and tax",
+        "visa and academic changes",
+        "know your rights",
+        "understand your legal requirements",
+        "international student hub",
+        "troubleshooting submitting an online form",
+        "get a us visa",
+        "international student services",
+        "transfer to nyu",
+        "plan your trip",
+        "pre orientation",
+        "journey to nyu email series",
+      ]),
+    );
+    expect(officeGlobalPrograms?.keywords).toContain(
+      "planning for study abroad",
+    );
+    expect(wasserman?.keywords).toEqual(
+      expect.arrayContaining([
+        "social impact career hub",
+        "career coaching",
+        "handshake",
+        "on-campus employment",
+        "experiential learning",
+        "career hubs",
+        "resume guide and samples",
+        "cover letter guide and samples",
+        "fraudulent job postings",
+      ]),
+    );
     expect(openNativeResourceTool(document, "wellness-center")).toBe(true);
+    const studentLife = getAvailableResourceTools(document).find(
+      ({ id }) => id === "student-life",
+    );
+    expect(studentLife?.keywords).toEqual(
+      expect.arrayContaining([
+        "intramural and club sports",
+        "service opportunities and civic engagement",
+        "clubs and organizations",
+        "leadership opportunities",
+        "volunteer service",
+        "commuter students",
+        "graduate students",
+        "lgbtq students",
+        "military students and vets",
+        "students with children",
+        "centers for connection and community",
+        "mindfulnyu",
+        "find my club",
+        "involvement in co-curricular educational opportunities and activities",
+        "music ensembles",
+        "center for student life",
+        "leadership launch",
+        "student leadership week",
+        "project outreach",
+        "nyu service fair",
+        "day of service",
+      ]),
+    );
+    expect(
+      getAvailableResourceTools(document).find(
+        ({ id }) => id === "academic-support",
+      )?.keywords,
+    ).toEqual(
+      expect.arrayContaining([
+        "academic tutoring at nyu",
+        "academic resource center",
+        "securing tutorial and other academic support",
+        "university learning centers",
+        "writing center",
+      ]),
+    );
+    expect(
+      getAvailableResourceTools(document).find(
+        ({ id }) => id === "wellness-center",
+      )?.keywords,
+    ).toEqual(
+      expect.arrayContaining([
+        "access clinical care",
+        "clinical services",
+        "get 24/7 support",
+        "student health center",
+        "find a pop up flu clinic or make an appointment",
+        "wellness workshops",
+        "tune in to your wellbeing",
+        "infuse wellbeing",
+        "land in the nest",
+        "safety and respect",
+        "holistic care",
+      ]),
+    );
+    expect(
+      getAvailableResourceTools(document).find(
+        ({ id }) => id === "campus-safety",
+      )?.keywords,
+    ).toEqual(
+      expect.arrayContaining([
+        "report an incident",
+        "report a concern",
+        "incident response team",
+      ]),
+    );
     expect(click).toHaveBeenCalledOnce();
   });
 

@@ -26,6 +26,19 @@ const THEME_CSS = readFileSync(
  * bug.
  */
 describe("Grid overflow containment contract", () => {
+  it("keeps the compact native resource directory behind the modal finder", () => {
+    const marker =
+      "html[data-better-albert-task-finder-open][data-better-albert-enabled][data-better-albert-compact-header] #SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR[data-better-albert-resource-directory-open]";
+    const idx = THEME_CSS.indexOf(marker);
+    expect(idx).toBeGreaterThan(-1);
+    expect(THEME_CSS.slice(idx, idx + 520)).toContain(
+      "z-index: 1 !important",
+    );
+    expect(THEME_CSS.slice(idx, idx + 520)).toContain(
+      "pointer-events: none !important",
+    );
+  });
+
   it("neutralizes native Personal Info contact-field width/float at full specificity (no :where)", () => {
     // .NYUEmail must be targeted by a concrete high-specificity selector, not
     // wrapped in :where() (which would lose to the native !important width).
@@ -104,6 +117,23 @@ describe("Grid overflow containment contract", () => {
     expect(THEME_CSS.slice(idx, idx + 160)).toContain("width: auto !important");
   });
 
+  it("shrinks compact Academics advisor cards and wraps long names", () => {
+    const cardIdx = THEME_CSS.indexOf(
+      '[data-better-albert-region="advising-section"] .isSSS_Advs',
+    );
+    expect(cardIdx).toBeGreaterThan(-1);
+    const cardBlock = THEME_CSS.slice(cardIdx, cardIdx + 260);
+    expect(cardBlock).toContain("max-width: calc(100% - 8px)");
+
+    const nameIdx = THEME_CSS.indexOf(
+      '[data-better-albert-region="advising-section"] .isSSS_AdvsName',
+    );
+    expect(nameIdx).toBeGreaterThan(-1);
+    const nameBlock = THEME_CSS.slice(nameIdx, nameIdx + 220);
+    expect(nameBlock).toContain("overflow-wrap: anywhere");
+    expect(nameBlock).toContain("white-space: normal");
+  });
+
   it("fills directory groups to their grid columns so link labels do not clip", () => {
     // PeopleSoft .is_bb_LinkColumn groups ship at a fixed narrow width that
     // under-fills the directory grid, so long labels (e.g. "Demographic
@@ -123,6 +153,18 @@ describe("Grid overflow containment contract", () => {
     expect(itemIdx).toBeGreaterThan(-1);
     expect(THEME_CSS.slice(itemIdx, itemIdx + 300)).toContain(
       "overflow-wrap: anywhere",
+    );
+  });
+
+  it("renders the adapter's fallback section cue without inventing native values", () => {
+    expect(THEME_CSS).toContain(
+      "[data-better-albert-section-label]::before",
+    );
+    const idx = THEME_CSS.indexOf(
+      "[data-better-albert-section-label]::before",
+    );
+    expect(THEME_CSS.slice(idx, idx + 360)).toContain(
+      "content: attr(data-better-albert-section-label)",
     );
   });
 });

@@ -175,6 +175,11 @@ button {
   background: #400066;
 }
 
+/* Keep the longer newcomer-facing Home context compact at short desktop heights. */
+.ba-page-context[data-page-family="home"] {
+  padding-block: var(--ba-space-3);
+}
+
 .ba-page-eyebrow,
 .ba-tool-label {
   font-size: var(--ba-font-size-xs);
@@ -475,6 +480,19 @@ button {
   appearance: none;
 }
 
+.ba-task-finder-search-help {
+  max-width: 38rem;
+  margin: 0;
+  color: var(--ba-color-muted-ink);
+  font-size: var(--ba-font-size-xs);
+  line-height: 1.4;
+}
+
+.ba-task-finder-search-help strong {
+  color: var(--ba-color-nyu-violet);
+  font-weight: 800;
+}
+
 .ba-task-finder-search-clear {
   min-height: 44px;
   padding: var(--ba-space-2) var(--ba-space-3);
@@ -575,6 +593,44 @@ button {
   line-height: 1.4;
 }
 
+.ba-task-finder-search-result {
+  margin: calc(var(--ba-space-1) * -1) 0 0;
+  color: var(--ba-color-ink);
+  font-size: var(--ba-font-size-sm);
+  line-height: 1.35;
+}
+
+.ba-task-finder-search-result > strong {
+  color: var(--ba-color-nyu-violet);
+  font-weight: 800;
+}
+
+.ba-task-finder-search-result > span {
+  color: var(--ba-color-muted-ink);
+}
+
+.ba-task-finder-search-action {
+  width: 100%;
+  max-width: 38rem;
+  min-height: 44px;
+  margin: calc(var(--ba-space-1) * -1) 0 0;
+  padding: var(--ba-space-2) var(--ba-space-3);
+  border: 1px solid var(--ba-color-nyu-violet);
+  border-radius: var(--ba-radius-control);
+  background: var(--ba-color-pale-violet);
+  color: var(--ba-color-nyu-violet);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--ba-font-size-sm);
+  font-weight: 800;
+}
+
+.ba-task-finder-search-action:hover {
+  border-color: var(--ba-color-nyu-violet-hover);
+  background: var(--ba-color-white);
+  color: var(--ba-color-nyu-violet-hover);
+}
+
 .ba-task-finder-empty {
   display: grid;
   grid-column: 1 / -1;
@@ -597,6 +653,7 @@ button {
 .ba-task-finder-search input:focus-visible,
 .ba-task-finder-search-clear:focus-visible,
 .ba-task-finder-common-task:focus-visible,
+.ba-task-finder-search-action:focus-visible,
 .ba-task-finder-jump:focus-visible {
   outline: 3px solid var(--ba-color-ultraviolet);
   outline-offset: 1px;
@@ -1027,10 +1084,9 @@ button {
 }
 
 /*
- * Ordinary phone and tablet widths have enough vertical space to show every
- * task/resource section jump. Wrap the index instead of hiding later
- * categories in an unannounced horizontal strip. The <=279px zoom layout
- * retains the compact scroller so the sticky index cannot consume the view.
+ * Ordinary phone and tablet widths keep the compact index readable. The
+ * resource finder uses one Results jump at these widths; the general finder
+ * still wraps its area and task jumps instead of hiding them in a scroller.
  */
 @media (min-width: 280px) and (max-width: 899px) {
   .ba-task-finder-jump-nav {
@@ -1069,11 +1125,25 @@ button {
   }
 
   :host {
-    position: sticky;
-    inset: auto;
+    position: fixed;
+    inset: 0 0 auto;
     top: 0;
     width: 100%;
     height: auto;
+    /* Keep native promotional layers behind the compact navigation. */
+    z-index: 1000 !important;
+  }
+
+  /*
+   * The native Other Resources directory sits at Albert's maximum practical
+   * overlay layer and begins below the compact shell. Give the modal host a
+   * viewport-sized stacking box while it is open so that directory can never
+   * paint over the finder at high zoom or short heights.
+   */
+  :host([data-better-albert-task-finder-open]) {
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
   }
 
   .ba-shell {
@@ -1670,37 +1740,7 @@ button {
   }
 }
 
-@media (max-width: 599px) {
-  .ba-task-finder[data-resource-search="true"]
-    .ba-task-finder-common-label {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--ba-space-2);
-  }
-
-  .ba-task-finder[data-resource-search="true"]
-    .ba-task-finder-common-scroll-hint {
-    display: inline;
-    color: var(--ba-color-nyu-violet);
-    font-weight: 800;
-    letter-spacing: 0;
-    text-transform: none;
-  }
-
-  .ba-task-finder[data-resource-search="true"]
-    .ba-task-finder-common-list {
-    flex-wrap: nowrap;
-    padding-bottom: var(--ba-space-1);
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-  }
-
-  .ba-task-finder[data-resource-search="true"]
-    .ba-task-finder-common-task {
-    flex: 0 0 auto;
-  }
-
+@media (max-width: 899px) {
   .ba-task-finder[data-resource-search="true"]
     .ba-task-finder-jump-resource-category {
     display: none;
@@ -1770,6 +1810,74 @@ button {
   .ba-task-finder-resource-section .ba-task-finder-list,
   .ba-task-finder-task-groups {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * The general finder has the same newcomer-first shortcut density as the
+ * resource finder. At compact widths, keep its shortcut row in one visible
+ * line so magnification cannot leave a partially clipped third row without
+ * telling the student that more actions are available.
+ */
+@media (max-width: 899px) {
+  .ba-task-finder[data-resource-search="true"]
+    .ba-task-finder-common-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--ba-space-2);
+  }
+
+  .ba-task-finder[data-resource-search="true"]
+    .ba-task-finder-common-scroll-hint {
+    display: inline;
+    color: var(--ba-color-nyu-violet);
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .ba-task-finder[data-resource-search="true"]
+    .ba-task-finder-common-list {
+    flex-wrap: nowrap;
+    padding-bottom: var(--ba-space-1);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .ba-task-finder[data-resource-search="true"]
+    .ba-task-finder-common-task {
+    flex: 0 0 auto;
+  }
+
+  .ba-task-finder:not([data-resource-search="true"])
+    .ba-task-finder-common-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--ba-space-2);
+  }
+
+  .ba-task-finder:not([data-resource-search="true"])
+    .ba-task-finder-common-scroll-hint {
+    display: inline;
+    color: var(--ba-color-nyu-violet);
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .ba-task-finder:not([data-resource-search="true"])
+    .ba-task-finder-common-list {
+    flex-wrap: nowrap;
+    padding-bottom: var(--ba-space-1);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .ba-task-finder:not([data-resource-search="true"])
+    .ba-task-finder-common-task {
+    flex: 0 0 auto;
   }
 }
 

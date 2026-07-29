@@ -6,9 +6,213 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.3 includes:
+Version 0.5.141 includes:
 
+- generic “accessibility” searches no longer leak into Housing through a
+  shared keyword; they use the exact Campus Resources anchor when verified or
+  stay on the honest Other Resources fallback;
+
+- conversational requests such as “I need health insurance help” now retain
+  the specific service phrase and reach the verified Wellness Center without
+  allowing broad “NYU” wording to match unrelated resources;
+
+- verified task actions now expose their outcome description in the accessible
+  action name, and the single-result handoff uses a pale-violet treatment so
+  course search and advising guidance remain readable without competing with
+  the primary Start here action;
+
+- area and resource searches keep their verified cards visible while course
+  search remains the only compact one-step action, including Academics
+  class-schedule handoffs and typo-tolerant transcript guidance;
+
+- “Where are my classes?” now opens the verified Weekly Schedule instead of
+  offering Class Search and Brightspace together, and “international office”
+  now reaches OGS without requiring a student to know the acronym;
+
+- NYU Students labels such as “Accessibility and Accommodations,” “Athletics
+  and Fitness,” “Student Government,” “Service Opportunities and Civic
+  Engagement,” “Sustainability,” and “International Student Employment” now
+  remain discoverable: they use the exact verified anchor when Albert exposes
+  it, otherwise they fall back to the official Other Resources or OGS
+  destination instead of returning zero results; bare “time management” is
+  kept on the newcomer resource path instead of producing two area choices;
+
+- “degree audit” and “audit my degree” now fall back to the verified Academics
+  workspace when Albert does not expose the direct Degree Progress control;
+  ordinary “transportation” searches stay on the verified Other Resources
+  directory instead of being mistaken for Campus Safety;
+
+- first-semester wording such as “report card,” “verify enrollment,” “how
+  much is tuition,” and “health insurance waiver” now reaches the verified
+  Grades, Finances, or Wellness destination instead of returning no results;
+
+- the general task finder now explains the one-step Class Search handoff and
+  tells students exactly which native fields they can use: subject, course
+  number, title, or instructor;
+
+- specific advisor-meeting searches now fall back to the verified Academics
+  workspace when the exact appointment control is not in the current view;
+  when Albert exposes that control, the direct native action still wins;
+
+- generic newcomer prompts such as “how do I get started” now preserve the
+  verified starter recovery instead of relaxing into an unrelated calendar
+  result;
+
+- broad resource-only help searches now stay honest: they open verified
+  Student Services when present, otherwise they point to Albert’s unchanged
+  resource directory instead of surfacing unrelated support links;
+
+- cross-area searches for classroom location, current classes, and enrollment
+  verification now hand off to the verified Home or Grades workspace instead
+  of returning an avoidable no-results state;
+
+- Grades & Transcripts and Finances now lead their workspace context with
+  student outcomes—view grades, prove enrollment, check balances, and pay
+  tuition—before system terminology;
+
+- “how do I register” now follows the same one-step Find Classes handoff as
+  “where can I register,” removing the competing Registrar result;
+
+- single-result searches now keep one emphasized “Open …” handoff instead of
+  repeating the same verified destination in the inventory below;
+
+- generic campus-service searches such as “parking,” “campus map,” and
+  “shuttle” no longer typo-match unrelated international-student wording;
+  unmatched needs stay honestly on the verified Other Resources directory;
+
+- the exact “advisor” search now prefers the verified Academics destination
+  over broad resource vocabulary such as spiritual-life advising;
+
+- generic newcomer prompts such as “what do I do first,” “what should I do
+  first,” “where do I start,” and “how do I get started” now resolve to one
+  verified Other Resources destination instead of being mistaken for dates or
+  the already-open Home area;
+
+- Personal Info now understands “home address,” “mobile phone,” and
+  “nationality” as direct native destinations, while broad “personal
+  information” and “edit profile” searches open the verified Personal Info
+  workspace;
+
+- everyday records and finance wording such as “report card,” “verify
+  enrollment,” “credit transfer,” “current balance,” “print statement,” and
+  “accept financial aid” now reaches the closest verified task or workspace;
+  “order transcript” opens the verified Registrar guidance resource;
+
+- student-language academic searches such as “degree audit,” “audit my
+  degree,” and “apply to graduate” now reach the verified Degree Progress or
+  Academics workspace without changing the native graduation action;
+
+- plain-language searches such as “plan my courses,” “when do I graduate,”
+  and “choose a major” now reach the verified Academic Planner, graduation
+  status, or Academics workspace in one step;
+
+- “where can I register” now stays on the verified one-step Course Search
+  handoff instead of competing with University Registrar;
+- finance searches now keep “pay my bill” on the verified eSuite billing
+  control and route a bare “bursar” query to Finances instead of Academic
+  Calendar; exact “email” and “gender” searches now prefer their native
+  Personal Info tasks over unrelated resource aliases;
+- enrollment and records wording such as “proof of enrollment,” “unofficial
+  transcript,” “official transcript,” and “MyHub enrollment” now reaches the
+  verified Grades & Transcripts workspace from other Albert areas;
+- accessibility and newcomer support phrases such as “disability support,”
+  “testing accommodations,” “campus accessibility,” “academic support,”
+  “student life,” and “I need help with NYU” now reach the verified Other
+  Resources directory when Albert does not expose a more specific native link;
+- generic “schedule appointment” and “book appointment” searches now fall
+  back honestly instead of guessing Wasserman or NYU Connect, while
+  counseling and financial-aid appointment phrases reach their verified
+  services directly;
+- “pronouns” and “name pronunciation” now reach the verified Personal Info
+  workspace when the native control is on that page;
+- “major planning” and “student clubs” now reach their verified Academics or
+  Other Resources workspace instead of returning no destination;
+- a generic “scholarship” query prefers the verified Financial Aid resource
+  over a broader career-scholarship match;
+- major-change wording now opens the verified Academics workspace as an
+  honest planning handoff, without implying that Better Albert changes a
+  student's academic program;
+- plain-language campus Wi‑Fi and disability-accommodation queries now reach
+  the verified Other Resources directory when no direct anchor is present;
+- student-employment wording now opens the verified Wasserman resource when
+  Albert exposes that official link;
+- generic “events” no longer falls through to OGS’s longer immigration-events
+  alias, preserving a safe Other Resources destination;
+- native PeopleSoft lightboxes suppress the fixed extension shell while open,
+  keeping What-If and other modal content unobscured at high zoom;
+- plain-language “class search,” “find classes,” and “search for a course”
+  queries use the same one-step verified Course Search handoff;
+- high-intent resource phrases stay tied to their intended service and fall
+  back to the official Other Resources directory when that exact native link is
+  unavailable;
 - a Vite, CRXJS, React, and TypeScript MV3 build;
+- an accessible one-step “Open …” action that announces the verified destination and keyboard handoff hint to assistive technology;
+- a visible one-step “Open …” action beside every unique verified search result, so pointer users can activate the same safe handoff without scrolling to the result card;
+- an inline verified-destination cue for single search matches, so Enter
+  handoffs remain understandable at 200% zoom even before the result card is
+  scrolled into view;
+- a compact horizontal common-task strip with a visible “Scroll for more”
+  cue, keeping one-step Find classes and newcomer shortcuts fully readable at
+  200% zoom;
+- a single-row resource starter strip at compact widths, so popular NYU
+  services remain discoverable with a visible scroll cue instead of wrapping
+  into a clipped third row at high zoom;
+- a high-zoom Class Search handoff that scrolls the original combined search
+  field fully into view while keeping it focused and ready for typing;
+- a full-width primary Class Search action even when PeopleSoft wraps the
+  verified native button in an intrinsically sized control wrapper;
+- a cross-area course-search intent that carries a verified “find a course”
+  query from Academics, Grades, Finances, or Personal Info through Home and
+  into the original Class Search control;
+- a full-viewport compact finder modal that keeps Albert's native resource
+  directory mounted but behind the search surface at high zoom and short
+  heights;
+- verified popular NYU resource starters that remain available after a
+  no-result search, so a newcomer can recover without leaving the search
+  surface or guessing Albert's native directory labels;
+- a newcomer-aware resource handoff that keeps the “New student help” intent
+  visible when Albert's verified directory opens, with a clear “Start here”
+  cue for first-week services;
+- a first-week starter order that puts academic dates, course materials,
+  financial aid, ID cards, international-student help, health, housing, and
+  student success before broader resource categories in newcomer search;
+- a cross-area course-search result cue that names the actual one-step action
+  (“Find classes — Open Course Search”) before the student presses Enter;
+- conversational course requests such as “look for a course” that stay on the
+  verified Find Classes destination instead of mixing in unrelated course
+  feedback, learning-platform, or summer-program links;
+- concise student wording such as “browse classes,” “find course offerings,”
+  “look for a course,” “look for classes,” “search for classes,” “where can I
+  find a course,” “what classes are available,” and “which courses are offered”
+  now uses the same verified one-step Course Search handoff;
+- a precise conversational support query that opens Student Services only when
+  its exact native anchor is verified, avoiding unrelated links when it is not;
+- a resource-search empty state that points students to Albert’s official
+  directory instead of asking them to broaden an unsupported need blindly;
+- a clearly labelled “Try a verified starter” recovery group when a typed
+  resource need has no exact native link, so fallback chips are not mistaken
+  for search matches;
+- newcomer resource search switches from “Start here” to the same recovery
+  label after a typed no-result query, keeping the state honest while retaining
+  first-week verified links;
+- the enabled-state “Original Albert” escape hatch now explains the immediate
+  switch and how to turn Better Albert back on, instead of describing a future
+  disabled state;
+- the general “Student support” starter appears only when Albert exposes its
+  exact verified Student Services resource, preserving the official-directory
+  fallback when that anchor is absent;
+- the general “Find classes” starter and course-search wording disappear when
+  Home has no verified Course Search control, so a newcomer never lands on the
+  already-open Home area believing a class search has started;
+- Home status starters appear only when their native status card is verified,
+  or when another workspace can hand the student to Home, so missing holds,
+  registration, schedule, and to-do controls never become no-op shortcuts;
+- unmatched task searches now name the visible “Show all” recovery action,
+  making the complete verified-destination list an obvious next step without
+  broadening the search beyond the current Albert view;
+- conservative orientation disambiguation that sends generic orientation
+  requests to Albert's resource directory while preserving international and
+  pre-arrival orientation matches for OGS;
 - one isolated Shadow DOM application frame: a fixed violet rail on desktop and
   a compact responsive workspace header below 900px;
 - task-first discovery cards at every supported width that explain what
@@ -34,6 +238,10 @@ Version 0.5.3 includes:
   regions that annotate original Albert nodes without copying their values;
 - live Finances support for the verified account and financial-aid roots even
   when Albert omits the shared link-directory container;
+- safe page-world activation for the exact non-transactional Academic Planner,
+  Degree Progress, What If Report, and Graduation Status shortcuts;
+- cross-area “financial aid status” routing that takes a newcomer to Finances
+  when the exact native status control is not in the current Albert view;
 - effective 200% zoom containment for family hubs, deep pages, read-only
   dialogs, and both Class Search variants without replacing native controls;
 - a common full-page PeopleSoft layout for recognized deep `/psp/` and `/psc/`
@@ -89,7 +297,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.3` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.82` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

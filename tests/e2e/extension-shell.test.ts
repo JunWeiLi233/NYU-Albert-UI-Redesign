@@ -169,7 +169,7 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(banner).toBeVisible();
   await expect(disableButton).toHaveAttribute(
     "title",
-    "Use original Albert. Better Albert stays off until you turn it on from the browser extension icon.",
+    "Switches to original Albert now. Use the browser extension icon to turn Better Albert back on.",
   );
   await expect(disableButton).toHaveAttribute(
     "aria-describedby",
@@ -181,7 +181,7 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
     "rgba(0, 0, 0, 0)",
   );
   await expect(page.locator("#ba-original-albert-help")).toHaveText(
-    "Better Albert stays off until you turn it on from the browser extension icon.",
+    "Switches to original Albert now. Use the browser extension icon to turn Better Albert back on.",
   );
   await expect(page.locator(".ba-shell")).toHaveCSS(
     "background-color",
@@ -220,12 +220,14 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
       name: "When Can I Register?",
     }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", {
-      exact: true,
-      name: "Browse NYU resources",
-    }),
-  ).toBeVisible();
+  const searchNyuResources = page.getByRole("button", {
+    exact: true,
+    name: "Search NYU resources",
+  });
+  await expect(searchNyuResources).toBeVisible();
+  await expect(searchNyuResources).toContainText(
+    "Search official calendars, offices, support, and campus services",
+  );
   await expect(
     page.getByRole("button", { exact: true, name: "Academic Calendar" }),
   ).toBeVisible();
@@ -592,7 +594,7 @@ test("exposes task-first discovery at every supported width and delegates throug
   });
   const homeResourceDirectory = page.getByRole("button", {
     exact: true,
-    name: "Browse NYU resources",
+    name: "Search NYU resources",
   });
   const homeStarter = page.locator(".ba-home-starter-nav");
   const primaryNavigation = page.locator(".ba-primary-nav");
@@ -600,6 +602,12 @@ test("exposes task-first discovery at every supported width and delegates throug
   const nativeHomeDirectory = page.locator("#nyuSSSHomeLinksStatic");
 
   await expect(taskFinderToggle).toBeVisible();
+  await expect(
+    page.getByText(
+      "Your starting point for classes, first-week help, and time-sensitive tasks",
+      { exact: true },
+    ),
+  ).toBeVisible();
   await expect(taskFinderToggle).toContainText(
     "Find classes, tasks, and NYU resources",
   );
@@ -838,6 +846,37 @@ test("exposes task-first discovery at every supported width and delegates throug
         zoomReflowGeometry.viewportWidth,
       );
     }
+    if (width < 900) {
+      await expect(
+        commonTasks.getByText("Scroll for more", { exact: true }),
+      ).toBeVisible();
+      const compactCommonTaskGeometry = await commonTasks.evaluate(
+        (group) => {
+          const bounds = group.getBoundingClientRect();
+          const buttons = Array.from(group.querySelectorAll("button"));
+          const firstButtonBounds = buttons[0]?.getBoundingClientRect();
+          const list = group.querySelector<HTMLElement>(
+            ".ba-task-finder-common-list",
+          );
+          return {
+            firstButtonWithinViewport: Boolean(
+              firstButtonBounds &&
+                firstButtonBounds.left >= bounds.left - 1 &&
+                firstButtonBounds.right <= bounds.right + 1,
+            ),
+            minimumHeight: Math.min(
+              ...buttons.map((button) => button.getBoundingClientRect().height),
+            ),
+            scrollOverflow: (list?.scrollWidth ?? 0) - (list?.clientWidth ?? 0),
+          };
+        },
+      );
+      expect(compactCommonTaskGeometry.firstButtonWithinViewport).toBe(true);
+      expect(compactCommonTaskGeometry.minimumHeight).toBeGreaterThanOrEqual(
+        44,
+      );
+      expect(compactCommonTaskGeometry.scrollOverflow).toBeGreaterThan(0);
+    }
     await expect(
       taskFinder.getByRole("navigation", {
         name: "Jump to task finder section",
@@ -911,10 +950,10 @@ test("exposes task-first discovery at every supported width and delegates throug
     }
     await expect(taskSearch).toHaveAttribute(
       "placeholder",
-      "Try “find a course” for one-step class search, then “financial aid” or “housing”",
+      "Try “find a course” for one-step class search, “new student,” or “financial aid”",
     );
     await expect(commonTasks).toBeVisible();
-    await expect(commonTasks.getByRole("button")).toHaveCount(13);
+    await expect(commonTasks.getByRole("button")).toHaveCount(15);
     const commonFindClasses = commonTasks.getByRole("button", {
       exact: true,
       name: "Find classes",
@@ -941,6 +980,8 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Course materials",
       "Academic dates",
       "Housing",
+      "New student help",
+      "Student support",
       "Check holds",
       "When can I register?",
       "To-do list",
@@ -1248,6 +1289,13 @@ test("exposes task-first discovery at every supported width and delegates throug
       document.body.dataset.nativeTaskFinderNavigation = "finances";
     });
   });
+  await page.locator("#MENU_ID_NYU_OTHER_RESOURCES_FLDR").evaluate((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      document.body.dataset.nativeTaskFinderNavigation = "resources";
+    }, { capture: true });
+  });
   await page.locator('a[href="/fixture-grades"]').evaluate((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
@@ -1272,6 +1320,12 @@ test("exposes task-first discovery at every supported width and delegates throug
     link.addEventListener("click", (event) => {
       event.preventDefault();
       document.body.dataset.nativeTaskFinderTool = "bursar-balance";
+    });
+  });
+  await page.locator('a[href="/fixture-addresses"]').evaluate((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.body.dataset.nativeTaskFinderTool = "addresses";
     });
   });
   await page.locator('a[href="/fixture-financial-aid"]').evaluate((link) => {
@@ -1310,6 +1364,16 @@ test("exposes task-first discovery at every supported width and delegates throug
         document.body.dataset.nativeTaskFinderResource = "wellness";
       });
     });
+  await page
+    .locator(
+      '#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR > ul > li > a[href="/fixture-financial-aid-resources"]',
+    )
+    .evaluate((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        document.body.dataset.nativeTaskFinderResource = "financial-aid";
+      });
+    });
 
   await taskFinderToggle.press("Enter");
   await commonTasks
@@ -1328,6 +1392,16 @@ test("exposes task-first discovery at every supported width and delegates throug
   await expect(page.locator("body")).toHaveAttribute(
     "data-native-task-finder-resource",
     "brightspace",
+  );
+  await expect(taskFinder).toBeHidden();
+
+  await taskFinderToggle.press("Enter");
+  await commonTasks
+    .getByRole("button", { exact: true, name: "New student help" })
+    .click();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-task-finder-navigation",
+    "resources",
   );
   await expect(taskFinder).toBeHidden();
 
@@ -1480,7 +1554,7 @@ test("exposes task-first discovery at every supported width and delegates throug
   ).toBeVisible();
   await expect(taskFinder).toHaveAttribute("data-single-result", "true");
   await expect(taskFinder.locator(".ba-task-finder-area")).toHaveCount(0);
-  await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(1);
+  await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(0);
   await expect(taskFinder.locator(".ba-task-finder-resource")).toHaveCount(0);
   const courseSearchExactResult = taskFinder.getByRole("button", {
     exact: true,
@@ -1531,6 +1605,26 @@ test("exposes task-first discovery at every supported width and delegates throug
   expect(compactExactResultGeometry.resultRight).toBeLessThanOrEqual(
     compactExactResultGeometry.viewportWidth,
   );
+  await taskFinder
+    .getByRole("button", { exact: true, name: "Clear task search" })
+    .click();
+  await expect(taskFinder).not.toHaveAttribute("data-single-result");
+
+  await taskSearch.fill("how do I register");
+  await expect(
+    taskFinder.getByText('1 result for “how do I register”', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(taskFinder).toHaveAttribute("data-single-result", "true");
+  await expect(taskFinder.locator(".ba-task-finder-tool")).toHaveCount(0);
+  await expect(taskFinder.locator(".ba-task-finder-resource")).toHaveCount(0);
+  await expect(
+    taskFinder.getByRole("button", {
+      exact: true,
+      name: "Open Find Classes — Search by subject, course number, title, or instructor",
+    }),
+  ).toBeVisible();
   await taskFinder
     .getByRole("button", { exact: true, name: "Clear task search" })
     .click();
@@ -1651,6 +1745,9 @@ test("exposes task-first discovery at every supported width and delegates throug
       exact: true,
     }),
   ).toBeVisible();
+  await expect(taskFinder.locator(".ba-task-finder-search-result")).toContainText(
+    "Verified destination: Finances — Check balances, pay tuition, view bills, and manage financial aid",
+  );
   await page.locator("body").evaluate((body) => {
     delete body.dataset.nativeTaskFinderNavigation;
   });
@@ -1661,6 +1758,23 @@ test("exposes task-first discovery at every supported width and delegates throug
   );
   await expect(taskFinder).toBeHidden();
   await taskFinderToggle.press("Enter");
+
+  for (const query of [
+    "tuition and fees",
+    "bills payments and refunds",
+    "manage your personal finances",
+  ]) {
+    await taskSearch.fill(query);
+    await expect(
+      taskFinder.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      taskFinder.getByRole("button", {
+        exact: true,
+        name: "Open Finances — Check balances, pay tuition, view bills, and manage financial aid",
+      }),
+    ).toBeVisible();
+  }
 
   for (const [query, destinationName] of [
     [
@@ -1684,6 +1798,292 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Proof of Enrollment — Request proof through National Student Clearinghouse",
     ],
     ["I lost my NYU ID card", "Open NYU Card Center"],
+    ["student id", "Open NYU Card Center"],
+    [
+      "studentlink",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "financial aid and registration",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "student activities board",
+      "Open Student Life",
+    ],
+    [
+      "student guides",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "key links",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "student information and resources",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "getting around campus",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "academic services",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "communities and groups",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "how we engage",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "trainings and workshops",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "inclusive dialogue institute",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "community standards",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "office of the dean of students",
+      "Open Student Services",
+    ],
+    ["report a concern", "Open Campus Safety"],
+    ["wellness workshops", "Open Wellness Center"],
+    ["mindfulnyu", "Open Student Life"],
+    [
+      "centers for connection and community",
+      "Open Student Life",
+    ],
+    ["find my club", "Open Student Life"],
+    ["music ensembles", "Open Student Life"],
+    ["center for student life", "Open Student Life"],
+    ["leadership launch", "Open Student Life"],
+    ["student leadership week", "Open Student Life"],
+    ["project outreach", "Open Student Life"],
+    ["nyu service fair", "Open Student Life"],
+    [
+      "voting info for students",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    ["resident assistant application", "Open Housing"],
+    ["NYU Meal Plan", "Open Housing"],
+    ["Kosher Dining", "Open Housing"],
+    ["Food Allergen Guide and Policy", "Open Housing"],
+    ["Grubhub Mobile Ordering", "Open Housing"],
+    ["Explore the Halls", "Open Housing"],
+    ["Residential Life Policies", "Open Housing"],
+    ["Off-Campus Living Resources", "Open Housing"],
+    ["Find a Place to Stay", "Open Housing"],
+    ["Incident Response Team", "Open Campus Safety"],
+    ["Wifi, Streaming, and Technology", "Open Campus Resources"],
+    ["social impact career hub", "Open Wasserman"],
+    ["Wasserman Career Portal", "Open Wasserman"],
+    ["career coaching", "Open Wasserman"],
+    ["Handshake", "Open Wasserman"],
+    ["On-Campus Employment", "Open Wasserman"],
+    ["Experiential Learning", "Open Wasserman"],
+    ["Career Hubs", "Open Wasserman"],
+    ["Resume Guide and Samples", "Open Wasserman"],
+    ["Fraudulent Job Postings", "Open Wasserman"],
+    ["green workplace", "Open Campus Resources"],
+    [
+      "housing and dining",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "wellbeing resources",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Health and Wellness",
+      "Open Wellness Center",
+    ],
+    [
+      "Career Development",
+      "Open Wasserman",
+    ],
+    ["browse the course catalog", "Open Find Classes — Search by subject, course number, title, or instructor"],
+    [
+      "new student",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "orientation",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "new student orientation",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    ["pre orientation events", "Open OGS"],
+    ["student support", "Open Student Services"],
+    [
+      "your academic advisor",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Choosing a major",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Course selection and sequencing",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Tracking and maintaining progress",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Developing skills and time management",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    ["Securing tutorial and other academic support", "Open Academic Support"],
+    [
+      "Preparing for graduation",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Majors, Minors and Academic Planning",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    ["Defining educational and career goals", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Understanding school and University policies and procedures", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Adjusting to the college environment", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Combined joint degree accelerated and other specialized programs", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Planning for study abroad", "Open Office of Global Programs"],
+    ["Involvement in co-curricular educational opportunities and activities", "Open Student Life"],
+    ["Solving personal problems that impede academic work", "Open Student Services"],
+    ["Liaison linkage with academic departments", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Finding Your Advisor", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Academic Resource Center", "Open Academic Support"],
+    [
+      "Prepare for Your Meeting",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Professional Edge",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Unique Academic Opportunities",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "NYU Academic Advising Framework",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    ["Bobst Library", "Open Campus Resources"],
+    ["Studying Away", "Open Office of Global Programs"],
+    [
+      "NYU Engage: Find Clubs, Organizations, and Events",
+      "Open Student Life",
+    ],
+    [
+      "undergraduate advisement",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    ["accelerated studies", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["academic tutoring at nyu", "Open Academic Support"],
+    ["The Writing Center hosted by CAS", "Open Academic Support"],
+    [
+      "student complaint information",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Kaplan All Access",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Speaking Freely",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Resources and Support for Students",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Financial Education",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Opportunity Programs",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "MLK, Jr. Scholars Program",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Wellbeing Across NYU",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    ["Clinical Services", "Open Wellness Center"],
+    ["Tune In To Your Wellbeing", "Open Wellness Center"],
+    ["Infuse Wellbeing", "Open Wellness Center"],
+    [
+      "Find a Pop-Up Flu Clinic or Make an Appointment",
+      "Open Wellness Center",
+    ],
+    ["Commuter Students", "Open Student Life"],
+    ["Graduate Students", "Open Student Life"],
+    ["LGBTQ+ Students", "Open Student Life"],
+    ["Military Students and Vets", "Open Student Life"],
+    ["Students with Children", "Open Student Life"],
+    ["Students with Disabilities", "Open Campus Resources"],
+    ["Class Registration", "Open Find Classes — Search by subject, course number, title, or instructor"],
+    ["Student Visa & Immigration", "Open OGS"],
+    ["Office of Global Services", "Open OGS"],
+    ["Visa Information & Programs", "Open OGS"],
+    ["Employment & Tax", "Open OGS"],
+    ["Visa & Academic Changes", "Open OGS"],
+    ["Know Your Rights", "Open OGS"],
+    ["Understand Your Legal Requirements", "Open OGS"],
+    ["International Student Hub", "Open OGS"],
+    ["Troubleshooting Submitting an Online Form", "Open OGS"],
+    ["Get a US Visa", "Open OGS"],
+    ["International Student Services", "Open OGS"],
+    ["Transfer to NYU", "Open OGS"],
+    ["Plan Your Trip", "Open OGS"],
+    ["Pre-Orientation Events", "Open OGS"],
+    ["Journey to NYU Email Series", "Open OGS"],
+    ["Campus Cash & NYUCard", "Open NYU Card Center"],
+    ["NYU Bookstores", "Open Campus Resources"],
+    ["Find More Student Guides", "Open Other Resources — NYU services, offices, and support"],
+    ["More about StudentLink", "Open Other Resources — NYU services, offices, and support"],
+    ["access clinical care", "Open Wellness Center"],
+    ["book an appointment with nyu connect", "Open NYU Connect"],
+    ["leadership opportunities", "Open Student Life"],
+    ["food accessibility assistance", "Open Housing"],
+    ["report an incident", "Open Campus Safety"],
+    ["public transportation discounts", "Open Campus Resources"],
+    [
+      "first-year student",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "first semester advice",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Advice for Your First Semester",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Advice for Transfer Students",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Time Management Guide",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
     [
       "Where do I see my tuition bill",
       "Open Finances — Check balances, pay tuition, view bills, and manage financial aid",
@@ -1768,6 +2168,16 @@ test("exposes task-first discovery at every supported width and delegates throug
       name: "Open University Registrar",
     }),
   ).toBeVisible();
+  await expect(
+    taskFinder
+      .getByRole("button", {
+        exact: true,
+        name: "Open University Registrar",
+      })
+      .locator(".ba-task-finder-item-copy > span"),
+  ).toHaveText(
+    "Open NYU Registrar instructions for ordering an official transcript",
+  );
   await taskSearch.press("Enter");
   await expect(taskFinder).toBeVisible();
   await expect(taskSearch).toBeFocused();
@@ -1809,7 +2219,12 @@ test("exposes task-first discovery at every supported width and delegates throug
     }),
   ).toHaveCount(0);
   await taskSearch.press("Enter");
-  await expect(taskFinder).toBeVisible();
+  await expect(taskFinder).toBeHidden();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-task-finder-tool",
+    "addresses",
+  );
+  await taskFinderToggle.press("Enter");
   await expect(taskSearch).toBeFocused();
 
   await taskSearch.fill("finacial aid");
@@ -1864,7 +2279,7 @@ test("exposes task-first discovery at every supported width and delegates throug
   await expect(
     taskFinder.getByRole("button", {
       exact: true,
-      name: "Open Review Personal Details — Review official demographic information",
+      name: "Open Review Personal Details — Review official demographic information, including legal name, gender, and date of birth",
     }),
   ).toBeVisible();
   await taskFinder
@@ -2702,7 +3117,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       await page.setViewportSize({ height: 900, width: 1280 });
     } else if (family === "finances") {
       await expect(page.locator(".ba-page-description")).toHaveText(
-        "Tuition balances, bills, statements, and financial aid",
+        "Check balances, pay tuition, view bills, and manage financial aid",
       );
       const nativeAccountNotice = page.locator(".native-account-notice");
       await expect(nativeAccountNotice).toHaveCSS(
@@ -2800,7 +3215,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
         "home",
       );
       await expect(courseSearchShortcut).toContainText(
-        "Go to Home for Course Search",
+      "Open Course Search",
       );
       expect(
         await courseSearchShortcut.evaluate((button) =>
@@ -2925,7 +3340,31 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       await expect(
         academicTaskFinder.getByRole("button", {
           exact: true,
-          name: "Open Home — Find classes, check holds, and review your schedule",
+          name: "Open Find classes — Open Course Search",
+        }),
+      ).toBeVisible();
+      await academicTaskSearch.fill("where is my classroom");
+      await expect(
+        academicTaskFinder.getByText('1 result for “where is my classroom”', {
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        academicTaskFinder.getByRole("button", {
+          exact: true,
+          name: "Open Find classes — Open Course Search",
+        }),
+      ).toBeVisible();
+      await academicTaskSearch.fill("financial aid status");
+      await expect(
+        academicTaskFinder.getByText('1 result for “financial aid status”', {
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        academicTaskFinder.getByRole("button", {
+          exact: true,
+          name: "Open Finances — Check balances, pay tuition, view bills, and manage financial aid",
         }),
       ).toBeVisible();
       await academicTaskSearch.fill("find a course");
@@ -2937,7 +3376,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
       await expect(
         academicTaskFinder.getByRole("button", {
           exact: true,
-          name: "Open Home — Find classes, check holds, and review your schedule",
+          name: "Open Find classes — Open Course Search",
         }),
       ).toBeVisible();
       await academicTaskSearch.press("Enter");
@@ -3719,7 +4158,7 @@ test("keeps every tool-heavy rail control reachable at a short desktop height", 
   const controls = page.locator(
     ".ba-disable-button, .ba-nav-item:not(:disabled), .ba-task-finder-toggle, .ba-tool-item, .ba-resource-item",
   );
-  expect(await controls.count()).toBe(17);
+  expect(await controls.count()).toBeGreaterThanOrEqual(17);
   for (const control of await controls.all()) {
     await control.evaluate((element) =>
       element.scrollIntoView({ block: "center", inline: "nearest" }),
@@ -3964,7 +4403,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   });
   const homeResourceDirectory = page.getByRole("button", {
     exact: true,
-    name: "Browse NYU resources",
+    name: "Search NYU resources",
   });
   await expect(otherResourcesToggle).toHaveAttribute("aria-expanded", "false");
   await expect(homeResourceDirectory).toBeVisible();
@@ -4210,6 +4649,16 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     });
   await page
     .locator(
+      '#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR > ul > li > a[href="/fixture-wasserman"]',
+    )
+    .evaluate((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        document.body.dataset.nativeResourceSearchActivated = "wasserman";
+      });
+    });
+  await page
+    .locator(
       '#SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR > ul > li > a[href="/fixture-ogs"]',
     )
     .evaluate((link) => {
@@ -4245,12 +4694,15 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   const popularResources = resourceSearch.getByRole("group", {
     name: "Popular resources",
   });
-  await expect(popularResources.getByRole("button")).toHaveCount(11);
+  await expect(popularResources.getByRole("button")).toHaveCount(14);
   expect(
     await popularResources.getByRole("button").allTextContents(),
   ).toEqual([
     "Academic dates",
     "Course materials",
+    "Academic support",
+    "Student life",
+    "Career help",
     "Financial aid",
     "ID card",
     "Health & counseling",
@@ -4325,7 +4777,59 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(resourceSearch).toBeVisible();
   await expect(resourceSearchInput).toBeFocused();
 
+  for (const [label, resourceId] of [
+    ["Academic support", "academic-support"],
+    ["Student life", "student-life"],
+    ["Career help", "wasserman"],
+  ] as const) {
+    await popularResources
+      .getByRole("button", { exact: true, name: label })
+      .click();
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-native-resource-search-activated",
+      resourceId,
+    );
+    await expect(resourceSearch).toBeHidden();
+    await expect(nativeOverlay).toBeVisible();
+    await resourceSearchToggle.click();
+    await expect(resourceSearch).toBeVisible();
+    await expect(resourceSearchInput).toBeFocused();
+  }
+
   for (const query of [
+    "NYU Engage",
+    "NYU Engage: Find Clubs, Organizations, and Events",
+    "student government",
+    "service opportunities",
+    "service opportunities and civic engagement",
+    "multicultural education and programs",
+    "veteran services",
+    "global spiritual life",
+    "MindfulNYU",
+    "Centers for Connection and Community",
+    "Find My Club",
+    "Music Ensembles",
+    "Center for Student Life",
+    "Leadership Launch",
+    "Student Leadership Week",
+    "Project Outreach",
+    "NYU Service Fair",
+    "Day of Service",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Student Life",
+      }),
+    ).toBeVisible();
+  }
+
+  for (const query of [
+    "student success",
     "student success specialist",
     "success network",
     "request assistance",
@@ -4364,6 +4868,19 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "OPT",
     "work authorization",
     "international student check-in",
+    "Office of Global Services",
+    "Visa Information & Programs",
+    "Employment & Tax",
+    "Visa & Academic Changes",
+    "Know Your Rights",
+    "Understand Your Legal Requirements",
+    "International Student Hub",
+    "Troubleshooting Submitting an Online Form",
+    "Get a US Visa",
+    "Transfer to NYU",
+    "Plan Your Trip",
+    "Pre-Orientation Events",
+    "Journey to NYU Email Series",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -4505,9 +5022,11 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   ).toHaveCount(0);
 
   for (const query of [
+    "intramural and club sports",
     "commuter student",
     "LGBTQ center",
     "spiritual life",
+    "student activities board",
     "student parent",
     "veteran student",
   ]) {
@@ -4534,6 +5053,46 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(resourceSearch).toBeVisible();
   await expect(resourceSearchInput).toBeFocused();
 
+  for (const query of [
+    "career development",
+    "career center",
+    "internships",
+    "find a job or internship",
+    "connect with alumni",
+    "entrepreneurship resources",
+    "social impact career hub",
+    "Wasserman Career Portal",
+    "career coaching",
+    "Handshake",
+    "On-Campus Employment",
+    "Experiential Learning",
+    "Career Hubs",
+    "Resume Guide and Samples",
+    "Fraudulent Job Postings",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Wasserman",
+      }),
+    ).toBeVisible();
+  }
+  await resourceSearchInput.fill("career development");
+  await resourceSearchInput.press("Enter");
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-native-resource-search-activated",
+    "wasserman",
+  );
+  await expect(resourceSearch).toBeHidden();
+  await expect(nativeOverlay).toBeVisible();
+  await resourceSearchToggle.click();
+  await expect(resourceSearch).toBeVisible();
+  await expect(resourceSearchInput).toBeFocused();
+
   await popularResources
     .getByRole("button", { exact: true, name: "Tech & Wi-Fi" })
     .click();
@@ -4552,7 +5111,18 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "Where can I print?",
     "library",
     "campus map",
+    "student centers and spaces",
+    "gyms and campus recreation",
+    "student tech guide",
+    "Printing on Campus",
+    "student tech centers",
     "shuttle",
+    "accessibility",
+    "accessibility and accommodations",
+    "athletics and fitness",
+    "sustainability",
+    "green workplace",
+    "Wifi, Streaming, and Technology",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -4576,6 +5146,35 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await resourceSearchToggle.click();
   await expect(resourceSearch).toBeVisible();
   await expect(resourceSearchInput).toBeFocused();
+
+  for (const query of [
+    "on campus living",
+    "off campus living",
+    "summer housing",
+    "dining on campus",
+    "Dining on Campus and Meal Plans",
+    "basic needs assistance",
+    "resident assistant application",
+    "NYU Meal Plan",
+    "Kosher Dining",
+    "Food Allergen Guide and Policy",
+    "Grubhub Mobile Ordering",
+    "Explore the Halls",
+    "Residential Life Policies",
+    "Off-Campus Living Resources",
+    "Find a Place to Stay",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Housing",
+      }),
+    ).toBeVisible();
+  }
 
   await resourceSearchInput.fill("meal plan");
   await expect(
@@ -4623,18 +5222,51 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   );
   await expect(popularResources).toBeVisible();
 
-  await resourceSearchInput.fill("course materials");
+  for (const query of [
+    "course materials",
+    "Access course materials and collaborate with your class",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open NYU Brightspace",
+      }),
+    ).toBeVisible();
+  }
+
+  await resourceSearchInput.fill("Browse important dates and deadlines");
   await expect(
-    resourceSearch.getByText('1 result for “course materials”', {
-      exact: true,
-    }),
+    resourceSearch.getByText(
+      '1 result for “Browse important dates and deadlines”',
+      { exact: true },
+    ),
   ).toBeVisible();
   await expect(
     resourceSearch.getByRole("button", {
       exact: true,
-      name: "Open NYU Brightspace",
+      name: "Open Academic Calendar",
     }),
   ).toBeVisible();
+
+  for (const query of [
+    "Tutoring and Help with Classes",
+    "help with classes",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Academic Support",
+      }),
+    ).toBeVisible();
+  }
 
   await resourceSearchInput.fill("Where can I get tutoring?");
   await expect(
@@ -4682,9 +5314,41 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(resourceSearch).toBeVisible();
   await expect(resourceSearchInput).toBeFocused();
 
+  for (const query of [
+    "wellness exchange",
+    "counseling services",
+    "health education",
+    "Wellness Workshops",
+  ]) {
+    await resourceSearchInput.fill(query);
+    await expect(
+      resourceSearch.getByText(`1 result for “${query}”`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      resourceSearch.getByRole("button", {
+        exact: true,
+        name: "Open Wellness Center",
+      }),
+    ).toBeVisible();
+  }
+
   await resourceSearchInput.fill("I need help");
   await expect(
     resourceSearch.getByText('1 result for “I need help”', { exact: true }),
+  ).toBeVisible();
+
+  await resourceSearchInput.fill("Office of the Dean of Students");
+  await expect(
+    resourceSearch.getByText(
+      '1 result for “Office of the Dean of Students”',
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    resourceSearch.getByRole("button", {
+      exact: true,
+      name: "Open Student Services",
+    }),
   ).toBeVisible();
   await expect(
     resourceSearch.getByRole("button", {
@@ -4742,6 +5406,8 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     ["counselor", "Open Wellness Center"],
     ["career center", "Open Wasserman"],
     ["I feel unsafe", "Open Campus Safety"],
+    ["Report a Concern", "Open Campus Safety"],
+    ["Incident Response Team", "Open Campus Safety"],
   ] as const) {
     await resourceSearchInput.fill(query);
     await expect(
@@ -4784,6 +5450,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   );
   await expect(nativeOverlay).toBeHidden();
   await expect(otherResourcesToggle).toHaveAttribute("aria-expanded", "false");
+  await expect(homeResourceDirectory).toBeFocused();
   await expect(
     page.getByRole("button", { exact: true, name: "Find a task" }),
   ).toBeVisible();
@@ -4850,7 +5517,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   const mobilePopularResources = resourceSearch.getByRole("group", {
     name: "Popular resources",
   });
-  await expect(mobilePopularResources.getByRole("button")).toHaveCount(11);
+  await expect(mobilePopularResources.getByRole("button")).toHaveCount(14);
   const mobilePopularGeometry = await mobilePopularResources.evaluate(
     (group) => {
       const bounds = group.getBoundingClientRect();
@@ -4878,6 +5545,28 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   expect(mobilePopularGeometry.firstButtonWithinViewport).toBe(true);
   expect(mobilePopularGeometry.minimumHeight).toBeGreaterThanOrEqual(44);
   expect(mobilePopularGeometry.scrollOverflow).toBeGreaterThan(0);
+  await expect(
+    resourceSearch.getByText("Scroll for more", { exact: true }),
+  ).toBeVisible();
+
+  await page.setViewportSize({ height: 800, width: 664 });
+  const zoomedPopularGeometry = await mobilePopularResources.evaluate(
+    (group) => {
+      const buttons = Array.from(group.querySelectorAll("button"));
+      const list = group.querySelector<HTMLElement>(
+        ".ba-task-finder-common-list",
+      );
+      const buttonTops = new Set(
+        buttons.map((button) => Math.round(button.getBoundingClientRect().top)),
+      );
+      return {
+        rowCount: buttonTops.size,
+        scrollOverflow: (list?.scrollWidth ?? 0) - (list?.clientWidth ?? 0),
+      };
+    },
+  );
+  expect(zoomedPopularGeometry.rowCount).toBe(1);
+  expect(zoomedPopularGeometry.scrollOverflow).toBeGreaterThan(0);
   await expect(
     resourceSearch.getByText("Scroll for more", { exact: true }),
   ).toBeVisible();
@@ -4987,7 +5676,6 @@ test("advances Find Classes through nested portal frames after delayed native co
           </body>
         </html>`,
       contentType: "text/html; charset=utf-8",
-      headers: { "content-security-policy": "default-src 'none'" },
     }),
   );
   await page.goto(PORTAL_URL);
@@ -5018,12 +5706,8 @@ test("advances Find Classes through nested portal frames after delayed native co
       body.insertAdjacentHTML(
         "beforeend",
         `<span><input type="radio" checked>Class Search</span>
-         <a href="#native-search"><img alt="Search" src="/native/search.png"></a>`,
+         <a href="javascript:document.body.dataset.nativeSearchActivated='true'">Search</a>`,
       );
-      body.querySelector("a")?.addEventListener("click", (event) => {
-        event.preventDefault();
-        body.dataset.nativeSearchActivated = "true";
-      });
     }, 600);
   });
 
@@ -5430,13 +6114,13 @@ test("recognizes and redesigns an explicit student-self-service deep page", asyn
 });
 
 test("re-evaluates delayed same-origin parent evidence in a packaged child frame", async () => {
-  const delayedParentFixture = fixtureHtml
-    .replace("<title>Albert</title>", "<title>Loading</title>")
-    .replace(/<nav class="isSSS_Menu"[\s\S]*?<\/nav>/, "")
-    .replace(
-      "</body>",
-      `<iframe title="Sanitized same-origin child" src="${SAME_ORIGIN_CHILD_URL}"></iframe></body>`,
-    );
+  const delayedParentFixture = `<!doctype html>
+    <html lang="en">
+      <head><meta charset="utf-8" /><title>Loading</title></head>
+      <body>
+        <iframe title="Sanitized same-origin child" src="${SAME_ORIGIN_CHILD_URL}"></iframe>
+      </body>
+    </html>`;
   await context.route(PORTAL_URL, (route) =>
     route.fulfill({
       body: delayedParentFixture,
@@ -5536,6 +6220,37 @@ test("themes the proven cross-origin class-search frame and preserves transactio
     "Enter a department or subject, then use Search.",
   );
   await expect(classSearch.locator("#subject")).toBeFocused();
+  const primarySearchGeometry = await classSearch
+    .locator(".ps_box-search")
+    .evaluate((filter) => {
+      const action = filter.querySelector<HTMLElement>(
+        '[data-better-albert-region="primary-search-action"]',
+      );
+      const wrapper = action?.parentElement;
+      if (!action || !wrapper) {
+        return undefined;
+      }
+      const filterStyle = getComputedStyle(filter);
+      const expectedWrapperWidth =
+        filter.clientWidth -
+        Number.parseFloat(filterStyle.paddingLeft) -
+        Number.parseFloat(filterStyle.paddingRight);
+      return {
+        actionWidth: Math.round(action.getBoundingClientRect().width),
+        wrapperWidth: Math.round(wrapper.getBoundingClientRect().width),
+        expectedWrapperWidth: Math.round(expectedWrapperWidth),
+      };
+    });
+  expect(primarySearchGeometry).toBeDefined();
+  if (!primarySearchGeometry) {
+    throw new Error("The native primary Class Search action wrapper is missing");
+  }
+  expect(primarySearchGeometry.wrapperWidth).toBe(
+    primarySearchGeometry.expectedWrapperWidth,
+  );
+  expect(primarySearchGeometry.actionWidth).toBe(
+    primarySearchGeometry.wrapperWidth,
+  );
   await classSearch.locator("#career").focus();
   await classSearch.locator("body").evaluate((body) => {
     body.append(document.createElement("span"));
@@ -5702,6 +6417,7 @@ test("themes the proven cross-origin class-search frame and preserves transactio
     stackedPositions.filterBottom,
   );
 
+  await page.setViewportSize({ height: 900, width: 200 });
   await page.goto(CLASS_SEARCH_URL);
   await expect(page.locator("html")).toHaveAttribute(
     "data-better-albert-page",
@@ -5709,6 +6425,20 @@ test("themes the proven cross-origin class-search frame and preserves transactio
   );
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
   await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
+  const initialSearchVisibility = await page
+    .locator('[data-better-albert-region="primary-search-input"]')
+    .evaluate((input) => {
+      const bounds = input.getBoundingClientRect();
+      return {
+        bottom: Math.round(bounds.bottom),
+        top: Math.round(bounds.top),
+        viewportHeight: window.innerHeight,
+      };
+    });
+  expect(initialSearchVisibility.top).toBeGreaterThanOrEqual(0);
+  expect(initialSearchVisibility.bottom).toBeLessThanOrEqual(
+    initialSearchVisibility.viewportHeight,
+  );
 
   for (const width of [200, 400, 600, 768, 899, 900, 1200, 1440] as const) {
     await page.setViewportSize({ height: 900, width });

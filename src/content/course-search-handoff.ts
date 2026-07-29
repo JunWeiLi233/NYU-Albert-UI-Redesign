@@ -12,6 +12,9 @@ const COURSE_SEARCH_FRAME_OPEN_MESSAGE =
   "better-albert:open-native-course-search";
 const COMPONENT_ORIGIN = "https://sis.nyu.edu";
 const PORTAL_ORIGIN = "https://sis.portal.nyu.edu";
+const UNVERIFIED_FRAME_TARGET_ORIGIN = "*";
+const COURSE_SEARCH_RELAY_PATH =
+  /^\/psp\/[^/]+\/EMPLOYEE\/SA\/s\/WEBLIB_NYU_NCOA\.ISCRIPT1\.FieldFormula\.IScript_Open\/?$/i;
 
 function normalizeText(value: string | null | undefined): string {
   return value?.replace(/\s+/g, " ").trim().toLocaleLowerCase() ?? "";
@@ -91,6 +94,7 @@ function isCourseSearchRadio(control: HTMLInputElement): boolean {
     control.labels?.[0]?.textContent,
     control.labels?.[1]?.textContent,
     control.parentElement?.textContent,
+    control.parentElement?.parentElement?.textContent,
   ];
   return labels.some((label) => normalizeText(label) === "class search");
 }
@@ -141,7 +145,7 @@ export function advanceToNativeClassSearch(document: Document): boolean {
     return false;
   }
 
-  activateNativeControl(control);
+  activateNativeControl(control, { allowJavascriptUrl: true });
   return true;
 }
 
@@ -173,6 +177,61 @@ export function isEnrollmentCartUrl(url: string): boolean {
   );
 }
 
+export function isCourseSearchRelayUrl(url: string): boolean {
+  const location = parseLocation(url);
+  return Boolean(
+    location &&
+      location.protocol === "https:" &&
+      location.hostname === "sis.portal.nyu.edu" &&
+      COURSE_SEARCH_RELAY_PATH.test(location.pathname),
+  );
+}
+
+function isVisibleFrame(frame: HTMLIFrameElement): boolean {
+  for (let current: HTMLElement | null = frame; current; current = current.parentElement) {
+    if (
+      current.hidden ||
+      current.getAttribute("aria-hidden") === "true" ||
+      current.ownerDocument.defaultView?.getComputedStyle(current).display ===
+        "none" ||
+      current.ownerDocument.defaultView?.getComputedStyle(current).visibility ===
+        "hidden"
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Detect the native Class Search overlay from the top-level portal document.
+ * The relay is cross-origin and may not expose its dialog markup to the
+ * parent, but its exact allowlisted frame routes are visible and reversible.
+ */
+export function hasOpenCourseSearchFrame(document: Document): boolean {
+  return Array.from(
+    document.querySelectorAll<HTMLIFrameElement>("iframe"),
+  ).some((frame) => {
+    if (!isVisibleFrame(frame)) {
+      return false;
+    }
+    if (isCourseSearchRelayUrl(frame.src) || isEnrollmentCartUrl(frame.src)) {
+      return true;
+    }
+
+    // A portal relay can host the allowlisted cart one level deeper. Same-
+    // origin frames expose contentDocument; cross-origin frames safely return
+    // null and remain covered by their own content-script lifecycle.
+    try {
+      return frame.contentDocument
+        ? hasOpenCourseSearchFrame(frame.contentDocument)
+        : false;
+    } catch {
+      return false;
+    }
+  });
+}
+
 function isMessageType(value: unknown, type: string): boolean {
   return Boolean(
     value &&
@@ -186,30 +245,57 @@ function getChildFrames(document: Document): HTMLIFrameElement[] {
   return Array.from(document.querySelectorAll<HTMLIFrameElement>("iframe"));
 }
 
-function getFrameTargetOrigin(frame: HTMLIFrameElement): string {
+function isAllowlistedOrigin(origin: string | undefined): boolean {
+  return origin === COMPONENT_ORIGIN || origin === PORTAL_ORIGIN;
+}
+
+interface FrameTarget {
+  origin: string;
+}
+
+function getFrameTarget(frame: HTMLIFrameElement): FrameTarget | undefined {
   const source = parseLocation(frame.src);
+
+  // The enrollment-cart component can redirect between the two allowlisted
+  // SIS hosts while retaining its original iframe source. Do not trust a
+  // stale component origin here; the payload is a data-free handshake and
+  // every receiver still requires the exact portal origin.
+  if (source?.origin === COMPONENT_ORIGIN) {
+    return { origin: UNVERIFIED_FRAME_TARGET_ORIGIN };
+  }
+
   try {
     const currentOrigin = frame.contentWindow?.location.origin;
-    if (currentOrigin === COMPONENT_ORIGIN || currentOrigin === PORTAL_ORIGIN) {
-      return currentOrigin;
+    if (typeof currentOrigin === "string" && isAllowlistedOrigin(currentOrigin)) {
+      return { origin: currentOrigin };
     }
   } catch {
-    // Cross-origin frames fall back to their allowlisted source host.
+    // Cross-origin frames do not expose their settled location to the parent.
   }
 
-  if (source?.origin === COMPONENT_ORIGIN) {
-    return COMPONENT_ORIGIN;
+  if (source?.origin === PORTAL_ORIGIN) {
+    return {
+      // PeopleSoft can redirect an allowlisted iframe between the two hosts
+      // while the request is in flight. The payload contains no student data;
+      // child receivers still require an exact allowlisted event.origin.
+      origin: UNVERIFIED_FRAME_TARGET_ORIGIN,
+    };
   }
 
-  return PORTAL_ORIGIN;
+  return undefined;
 }
 
 function postOpenRequestToChildFrames(document: Document): void {
   for (const frame of getChildFrames(document)) {
+    const target = getFrameTarget(frame);
+    if (!target || !frame.contentWindow) {
+      continue;
+    }
+
     try {
-      frame.contentWindow?.postMessage(
+      frame.contentWindow.postMessage(
         { type: COURSE_SEARCH_FRAME_OPEN_MESSAGE },
-        getFrameTargetOrigin(frame),
+        target.origin,
       );
     } catch {
       // PeopleSoft may navigate a modal frame between origin detection and
@@ -383,8 +469,8 @@ export function startCourseSearchFrameReceiver(
   const handleOpenRequest = (event: MessageEvent): void => {
     if (
       handled ||
-      event.source !== window.parent ||
-      event.origin !== PORTAL_ORIGIN ||
+      (event.source !== window.parent && event.source !== window.top) ||
+      !isAllowlistedOrigin(event.origin) ||
       !isMessageType(event.data, COURSE_SEARCH_FRAME_OPEN_MESSAGE)
     ) {
       return;

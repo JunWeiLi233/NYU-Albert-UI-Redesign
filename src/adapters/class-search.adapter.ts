@@ -92,7 +92,10 @@ function focusInitialSearchControl(
   }
 
   try {
-    control.focus({ preventScroll: true });
+    // Let the browser reveal the focused native control. At high zoom the
+    // first search field can begin below the fold; preserving focus without
+    // its normal scroll behavior leaves a ready-to-type field clipped.
+    control.focus();
     if (document.activeElement === control) {
       initiallyFocusedDocuments.add(document);
     }

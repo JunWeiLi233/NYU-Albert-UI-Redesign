@@ -2,6 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   advanceToNativeClassSearch,
+  createCourseSearchFrameHandoff,
+  hasOpenCourseSearchFrame,
+  isCourseSearchRelayUrl,
   isEnrollmentCartUrl,
   isTrustedCourseSearchIntentSource,
 } from "../../src/content/course-search-handoff";
@@ -71,12 +74,76 @@ describe("course-search handoff", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
+  it("recognizes PeopleSoft's nested radio label structure", () => {
+    document.body.innerHTML = `
+      <h3>Find Classes to add to your Enrollment cart using the options below</h3>
+      <div class="ps_box-field" id="win0divFIND_OPTION_1">
+        <div class="ps_box-control" id="win0divFIND_OPTION_1ctrl">
+          <input type="radio" name="FIND_OPTION_1" checked>
+        </div>
+        <span>Class Search</span>
+      </div>
+      <a href="#native-search" role="button">Search</a>
+    `;
+    const search = document.querySelector<HTMLAnchorElement>("a");
+    const click = vi.fn((event: Event) => event.preventDefault());
+    search?.addEventListener("click", click);
+
+    expect(advanceToNativeClassSearch(document)).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
   it("fails open when the native mode is unchecked or ambiguous", () => {
     loadNativeLauncher({ checked: false });
     expect(advanceToNativeClassSearch(document)).toBe(false);
 
     loadNativeLauncher({ duplicateSearch: true });
     expect(advanceToNativeClassSearch(document)).toBe(false);
+  });
+
+  it("uses a non-sensitive handshake for an allowlisted frame whose redirect is unsettled", () => {
+    document.body.innerHTML =
+      '<iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL"></iframe>';
+    const frame = document.querySelector("iframe");
+    const postMessage = vi.fn();
+    if (!frame) {
+      throw new Error("Expected a frame");
+    }
+    Object.defineProperty(frame, "contentWindow", {
+      configurable: true,
+      value: {
+        get location(): never {
+          throw new DOMException("cross-origin", "SecurityError");
+        },
+        postMessage,
+      },
+    });
+
+    const handoff = createCourseSearchFrameHandoff(document);
+    handoff.request();
+    handoff.stop();
+
+    expect(postMessage).toHaveBeenCalledWith(
+      { type: "better-albert:open-native-course-search" },
+      "*",
+    );
+  });
+
+  it("does not send the handoff to an untrusted frame source", () => {
+    document.body.innerHTML =
+      '<iframe src="https://example.com/unknown-frame"></iframe>';
+    const frame = document.querySelector("iframe");
+    const postMessage = vi.fn();
+    if (!frame?.contentWindow) {
+      throw new Error("Expected a frame window");
+    }
+    frame.contentWindow.postMessage = postMessage;
+
+    const handoff = createCourseSearchFrameHandoff(document);
+    handoff.request();
+    handoff.stop();
+
+    expect(postMessage).not.toHaveBeenCalled();
   });
 
   it("accepts only the verified portal and enrollment-cart routes", () => {
@@ -100,5 +167,38 @@ describe("course-search handoff", () => {
         "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL",
       ),
     ).toBe(false);
+    expect(
+      isCourseSearchRelayUrl(
+        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open",
+      ),
+    ).toBe(true);
+    expect(
+      isCourseSearchRelayUrl(
+        "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/OTHER_SCRIPT",
+      ),
+    ).toBe(false);
+  });
+
+  it("detects only visible allowlisted Class Search frames", () => {
+    document.body.innerHTML = `
+      <iframe src="https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open"></iframe>
+    `;
+    expect(hasOpenCourseSearchFrame(document)).toBe(true);
+    document.querySelector("iframe")?.setAttribute("hidden", "");
+    expect(hasOpenCourseSearchFrame(document)).toBe(false);
+  });
+
+  it("detects an allowlisted cart nested inside a same-origin relay", () => {
+    document.body.innerHTML = "<iframe title='portal relay'></iframe>";
+    const relay = document.querySelector<HTMLIFrameElement>("iframe");
+    const relayDocument = relay?.contentDocument;
+    if (!relayDocument) {
+      throw new Error("Expected a same-origin relay document");
+    }
+    relayDocument.body.innerHTML = `
+      <iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL"></iframe>
+    `;
+
+    expect(hasOpenCourseSearchFrame(document)).toBe(true);
   });
 });

@@ -94,6 +94,31 @@ describe("Albert page detection", () => {
     ).toEqual({ kind: "unsupported" });
   });
 
+  it("recognizes a headed PeopleSoft utility response", () => {
+    document.title = "Pronouns & Name Pronunciation";
+    document.body.innerHTML = `
+      <span id="IS_AC_RESPONSE">
+        <div class="ptprtlcontainer">
+          <h1>Pronouns &amp; Name Pronunciation</h1>
+        </div>
+      </span>
+    `;
+
+    expect(
+      classifyAlbertDocument({
+        document,
+        location: new URL(
+          "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open",
+        ),
+        topLevel: true,
+      }),
+    ).toMatchObject({
+      kind: "albert",
+      pageFamily: "personal",
+      topLevel: true,
+    });
+  });
+
   it("recognizes an explicit NYU student-self-service uninav deep route", () => {
     document.title = "Academic Planner";
     document.body.replaceChildren(document.createElement("main"));

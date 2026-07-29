@@ -24,6 +24,8 @@ const ENROLLMENT_GUIDANCE =
   "Review your selections in Albert before submitting.";
 const ACADEMIC_STEP_ATTRIBUTE = "data-better-albert-academic-step";
 const PERSONAL_GROUP_ATTRIBUTE = "data-better-albert-personal-group";
+const FALLBACK_SECTION_LABEL_ATTRIBUTE =
+  "data-better-albert-section-label";
 const ACADEMIC_JOURNEY = [
   { label: "Step 1 of 5 · Plan your path", region: "planning-section" },
   { label: "Step 2 of 5 · Check requirements", region: "degree-section" },
@@ -36,6 +38,11 @@ const PERSONAL_SECTION_GROUPS = new Map<string, string>([
   ["address-section", "Contact information"],
   ["missing-person-section", "Safety contact"],
   ["citizenship-section", "Official records"],
+]);
+const FALLBACK_SECTION_LABELS = new Map<string, string>([
+  ["home:news-section", "Updates and deadlines"],
+  ["home:schedule-section", "Today and weekly schedule"],
+  ["finances:account-section", "Account and billing"],
 ]);
 const PERSONAL_FOCUS_REGIONS = new Set([
   "citizenship-section",
@@ -56,7 +63,7 @@ interface FamilyHubPlan {
   directories: readonly Element[];
   enrollmentForm: HTMLFormElement | undefined;
   financialAidTarget: Element | undefined;
-  gradeViewerTarget: HTMLSelectElement | undefined;
+  gradeViewerTarget: Element | undefined;
   homeHoldsTarget: Element | undefined;
   homeRegistrationTarget: Element | undefined;
   homeTodoTarget: Element | undefined;
@@ -67,6 +74,7 @@ interface FamilyHubPlan {
   paymentForm: HTMLFormElement | undefined;
   personalEditForms: readonly HTMLFormElement[];
   sections: readonly Element[];
+  scheduleSections: readonly Element[];
   tables: readonly Element[];
   workspace: Element;
   wrapper: Element;
@@ -74,6 +82,92 @@ interface FamilyHubPlan {
 
 function normalizedText(value: string | null | undefined): string {
   return value?.replace(/\s+/g, " ").trim().toLocaleLowerCase() ?? "";
+}
+
+function hasNativeSectionHeading(section: Element): boolean {
+  return Boolean(
+    section.querySelector("h1, h2, h3, h4, h5, h6, [role='heading']"),
+  );
+}
+
+function hasNativeSectionAccessibleName(section: Element): boolean {
+  if (section.getAttribute("aria-label")?.trim()) {
+    return true;
+  }
+
+  const labelledBy = section.getAttribute("aria-labelledby")?.trim();
+  if (labelledBy) {
+    const ids = labelledBy.split(/\s+/).filter(Boolean);
+    if (
+      ids.length > 0 &&
+      ids.every((id) => section.ownerDocument.getElementById(id))
+    ) {
+      return true;
+    }
+  }
+
+  return hasNativeSectionHeading(section);
+}
+
+function hasScheduleCue(section: Element): boolean {
+  const values = [section.getAttribute("aria-label") ?? ""];
+  const labelledBy = section.getAttribute("aria-labelledby")?.trim();
+  if (labelledBy) {
+    for (const id of labelledBy.split(/\s+/).filter(Boolean)) {
+      const label = section.ownerDocument.getElementById(id);
+      if (label) {
+        values.push(label.textContent ?? "");
+      }
+    }
+  }
+  values.push(
+    ...Array.from(
+      section.querySelectorAll(
+        ":scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > [role='heading']",
+      ),
+    ).map((heading) => heading.textContent ?? ""),
+  );
+  return values.some((value) =>
+    /\b(?:schedule|weekly|class week)\b/i.test(normalizedText(value)),
+  );
+}
+
+function findHomeScheduleSections(
+  family: PrimaryPageFamily,
+  contentRoot: Element,
+): readonly Element[] {
+  if (family !== "home") {
+    return [];
+  }
+
+  const allSchedules = Array.from(
+    contentRoot.querySelectorAll(".isSSS_ShCtSchWrp"),
+  ).filter((schedule) => !schedule.matches("#IS_SSS_SUMMARY_NEWS"));
+  const scheduleLinkWrappers = Array.from(
+    contentRoot.querySelectorAll(".isSSS_ShCtLnkWrp"),
+  ).filter((wrapper) => normalizedText(wrapper.textContent).length > 0);
+  if (scheduleLinkWrappers.length === 1) {
+    return scheduleLinkWrappers;
+  }
+  const selectedSchedules = allSchedules.filter((schedule) =>
+    schedule.classList.contains("selected"),
+  );
+  const candidates =
+    selectedSchedules.length > 0 ? selectedSchedules : allSchedules;
+  const meaningfulCandidates = candidates.filter(
+    (candidate) =>
+      hasNativeSectionHeading(candidate) ||
+      normalizedText(candidate.textContent).length > 0,
+  );
+  const renderedCandidates = meaningfulCandidates.filter(hasRenderedBox);
+  const eligibleCandidates =
+    renderedCandidates.length > 0 ? renderedCandidates : meaningfulCandidates;
+  if (eligibleCandidates.length === 1) {
+    return eligibleCandidates;
+  }
+
+  const cuedCandidates = eligibleCandidates.filter(hasScheduleCue);
+  return cuedCandidates.length === 1 ? cuedCandidates : [];
 }
 
 function normalizedAttentionHeading(
@@ -266,7 +360,10 @@ function getFamilyRegion(
 ): string | undefined {
   switch (family) {
     case "home":
-      if (element.matches("#IS_SSS_SUMMARY_NEWS, .isSSS_ShCtSchWrp")) {
+      if (element.matches("#IS_SSS_SUMMARY_NEWS")) {
+        return "news-section";
+      }
+      if (element.matches(".isSSS_ShCtSchWrp")) {
         return "schedule-section";
       }
       if (element.matches("#ToDoHoldsEnrlDates, .isSSS_Attention")) {
@@ -398,7 +495,7 @@ function findFinancialAidTarget(
 function findGradeViewerTarget(
   family: PrimaryPageFamily,
   sections: readonly Element[],
-): HTMLSelectElement | undefined {
+): Element | undefined {
   if (family !== "grades") {
     return undefined;
   }
@@ -418,7 +515,27 @@ function findGradeViewerTarget(
       !select.disabled &&
       select.getAttribute("aria-disabled") !== "true",
   );
-  return selects.length === 1 ? selects[0] : undefined;
+  if (selects.length === 1) {
+    return selects[0];
+  }
+  if (selects.length > 1) {
+    return undefined;
+  }
+
+  const careerLinks = Array.from(
+    termSelectors[0]?.querySelectorAll<HTMLAnchorElement>("a") ?? [],
+  ).filter((anchor) => {
+    const label = normalizedText(
+      anchor.textContent ?? anchor.getAttribute("aria-label"),
+    );
+    return (
+      anchor.isConnected &&
+      !anchor.matches("[disabled], [aria-disabled='true']") &&
+      /^[a-z][a-z -]{1,48}\s*:\s*\/?$/i.test(label)
+    );
+  });
+
+  return careerLinks.length === 1 ? careerLinks[0] : undefined;
 }
 
 function hasVerifiedFamilyAnchor(
@@ -574,6 +691,7 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
         sections,
       ),
       sections,
+      scheduleSections: findHomeScheduleSections(this.family, contentRoot),
       tables: Array.from(contentRoot.querySelectorAll("table")),
       workspace,
       wrapper,
@@ -596,6 +714,7 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
       ...(plan.homeTodoTarget ? [plan.homeTodoTarget] : []),
       ...(plan.paymentForm ? [plan.paymentForm] : []),
       ...plan.personalEditForms,
+      ...plan.scheduleSections,
     ];
 
     try {
@@ -661,6 +780,21 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
           getFamilyRegion(this.family, section) ??
           (index === 0 ? "primary-section" : "supporting-section");
         markRegion(journal, section, region);
+        const fallbackSectionLabel = FALLBACK_SECTION_LABELS.get(
+          `${this.family}:${region}`,
+        );
+        if (
+          fallbackSectionLabel &&
+          !hasNativeSectionAccessibleName(section)
+        ) {
+          journal.setAttribute(
+            section,
+            FALLBACK_SECTION_LABEL_ATTRIBUTE,
+            fallbackSectionLabel,
+          );
+          journal.setAttribute(section, "role", "region");
+          journal.setAttribute(section, "aria-label", fallbackSectionLabel);
+        }
         const personalGroup =
           this.family === "personal"
             ? PERSONAL_SECTION_GROUPS.get(region)
@@ -680,6 +814,28 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
           markFocusTarget(journal, section);
         }
       });
+      for (const scheduleSection of plan.scheduleSections) {
+        markRegion(journal, scheduleSection, "schedule-section");
+        if (!hasScheduleCue(scheduleSection)) {
+          journal.setAttribute(
+            scheduleSection,
+            FALLBACK_SECTION_LABEL_ATTRIBUTE,
+            "Today and weekly schedule",
+          );
+        }
+        if (
+          !scheduleSection.hasAttribute("role") &&
+          !scheduleSection.hasAttribute("aria-label") &&
+          !scheduleSection.hasAttribute("aria-labelledby")
+        ) {
+          journal.setAttribute(scheduleSection, "role", "region");
+          journal.setAttribute(
+            scheduleSection,
+            "aria-label",
+            "Today and weekly schedule",
+          );
+        }
+      }
       for (const step of plan.academicJourney) {
         journal.setAttribute(step.section, ACADEMIC_STEP_ATTRIBUTE, step.label);
         if (!step.section.hasAttribute("role")) {

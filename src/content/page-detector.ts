@@ -34,7 +34,7 @@ const FAMILY_HEADING_PATTERNS: ReadonlyArray<{
   {
     family: "personal",
     pattern:
-      /^(?:personal info(?:rmation)?|profile|contact information|addresses|emergency contacts?)$/i,
+      /^(?:personal info(?:rmation)?|profile|contact information|addresses|emergency contacts?|pronouns?(?:\s*&\s*name pronunciation)?|name pronunciation)$/i,
   },
   {
     family: "resources",
@@ -94,6 +94,21 @@ function familyFromLabel(label: string): PrimaryPageFamily | undefined {
 
 export function hasPositiveAlbertEvidence(document: Document): boolean {
   if (document.title.trim().toLowerCase() === "albert") {
+    return true;
+  }
+
+  // Authenticated utility components such as Pronouns & Name Pronunciation
+  // may open without preserving Albert's window.opener. Their stable
+  // PeopleSoft response wrapper plus a real heading is positive portal
+  // evidence; authentication documents were already rejected by the caller.
+  const responseRoot = document.querySelector(
+    "#IS_AC_RESPONSE > .ptprtlcontainer",
+  );
+  if (
+    responseRoot?.querySelector(
+      "h1, [role='heading'], .PAPAGETITLE, .ps_box-pagetitle",
+    )
+  ) {
     return true;
   }
 

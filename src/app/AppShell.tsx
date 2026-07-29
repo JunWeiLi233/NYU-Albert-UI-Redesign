@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
 } from "react";
 
 import {
@@ -21,6 +22,7 @@ import type {
   TaskToolDefinition,
 } from "../content/page-tools";
 import {
+  COURSE_SEARCH_KEYWORDS,
   RESOURCE_CATEGORIES,
   RESOURCE_CATEGORY_DEFINITIONS,
 } from "../content/page-tools";
@@ -35,6 +37,7 @@ export interface AppShellProps {
   isNativeResourcesOpen: boolean;
   onDisable: () => Promise<void>;
   onNavigate: (pageFamily: PrimaryPageFamily) => void;
+  onNavigateToCourseSearch: () => void;
   onOpenResource: (toolId: PageToolId) => void;
   onOpenTool: (toolId: PageToolId) => void;
   onSkipToContent: () => void;
@@ -42,24 +45,64 @@ export interface AppShellProps {
 }
 
 const TASK_SEARCH_SUGGESTIONS = [
-  { label: "Find classes", query: "find a course" },
-  { label: "Class schedule", query: "class schedule" },
+  {
+    label: "Find classes",
+    query: "find a course",
+    requiresCourseSearch: true,
+  },
+  {
+    label: "Class schedule",
+    query: "class schedule",
+    requiresTaskId: "weekly-schedule",
+    fallbackPageFamily: "home",
+  },
   { label: "Course materials", query: "course materials" },
   { label: "Academic dates", query: "academic calendar" },
   { label: "Housing", query: "housing" },
-  { label: "Check holds", query: "check holds" },
-  { label: "When can I register?", query: "when can I register" },
-  { label: "To-do list", query: "to do list" },
+  { label: "New student help", query: "new student" },
+  {
+    label: "Student support",
+    query: "student support",
+    requiresResourceId: "student-services",
+  },
+  {
+    label: "Check holds",
+    query: "check holds",
+    requiresTaskId: "holds-status",
+    fallbackPageFamily: "home",
+  },
+  {
+    label: "When can I register?",
+    query: "when can I register",
+    requiresTaskId: "registration-time",
+    fallbackPageFamily: "home",
+  },
+  {
+    label: "To-do list",
+    query: "to do list",
+    requiresTaskId: "todo-status",
+    fallbackPageFamily: "home",
+  },
   { label: "Meet advisor", query: "meet advisor" },
   { label: "View grades", query: "view grades" },
   { label: "Check balance", query: "check balance" },
   { label: "Pay tuition", query: "pay tuition" },
   { label: "Financial aid status", query: "financial aid status" },
-] as const;
+] as const satisfies readonly {
+  label: string;
+  query: string;
+  fallbackPageFamily?: PrimaryPageFamily;
+  requiresCourseSearch?: boolean;
+  requiresResourceId?: PageToolId;
+  requiresTaskId?: PageToolId;
+}[];
 
 const RESOURCE_SEARCH_SUGGESTIONS = [
   { label: "Academic dates", toolId: "academic-calendar" },
   { label: "Course materials", toolId: "nyu-brightspace" },
+  { label: "Academic support", toolId: "academic-support" },
+  { label: "Student life", toolId: "student-life" },
+  { label: "Career help", toolId: "wasserman" },
   { label: "Financial aid", toolId: "financial-aid-resources" },
   { label: "ID card", toolId: "nyu-card-center" },
   { label: "Health & counseling", toolId: "wellness-center" },
@@ -73,6 +116,22 @@ const RESOURCE_SEARCH_SUGGESTIONS = [
   label: string;
   toolId: PageToolId;
 }[];
+
+const NEW_STUDENT_RESOURCE_STARTER_ORDER = [
+  "academic-calendar",
+  "nyu-brightspace",
+  "financial-aid-resources",
+  "nyu-card-center",
+  "ogs",
+  "wellness-center",
+  "housing",
+  "nyu-connect",
+  "campus-safety",
+] as const satisfies readonly PageToolId[];
+
+const NEW_STUDENT_RESOURCE_STARTER_RANK = new Map<PageToolId, number>(
+  NEW_STUDENT_RESOURCE_STARTER_ORDER.map((toolId, index) => [toolId, index]),
+);
 
 const OFFICIAL_TRANSCRIPT_SHORTCUT = {
   afterToolId: "unofficial-transcript",
@@ -91,6 +150,7 @@ const TASK_SEARCH_IGNORED_WORDS = new Set([
   "a",
   "am",
   "an",
+  "and",
   "are",
   "can",
   "do",
@@ -119,6 +179,122 @@ const TASK_SEARCH_CONVERSATIONAL_WORDS = new Set([
 ]);
 
 const TASK_SEARCH_RELAXED_WORDS = new Set(["help", "need"]);
+const COURSE_SEARCH_NON_COURSE_INTENTS = [
+  "when can i register",
+  "registration time",
+  "enrollment appointment",
+  "enrollment dates",
+] as const;
+const COURSE_SEARCH_ACTION_WORDS = new Set([
+  "add",
+  "browse",
+  "catalog",
+  "catalogue",
+  "enroll",
+  "find",
+  "look",
+  "looking",
+  "register",
+  "registration",
+  "search",
+  "sign",
+]);
+const COURSE_SEARCH_OBJECT_WORDS = new Set([
+  "class",
+  "classes",
+  "course",
+  "courses",
+  "catalog",
+  "catalogue",
+  "offerings",
+]);
+const COURSE_SEARCH_FILLER_WORDS = new Set([
+  "a",
+  "an",
+  "can",
+  "for",
+  "i",
+  "in",
+  "my",
+  "please",
+  "the",
+  "to",
+  "want",
+  "where",
+]);
+
+const NEW_STUDENT_RESOURCE_INTENTS = [
+  "new student",
+  "first year student",
+  "newly admitted student",
+  "what do i do first",
+  "what should i do first",
+  "where do i start",
+  "how do i get started",
+  "welcome week",
+  "advice for your first semester",
+  "first semester advice",
+  "time management",
+  "time management guide",
+  "advice for transfer students",
+  "transfer student",
+  "student tech guide",
+  "orientation",
+] as const;
+
+const OGS_ORIENTATION_CUES = new Set([
+  "arrival",
+  "f1",
+  "i20",
+  "immigration",
+  "international",
+  "j1",
+  "ogs",
+  "pre",
+  "sevis",
+  "visa",
+]);
+
+const OGS_GENERIC_RESOURCE_INTENTS = new Set(["event", "events"]);
+const GENERIC_OTHER_RESOURCES_INTENTS = new Set([
+  "accessibility",
+  "bookstore",
+  "campus map",
+  "disability services",
+  "parking",
+  "shuttle",
+  "transit",
+]);
+const GENERIC_RESOURCE_SUPPORT_INTENTS = new Set(["help", "need help"]);
+const GENERIC_NEW_STUDENT_RESOURCE_QUERIES = new Set([
+  "what do i do first",
+  "what should i do first",
+  "where do i start",
+  "how do i get started",
+]);
+const GENERIC_APPOINTMENT_RESOURCE_INTENTS = new Set([
+  "book appointment",
+  "schedule appointment",
+]);
+const EXACT_TASK_INTENTS = new Map<string, PageToolId>([
+  ["address", "addresses"],
+  ["date of birth", "demographic-information"],
+  ["email", "email-addresses"],
+  ["emergency contact", "emergency-contacts"],
+  ["gender", "demographic-information"],
+  ["legal name", "demographic-information"],
+  ["phone", "phone-numbers"],
+  ["preferred name", "demographic-information"],
+]);
+const EXACT_RAW_TASK_INTENTS = new Map<string, PageToolId>([
+  ["how do i register", "course-search"],
+  ["where can i register", "course-search"],
+  ["where are my classes", "weekly-schedule"],
+]);
+const EXACT_PAGE_FAMILY_INTENTS = new Map<string, PrimaryPageFamily>([
+  ["advisor", "academics"],
+  ["time management", "resources"],
+]);
 
 function normalizeTaskSearchValue(value: string): string {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -153,6 +329,36 @@ function getTaskSearchWords(
         (!isConversationalPhrase ||
           !TASK_SEARCH_CONVERSATIONAL_WORDS.has(word)),
     );
+}
+
+function getMeaningfulTaskSearchValue(value: string): string {
+  return getTaskSearchWords(value, true).join(" ");
+}
+
+// Keep high-intent resource phrases tied to the service they describe. If an
+// exact native anchor is unavailable, the caller can fall back to the broad
+// Other Resources area instead of surfacing a longer, unrelated alias (for
+// example OGS's “international student services” for “student services”).
+const EXACT_RESOURCE_INTENTS = new Map<string, PageToolId>([
+  ["academic support", "academic-support"],
+  ["accessibility", "campus-resources"],
+  ["campus accessibility", "campus-resources"],
+  ["disability support", "campus-resources"],
+  ["need help nyu", "student-services"],
+  ["scholarship", "financial-aid-resources"],
+  ["scholarships", "financial-aid-resources"],
+  ["student life", "student-life"],
+  ["student services", "student-services"],
+  ["student support", "student-services"],
+  ["testing accommodations", "campus-resources"],
+  ["tech wifi", "campus-resources"],
+  ["technology help", "campus-resources"],
+  ["involved", "student-life"],
+  ["campus events", "student-life"],
+]);
+
+function getExactResourceIntentId(query: string): PageToolId | undefined {
+  return EXACT_RESOURCE_INTENTS.get(getMeaningfulTaskSearchValue(query));
 }
 
 function isWithinOneTaskSearchEdit(left: string, right: string): boolean {
@@ -224,6 +430,29 @@ function matchesTaskSearchWord(
   );
 }
 
+function hasContiguousTaskSearchPhrase(
+  queryWords: readonly string[],
+  searchableValue: string,
+  allowTypos: boolean,
+): boolean {
+  if (queryWords.length < 2) {
+    return true;
+  }
+
+  const searchableWords = searchableValue
+    .split(/\s+/)
+    .filter((word) => !TASK_SEARCH_IGNORED_WORDS.has(word));
+  return searchableWords.some((_, startIndex) =>
+    queryWords.every((queryWord, offset) => {
+      const candidateWord = searchableWords[startIndex + offset];
+      return (
+        candidateWord !== undefined &&
+        matchesTaskSearchWord(queryWord, candidateWord, allowTypos)
+      );
+    }),
+  );
+}
+
 function matchesTaskSearch(
   query: string,
   values: readonly string[],
@@ -242,10 +471,129 @@ function matchesTaskSearch(
   }
   return values.some((value) => {
     const searchableValue = normalizeTaskSearchValue(value);
-    return queryWords.every((word) =>
+    const looseMatch = queryWords.every((word) =>
       matchesTaskSearchWord(word, searchableValue, allowTypos),
     );
+    return (
+      looseMatch &&
+      (queryWords.length !== 2 ||
+        hasContiguousTaskSearchPhrase(queryWords, searchableValue, allowTypos))
+    );
   });
+}
+
+function isNewStudentResourceIntent(query: string): boolean {
+  return matchesTaskSearch(query, NEW_STUDENT_RESOURCE_INTENTS);
+}
+
+function isGenericNewStudentResourceIntent(query: string): boolean {
+  return GENERIC_NEW_STUDENT_RESOURCE_QUERIES.has(
+    normalizeTaskSearchValue(query),
+  );
+}
+
+function isGenericOrientationIntent(query: string): boolean {
+  const words = getTaskSearchWords(query, true);
+  return (
+    words.includes("orientation") &&
+    !words.some((word) => OGS_ORIENTATION_CUES.has(word))
+  );
+}
+
+function isGenericOgsResourceIntent(query: string): boolean {
+  return OGS_GENERIC_RESOURCE_INTENTS.has(
+    getMeaningfulTaskSearchValue(query),
+  );
+}
+
+function isGenericOtherResourcesIntent(query: string): boolean {
+  return GENERIC_OTHER_RESOURCES_INTENTS.has(
+    getMeaningfulTaskSearchValue(query),
+  );
+}
+
+function isGenericResourceSupportIntent(query: string): boolean {
+  return GENERIC_RESOURCE_SUPPORT_INTENTS.has(
+    getMeaningfulTaskSearchValue(query),
+  );
+}
+
+function isGenericAppointmentResourceIntent(query: string): boolean {
+  return GENERIC_APPOINTMENT_RESOURCE_INTENTS.has(
+    getMeaningfulTaskSearchValue(query),
+  );
+}
+
+function getExactTaskIntentId(query: string): PageToolId | undefined {
+  return (
+    EXACT_RAW_TASK_INTENTS.get(normalizeTaskSearchValue(query)) ??
+    EXACT_TASK_INTENTS.get(getMeaningfulTaskSearchValue(query))
+  );
+}
+
+function getExactPageFamilyIntent(
+  query: string,
+): PrimaryPageFamily | undefined {
+  return EXACT_PAGE_FAMILY_INTENTS.get(normalizeTaskSearchValue(query));
+}
+
+function isBareBursarIntent(query: string): boolean {
+  return getMeaningfulTaskSearchValue(query) === "bursar";
+}
+
+function isConversationalSupportQuery(query: string): boolean {
+  const words = getTaskSearchWords(query);
+  return (
+    words.length >= 3 && words.includes("need") && words.includes("help")
+  );
+}
+
+function getConversationalSupportSubjectWords(
+  query: string,
+): readonly string[] {
+  return getTaskSearchWords(query).filter(
+    (word) =>
+      !TASK_SEARCH_RELAXED_WORDS.has(word) &&
+      !TASK_SEARCH_CONVERSATIONAL_WORDS.has(word),
+  );
+}
+
+function isConversationalCourseSearchIntent(query: string): boolean {
+  if (
+    query.length === 0 ||
+    matchesTaskSearch(query, COURSE_SEARCH_NON_COURSE_INTENTS)
+  ) {
+    return false;
+  }
+
+  const words = normalizeTaskSearchValue(query)
+    .split(/\s+/)
+    .filter((word) => word.length > 0 && !TASK_SEARCH_IGNORED_WORDS.has(word));
+  const hasSearchAction = words.some((word) =>
+    COURSE_SEARCH_ACTION_WORDS.has(word),
+  );
+  const hasCourseObject = words.some((word) =>
+    COURSE_SEARCH_OBJECT_WORDS.has(word),
+  );
+
+  return (
+    hasSearchAction &&
+    hasCourseObject &&
+    words.every(
+      (word) =>
+        COURSE_SEARCH_ACTION_WORDS.has(word) ||
+        COURSE_SEARCH_OBJECT_WORDS.has(word) ||
+        COURSE_SEARCH_FILLER_WORDS.has(word),
+    ) &&
+    matchesTaskSearch(query, COURSE_SEARCH_KEYWORDS)
+  );
+}
+
+function isExplicitCourseSearchQuery(query: string): boolean {
+  const meaningfulQuery = getMeaningfulTaskSearchValue(query);
+  return COURSE_SEARCH_KEYWORDS.some(
+    (keyword) => getMeaningfulTaskSearchValue(keyword) === meaningfulQuery,
+  );
 }
 
 function PageToolNavigation({
@@ -255,6 +603,7 @@ function PageToolNavigation({
   onOpenTool,
   pageLabel,
   contextualResourceShortcut,
+  resourceDirectoryToggleRef,
   tools,
 }: {
   contextualResourceShortcut?: {
@@ -268,6 +617,7 @@ function PageToolNavigation({
   onOpenResource: (toolId: PageToolId) => void;
   onOpenTool: (toolId: PageToolId) => void;
   pageLabel: string;
+  resourceDirectoryToggleRef?: RefObject<HTMLButtonElement | null>;
   tools: readonly PageToolDefinition[];
 }) {
   const renderContextualResourceShortcut = (
@@ -363,7 +713,8 @@ function PageToolNavigation({
             className="ba-tool-item ba-home-resource-item"
             type="button"
             aria-describedby="ba-home-resource-description"
-            aria-label="Browse NYU resources"
+            aria-label="Search NYU resources"
+            ref={resourceDirectoryToggleRef}
             onClick={onOpenResourceDirectory}
           >
             <span className="ba-tool-copy">
@@ -372,7 +723,7 @@ function PageToolNavigation({
                 className="ba-tool-description"
                 id="ba-home-resource-description"
               >
-                Calendars, offices, support, and campus services
+                Search official calendars, offices, support, and campus services
               </span>
             </span>
             <span className="ba-tool-arrow" aria-hidden="true">
@@ -395,6 +746,7 @@ export function AppShell({
   isNativeResourcesOpen,
   onDisable,
   onNavigate,
+  onNavigateToCourseSearch,
   onOpenResource,
   onOpenTool,
   onSkipToContent,
@@ -403,18 +755,59 @@ export function AppShell({
   const [isDisabling, setIsDisabling] = useState(false);
   const [isTaskFinderOpen, setIsTaskFinderOpen] = useState(false);
   const [taskSearchQuery, setTaskSearchQuery] = useState("");
+  const [resourceFinderIntent, setResourceFinderIntent] = useState<
+    "new-student" | null
+  >(null);
   const taskFinderId = useId();
   const taskFinderRef = useRef<HTMLElement>(null);
   const taskFinderSearchRef = useRef<HTMLInputElement>(null);
   const taskFinderToggleRef = useRef<HTMLButtonElement>(null);
+  const resourceDirectoryToggleRef = useRef<HTMLButtonElement>(null);
+  const resourceNavigationToggleRef = useRef<HTMLButtonElement>(null);
+  const resourceReturnFocusRef = useRef<(() => void) | null>(null);
+  const pendingResourceFinderIntentRef = useRef<"new-student" | null>(null);
+  const previousNativeResourcesOpenRef = useRef(isNativeResourcesOpen);
   const taskAreaHeadingRef = useRef<HTMLHeadingElement>(null);
   const taskShortcutHeadingRef = useRef<HTMLHeadingElement>(null);
   const resourceSectionHeadingRef = useRef<HTMLHeadingElement>(null);
+  const shellRef = useRef<HTMLElement>(null);
+  const primaryNavigationRef = useRef<HTMLElement>(null);
   const resourceCategoryHeadingRefs = useRef<
     Map<ResourceCategory, HTMLHeadingElement>
   >(new Map());
   const isResourceSearchMode = isNativeResourcesOpen;
   const currentPage = PAGE_FAMILY_DEFINITIONS[currentPageFamily];
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    const primaryNavigation = primaryNavigationRef.current;
+    if (shell) {
+      shell.scrollTop = 0;
+    }
+    if (primaryNavigation) {
+      primaryNavigation.scrollTop = 0;
+    }
+  }, [currentPageFamily, isResourceSearchMode]);
+
+  useEffect(() => {
+    const wasNativeResourcesOpen = previousNativeResourcesOpenRef.current;
+    previousNativeResourcesOpenRef.current = isNativeResourcesOpen;
+    if (!wasNativeResourcesOpen || isNativeResourcesOpen) {
+      return;
+    }
+
+    const returnFocus = resourceReturnFocusRef.current;
+    resourceReturnFocusRef.current = null;
+    const ownerWindow = resourceNavigationToggleRef.current?.ownerDocument
+      .defaultView;
+    if (!ownerWindow) {
+      returnFocus?.();
+      return;
+    }
+
+    ownerWindow.setTimeout(() => returnFocus?.(), 0);
+  }, [isNativeResourcesOpen]);
+
   const availableTaskFamilies = PRIMARY_PAGE_FAMILIES.filter((pageFamily) =>
     availablePageFamilies.includes(pageFamily),
   );
@@ -425,16 +818,25 @@ export function AppShell({
     !isResourceSearchMode && currentPageFamily !== "home"
       ? verifiedCourseSearch
         ? {
-            description: "Open the original Course Search",
+            description: verifiedCourseSearch.description,
             mode: "direct" as const,
           }
         : availablePageFamilies.includes("home")
           ? {
-              description: "Go to Home for Course Search",
+              description: "Open Course Search",
               mode: "home" as const,
             }
           : undefined
       : undefined;
+  const hasCourseSearchDestination = Boolean(
+    verifiedCourseSearch ||
+      (currentPageFamily !== "home" && availablePageFamilies.includes("home")),
+  );
+  const isCrossAreaCourseSearchIntent = (query: string): boolean =>
+    courseSearchShortcut?.mode === "home" &&
+    (isExplicitCourseSearchQuery(query) ||
+      isConversationalCourseSearchIntent(query) ||
+      getMeaningfulTaskSearchValue(query) === "class schedule");
   const matchesFamily = (
     pageFamily: PrimaryPageFamily,
     query: string,
@@ -466,58 +868,232 @@ export function AppShell({
     tool: ResourceToolDefinition,
     query: string,
     allowTypos = false,
-  ): boolean =>
-    matchesTaskSearch(
-      query,
-      [
-        tool.label,
-        tool.description,
-        RESOURCE_CATEGORY_DEFINITIONS[tool.category].label,
-        ...tool.keywords,
-      ],
-      allowTypos,
-    );
+  ): boolean => {
+    if (isGenericNewStudentResourceIntent(query)) {
+      return false;
+    }
+    if (
+      isGenericResourceSupportIntent(query) &&
+      tool.id !== "student-services"
+    ) {
+      return false;
+    }
+    if (isGenericAppointmentResourceIntent(query)) {
+      return false;
+    }
+    if (tool.id === "academic-calendar" && isBareBursarIntent(query)) {
+      return false;
+    }
+    if (
+      tool.id === "ogs" &&
+      (isGenericOrientationIntent(query) || isGenericOgsResourceIntent(query))
+    ) {
+      return false;
+    }
+    if (allowTypos && isGenericOtherResourcesIntent(query)) {
+      return false;
+    }
+
+    const values = [
+      tool.label,
+      tool.description,
+      RESOURCE_CATEGORY_DEFINITIONS[tool.category].label,
+      ...tool.keywords,
+    ];
+    if (!isConversationalSupportQuery(query)) {
+      return matchesTaskSearch(query, values, allowTypos);
+    }
+
+    const queryWords = getConversationalSupportSubjectWords(query);
+    if (queryWords.length === 0) {
+      return false;
+    }
+    return values.some((value) => {
+      const searchableValue = normalizeTaskSearchValue(value);
+      const isExactSingleWordSubject =
+        queryWords.length === 1 &&
+        [tool.label, ...tool.keywords].some(
+          (candidate) => normalizeTaskSearchValue(candidate) === queryWords[0],
+        );
+      return (
+        queryWords.every((word) =>
+          matchesTaskSearchWord(word, searchableValue, allowTypos),
+        ) && hasContiguousTaskSearchPhrase(
+          queryWords,
+          searchableValue,
+          allowTypos,
+        ) &&
+        (queryWords.length > 1 || isExactSingleWordSubject)
+      );
+    });
+  };
   const filterTaskSearchResults = (query: string) => {
     const findResults = (searchQuery: string, allowTypos = false) => {
-      const matchingResourceTools = availableResourceTools.filter((tool) =>
+      let matchingResourceTools = availableResourceTools.filter((tool) =>
         matchesResource(tool, searchQuery, allowTypos),
       );
+      const exactResourceIntentId = getExactResourceIntentId(searchQuery);
+      const hasVerifiedExactResourceIntent = Boolean(
+        exactResourceIntentId &&
+          availableResourceTools.some(
+            (tool) => tool.id === exactResourceIntentId,
+          ),
+      );
+      if (exactResourceIntentId) {
+        const exactResourceIntent = availableResourceTools.find(
+          (tool) => tool.id === exactResourceIntentId,
+        );
+        matchingResourceTools = exactResourceIntent
+          ? [exactResourceIntent]
+          : [];
+      }
+      if (allowTypos && matchingResourceTools.length > 1) {
+        const queryWords = getTaskSearchWords(searchQuery);
+        const queryWord = queryWords.length === 1 ? queryWords[0] : undefined;
+        if (queryWord) {
+          const typoMatches = matchingResourceTools.filter((tool) =>
+            normalizeTaskSearchValue(tool.label)
+              .split(" ")
+              .some((labelWord) =>
+                isWithinOneTaskSearchEdit(queryWord, labelWord),
+              ),
+          );
+          if (typoMatches.length > 0) {
+            const shortestLabel = Math.min(
+              ...typoMatches.map((tool) =>
+                normalizeTaskSearchValue(tool.label).split(" ").length,
+              ),
+            );
+            matchingResourceTools = typoMatches.filter(
+              (tool) =>
+                normalizeTaskSearchValue(tool.label).split(" ").length ===
+                shortestLabel,
+            );
+          }
+        }
+      }
       const meaningfulQuery = getTaskSearchWords(searchQuery, true).join(" ");
-      const exactResourceTools = matchingResourceTools.filter(
-        (tool) => normalizeTaskSearchValue(tool.label) === meaningfulQuery,
+      const exactResourceLabelTools = matchingResourceTools.filter(
+        (tool) =>
+          getMeaningfulTaskSearchValue(tool.label) === meaningfulQuery,
+      );
+      const exactResourceAliasTools = matchingResourceTools.filter((tool) =>
+        [tool.label, ...tool.keywords].some(
+          (value) => getMeaningfulTaskSearchValue(value) === meaningfulQuery,
+        ),
       );
       const resourceTools =
-        exactResourceTools.length > 0
-          ? exactResourceTools
-          : matchingResourceTools;
+        exactResourceLabelTools.length > 0
+          ? exactResourceLabelTools
+          : exactResourceAliasTools.length > 0
+            ? exactResourceAliasTools
+            : matchingResourceTools;
 
       // An exact official resource label is already an actionable destination.
       // Prefer it over a broad area match so common requests such as
       // “financial aid” open the NYU resource on Enter instead of making a
       // new student choose between Finances and Financial Aid.
-      const hasExactResourceResult = exactResourceTools.length > 0;
       const matchingTaskTools =
-        isResourceSearchMode || hasExactResourceResult
+        isResourceSearchMode
           ? []
           : availableTaskTools.filter((tool) =>
               matchesTool(tool, searchQuery, allowTypos),
             );
+      const exactTaskIntentId = getExactTaskIntentId(searchQuery);
+      const exactTaskIntentTool = exactTaskIntentId
+        ? matchingTaskTools.find((tool) => tool.id === exactTaskIntentId)
+        : undefined;
+      if (exactTaskIntentTool) {
+        return {
+          resourceTools: [],
+          taskFamilies: [],
+          taskTools: [exactTaskIntentTool],
+        };
+      }
+      const exactPageFamilyIntent = getExactPageFamilyIntent(searchQuery);
+      const exactPageFamily = exactPageFamilyIntent &&
+        availableTaskFamilies.includes(exactPageFamilyIntent)
+        ? exactPageFamilyIntent
+        : undefined;
+      if (
+        exactPageFamily &&
+        matchingTaskTools.length === 0 &&
+        !isResourceSearchMode &&
+        exactResourceLabelTools.length === 0 &&
+        exactResourceAliasTools.length === 0
+      ) {
+        return {
+          resourceTools: [],
+          taskFamilies: [exactPageFamily],
+          taskTools: [],
+        };
+      }
+      const directCourseSearch = matchingTaskTools.find(
+        (tool) => tool.id === "course-search",
+      );
+      const conversationalCourseSearch =
+        isConversationalCourseSearchIntent(searchQuery);
+      if (
+        (isExplicitCourseSearchQuery(searchQuery) ||
+          conversationalCourseSearch) &&
+        !directCourseSearch
+      ) {
+        if (courseSearchShortcut?.mode === "home") {
+          return {
+            resourceTools: [],
+            taskFamilies: ["home" as const],
+            taskTools: [],
+          };
+        }
+        return {
+          resourceTools: [],
+          taskFamilies: [],
+          taskTools: [],
+        };
+      }
+      if (conversationalCourseSearch && directCourseSearch) {
+        return {
+          resourceTools: [],
+          taskFamilies: [],
+          taskTools: [directCourseSearch],
+        };
+      }
       const exactTaskTools = matchingTaskTools.filter((tool) =>
         [tool.label, ...(tool.keywords ?? [])].some(
-          (value) => normalizeTaskSearchValue(value) === meaningfulQuery,
+          (value) => getMeaningfulTaskSearchValue(value) === meaningfulQuery,
         ),
       );
       const taskTools =
-        exactTaskTools.length > 0 ? exactTaskTools : matchingTaskTools;
+        exactResourceLabelTools.length > 0
+          ? []
+          : exactResourceAliasTools.length > 0 && exactTaskTools.length === 0
+            ? []
+            : exactTaskTools.length > 0
+            ? exactTaskTools
+            : matchingTaskTools;
       const hasDirectTaskResult =
         searchQuery.length > 0 && taskTools.length > 0;
-      const taskFamilies = isResourceSearchMode || hasExactResourceResult
+      const prefersResourceAlias =
+        exactResourceAliasTools.length > 0 && exactTaskTools.length === 0;
+      const prefersUniqueResource =
+        matchingResourceTools.length === 1 && !hasDirectTaskResult;
+      const prefersOtherResourcesFallback = Boolean(
+        exactResourceIntentId && !hasVerifiedExactResourceIntent,
+      );
+      const taskFamilies =
+        isResourceSearchMode ||
+        exactResourceLabelTools.length > 0 ||
+        prefersResourceAlias ||
+        prefersUniqueResource
         ? []
-        : availableTaskFamilies.filter(
-            (pageFamily) =>
-              !hasDirectTaskResult &&
-              matchesFamily(pageFamily, searchQuery, allowTypos),
-          );
+          : availableTaskFamilies.filter(
+              (pageFamily) =>
+                !hasDirectTaskResult &&
+                (!isGenericNewStudentResourceIntent(searchQuery) ||
+                  pageFamily === "resources") &&
+                (!prefersOtherResourcesFallback || pageFamily === "resources") &&
+                matchesFamily(pageFamily, searchQuery, allowTypos),
+            );
 
       return { resourceTools, taskFamilies, taskTools };
     };
@@ -530,6 +1106,20 @@ export function AppShell({
       taskFamilies.length + taskTools.length + resourceTools.length;
     const strictResultCount = countResults(strictResults);
     if (query.length === 0 || strictResultCount > 0) {
+      return strictResults;
+    }
+
+    // Keep a generic newcomer request on the verified starter recovery. The
+    // relaxed single-word fallback would otherwise turn “how do I get
+    // started” into “started” and surface an unrelated calendar alias.
+    if (isGenericNewStudentResourceIntent(query)) {
+      return strictResults;
+    }
+
+    // Keep a complete “need help …” request precise. Removing the support
+    // words would reduce a missing Student Services anchor to a broad “nyu”
+    // query and surface unrelated links instead of an honest fallback.
+    if (isConversationalSupportQuery(query)) {
       return strictResults;
     }
 
@@ -578,9 +1168,54 @@ export function AppShell({
     )
       ? OFFICIAL_TRANSCRIPT_SHORTCUT
       : undefined;
+  const useOfficialTranscriptGuidance = Boolean(
+    availableResourceTools.some(
+      (tool) => tool.id === OFFICIAL_TRANSCRIPT_SHORTCUT.id,
+    ) &&
+      matchesTaskSearch(normalizedTaskSearchQuery, ["transcript"], true) &&
+      !normalizedTaskSearchQuery.includes("unofficial"),
+  );
   const availableTaskSearchSuggestions =
     !isResourceSearchMode && normalizedTaskSearchQuery.length === 0
-      ? TASK_SEARCH_SUGGESTIONS.filter(({ query }) => {
+      ? TASK_SEARCH_SUGGESTIONS.filter((suggestion) => {
+          const { query } = suggestion;
+          const fallbackPageFamily =
+            "fallbackPageFamily" in suggestion
+              ? suggestion.fallbackPageFamily
+              : undefined;
+          const requiresCourseSearch =
+            "requiresCourseSearch" in suggestion
+              ? suggestion.requiresCourseSearch
+              : false;
+          const requiresResourceId =
+            "requiresResourceId" in suggestion
+              ? suggestion.requiresResourceId
+              : undefined;
+          const requiresTaskId =
+            "requiresTaskId" in suggestion
+              ? suggestion.requiresTaskId
+              : undefined;
+          if (requiresCourseSearch && !hasCourseSearchDestination) {
+            return false;
+          }
+          if (
+            requiresTaskId &&
+            !availableTaskTools.some(({ id }) => id === requiresTaskId) &&
+            !(
+              fallbackPageFamily &&
+              currentPageFamily !== fallbackPageFamily &&
+              availableTaskFamilies.includes(fallbackPageFamily)
+            )
+          ) {
+            return false;
+          }
+          if (
+            requiresResourceId &&
+            !availableResourceTools.some(({ id }) => id === requiresResourceId)
+          ) {
+            return false;
+          }
+
           const normalizedQuery = query.toLocaleLowerCase();
           return (
             availableTaskTools.some((tool) =>
@@ -595,19 +1230,89 @@ export function AppShell({
           );
         })
       : [];
-  const availableResourceSearchSuggestions =
-    isResourceSearchMode && normalizedTaskSearchQuery.length === 0
-      ? RESOURCE_SEARCH_SUGGESTIONS.filter(({ toolId }) =>
-          availableResourceTools.some((tool) => tool.id === toolId),
-        )
-      : [];
   const filteredResultCount =
     filteredTaskFamilies.length +
     filteredTaskTools.length +
     filteredResourceTools.length;
-  const hasFilteredResults = filteredResultCount > 0;
+  const isSingleCourseSearchResult =
+    normalizedTaskSearchQuery.length > 0 &&
+    filteredResultCount === 1 &&
+    ((filteredTaskTools.length === 1 &&
+      filteredTaskTools[0]?.id === "course-search") ||
+      (filteredTaskFamilies.length === 1 &&
+        filteredTaskFamilies[0] === "home" &&
+        isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery)));
+  const isSingleResultSearch = isSingleCourseSearchResult;
   const hasNoTaskSearchResults =
-    normalizedTaskSearchQuery.length > 0 && !hasFilteredResults;
+    normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
+  const availableResourceSearchSuggestions = (() => {
+    if (
+      !isResourceSearchMode ||
+      (normalizedTaskSearchQuery.length > 0 && !hasNoTaskSearchResults)
+    ) {
+      return [];
+    }
+
+    const suggestions = RESOURCE_SEARCH_SUGGESTIONS.filter(({ toolId }) =>
+      availableResourceTools.some((tool) => tool.id === toolId),
+    );
+    if (resourceFinderIntent !== "new-student") {
+      return suggestions;
+    }
+
+    return [...suggestions].sort(
+      ({ toolId: leftToolId }, { toolId: rightToolId }) =>
+        (NEW_STUDENT_RESOURCE_STARTER_RANK.get(leftToolId) ??
+          NEW_STUDENT_RESOURCE_STARTER_ORDER.length) -
+        (NEW_STUDENT_RESOURCE_STARTER_RANK.get(rightToolId) ??
+          NEW_STUDENT_RESOURCE_STARTER_ORDER.length),
+    );
+  })();
+  const singleTaskSearchResult =
+    normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1
+      ? (() => {
+          const pageFamily = filteredTaskFamilies[0];
+          if (pageFamily) {
+            const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
+            if (
+              pageFamily === "home" &&
+              isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery)
+            ) {
+              return {
+                description: "Open Course Search",
+                label: "Find classes",
+              };
+            }
+            return {
+              description: definition.navigationHint,
+              label: definition.label,
+            };
+          }
+
+          const taskTool = filteredTaskTools[0];
+          if (taskTool) {
+            return {
+              description: taskTool.description,
+              label: taskTool.label,
+            };
+          }
+
+          const resourceTool = filteredResourceTools[0];
+          if (resourceTool) {
+            return {
+              description:
+                useOfficialTranscriptGuidance &&
+                resourceTool.id === OFFICIAL_TRANSCRIPT_SHORTCUT.id
+                  ? OFFICIAL_TRANSCRIPT_SHORTCUT.description
+                  : resourceTool.description,
+              label: resourceTool.label,
+            };
+          }
+
+          return undefined;
+        })()
+      : undefined;
+  const hasFilteredResults = filteredResultCount > 0;
   const taskSearchResultSummary =
     normalizedTaskSearchQuery.length === 0
       ? `${filteredResultCount} verified destinations available`
@@ -671,10 +1376,17 @@ export function AppShell({
   }, [isTaskFinderOpen, taskFinderViewSignature]);
 
   useEffect(() => {
-    if (!isNativeResourcesOpen || availableResourceTools.length === 0) {
+    if (!isNativeResourcesOpen) {
+      setResourceFinderIntent(null);
       return;
     }
 
+    if (availableResourceTools.length === 0) {
+      return;
+    }
+
+    setResourceFinderIntent(pendingResourceFinderIntentRef.current);
+    pendingResourceFinderIntentRef.current = null;
     setTaskSearchQuery("");
     setIsTaskFinderOpen(true);
   }, [availableResourceTools.length, isNativeResourcesOpen]);
@@ -755,7 +1467,22 @@ export function AppShell({
 
   const handleTaskFinderNavigation = (
     pageFamily: PrimaryPageFamily,
+    query = "",
   ): void => {
+    if (pageFamily === "home" && isCrossAreaCourseSearchIntent(query)) {
+      closeTaskFinder();
+      onNavigateToCourseSearch();
+      return;
+    }
+    if (pageFamily === "resources" && !isNativeResourcesOpen) {
+      pendingResourceFinderIntentRef.current = isNewStudentResourceIntent(query)
+        ? "new-student"
+        : null;
+      resourceReturnFocusRef.current = () =>
+        taskFinderToggleRef.current?.focus({ preventScroll: true });
+    } else {
+      pendingResourceFinderIntentRef.current = null;
+    }
     if (
       pageFamily === currentPageFamily &&
       !delegatesCurrentAreaNavigation
@@ -800,7 +1527,7 @@ export function AppShell({
 
     const pageFamily = taskFamilies[0];
     if (pageFamily) {
-      handleTaskFinderNavigation(pageFamily);
+      handleTaskFinderNavigation(pageFamily, normalizedQuery);
       return true;
     }
 
@@ -824,16 +1551,19 @@ export function AppShell({
   ): void => {
     if (
       event.key !== "Enter" ||
-      normalizedTaskSearchQuery.length === 0 ||
-      filteredResultCount !== 1
+      normalizedTaskSearchQuery.length === 0
     ) {
       return;
     }
 
     event.preventDefault();
+    if (filteredResultCount !== 1) {
+      return;
+    }
+
     const pageFamily = filteredTaskFamilies[0];
     if (pageFamily) {
-      handleTaskFinderNavigation(pageFamily);
+      handleTaskFinderNavigation(pageFamily, normalizedTaskSearchQuery);
       return;
     }
 
@@ -863,6 +1593,13 @@ export function AppShell({
     onNavigate(pageFamily);
   };
 
+  const openResourceDirectory = (): void => {
+    pendingResourceFinderIntentRef.current = null;
+    resourceReturnFocusRef.current = () =>
+      resourceDirectoryToggleRef.current?.focus({ preventScroll: true });
+    handlePrimaryNavigation("resources");
+  };
+
   const handlePrimaryTool = (toolId: PageToolId): void => {
     closeTaskFinder();
     onOpenTool(toolId);
@@ -875,7 +1612,7 @@ export function AppShell({
       return;
     }
     if (courseSearchShortcut?.mode === "home") {
-      onNavigate("home");
+      onNavigateToCourseSearch();
     }
   };
 
@@ -890,8 +1627,18 @@ export function AppShell({
 
   const dismissTaskFinder = (): void => {
     if (isResourceSearchMode) {
+      const returnFocus = resourceReturnFocusRef.current;
       closeTaskFinder();
       onNavigate("resources");
+      const ownerWindow = taskFinderToggleRef.current?.ownerDocument.defaultView;
+      if (ownerWindow) {
+        ownerWindow.setTimeout(() => {
+          returnFocus?.();
+        }, 0);
+      } else {
+        returnFocus?.();
+      }
+      resourceReturnFocusRef.current = null;
       return;
     }
 
@@ -944,7 +1691,7 @@ export function AppShell({
   };
 
   return (
-    <header className="ba-shell" aria-label="Better Albert">
+    <header ref={shellRef} className="ba-shell" aria-label="Better Albert">
       <button className="ba-skip-link" type="button" onClick={onSkipToContent}>
         Skip to Albert content
       </button>
@@ -964,20 +1711,24 @@ export function AppShell({
             aria-describedby="ba-original-albert-help"
             aria-label="Use original Albert"
             disabled={isDisabling}
-            title="Use original Albert. Better Albert stays off until you turn it on from the browser extension icon."
+            title="Switches to original Albert now. Use the browser extension icon to turn Better Albert back on."
             onClick={handleDisable}
           >
             {isDisabling ? "Switching…" : "Original Albert"}
           </button>
           <span className="ba-visually-hidden" id="ba-original-albert-help">
-            Better Albert stays off until you turn it on from the browser
-            extension icon.
+            Switches to original Albert now. Use the browser extension icon to
+            turn Better Albert back on.
           </span>
         </div>
       </div>
 
       <div className="ba-workspace-row">
-        <div className="ba-page-context" aria-live="polite">
+        <div
+          className="ba-page-context"
+          data-page-family={currentPageFamily}
+          aria-live="polite"
+        >
           <span className="ba-page-eyebrow">Workspace</span>
           <strong className="ba-page-title">{currentPage.label}</strong>
           <span className="ba-page-description">{currentPage.description}</span>
@@ -1056,8 +1807,8 @@ export function AppShell({
             isHomeStarter={currentPageFamily === "home"}
             {...(availablePageFamilies.includes("resources")
               ? {
-                  onOpenResourceDirectory: () =>
-                    handlePrimaryNavigation("resources"),
+                  onOpenResourceDirectory: openResourceDirectory,
+                  resourceDirectoryToggleRef,
                 }
               : {})}
             onOpenResource={handlePrimaryResource}
@@ -1067,7 +1818,11 @@ export function AppShell({
           />
         )}
 
-        <nav className="ba-primary-nav" aria-label="Better Albert areas">
+        <nav
+          ref={primaryNavigationRef}
+          className="ba-primary-nav"
+          aria-label="Better Albert areas"
+        >
           <span className="ba-primary-label">Student services</span>
           {PRIMARY_PAGE_FAMILIES.map((pageFamily) => {
             const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
@@ -1105,7 +1860,16 @@ export function AppShell({
                       : `Open ${definition.label} using Albert navigation`
                     : `${definition.label} is not available in this Albert view`
                 }
-                onClick={() => handlePrimaryNavigation(pageFamily)}
+                ref={isResourcesToggle ? resourceNavigationToggleRef : undefined}
+                onClick={() => {
+                  if (isResourcesToggle && !isNativeResourcesOpen) {
+                    resourceReturnFocusRef.current = () =>
+                      resourceNavigationToggleRef.current?.focus({
+                        preventScroll: true,
+                      });
+                  }
+                  handlePrimaryNavigation(pageFamily);
+                }}
               >
                 <span className="ba-nav-copy">
                   <span className="ba-nav-label-text">
@@ -1143,11 +1907,7 @@ export function AppShell({
           }
           aria-modal="true"
           data-resource-search={isResourceSearchMode ? "true" : undefined}
-          data-single-result={
-            normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1
-              ? "true"
-              : undefined
-          }
+            data-single-result={isSingleResultSearch ? "true" : undefined}
           hidden={!isTaskFinderOpen}
           ref={taskFinderRef}
           role="dialog"
@@ -1165,7 +1925,9 @@ export function AppShell({
               </strong>
               <span>
                 {isResourceSearchMode
-                  ? "Search only the official links already available in Albert’s Other Resources directory."
+                  ? resourceFinderIntent === "new-student"
+                    ? "New to NYU? Start with a verified service below. Search only the official links available in Albert’s Other Resources directory."
+                    : "Search only the official links already available in Albert’s Other Resources directory."
                   : "Choose a task or a link already available in Albert. Better Albert never invents destinations."}
               </span>
             </div>
@@ -1195,16 +1957,20 @@ export function AppShell({
                   type="search"
                   aria-controls={`${taskFinderId}-results`}
                   aria-describedby={`${taskFinderId}-search-status${
+                    !isResourceSearchMode
+                      ? ` ${taskFinderId}-search-help`
+                      : ""
+                  }${
                     normalizedTaskSearchQuery.length > 0 &&
                     filteredResultCount === 1
-                      ? ` ${taskFinderId}-search-hint`
+                      ? ` ${taskFinderId}-search-destination ${taskFinderId}-search-hint`
                       : ""
                   }`}
                   autoComplete="off"
                   placeholder={
                     isResourceSearchMode
                       ? "Try financial aid, counseling, or ID card"
-                      : "Try “find a course” for one-step class search, then “financial aid” or “housing”"
+                      : "Try “find a course” for one-step class search, “new student,” or “financial aid”"
                   }
                   ref={taskFinderSearchRef}
                   spellCheck={false}
@@ -1234,6 +2000,16 @@ export function AppShell({
                   </button>
                 )}
               </div>
+              {!isResourceSearchMode && (
+                <p
+                  className="ba-task-finder-search-help"
+                  id={`${taskFinderId}-search-help`}
+                >
+                  Need a class? Choose <strong>Find classes</strong> to open
+                  Albert’s Course Search, then enter a subject, course number,
+                  title, or instructor.
+                </p>
+              )}
               {(availableTaskSearchSuggestions.length > 0 ||
                 availableResourceSearchSuggestions.length > 0) && (
                 <div
@@ -1246,13 +2022,15 @@ export function AppShell({
                     id={`${taskFinderId}-common-label`}
                   >
                     {isResourceSearchMode
-                      ? "Popular resources"
+                      ? hasNoTaskSearchResults
+                        ? "Try a verified starter"
+                        : resourceFinderIntent === "new-student"
+                          ? "Start here"
+                          : "Popular resources"
                       : "Common tasks"}
-                    {isResourceSearchMode && (
-                      <span className="ba-task-finder-common-scroll-hint">
-                        Scroll for more
-                      </span>
-                    )}
+                    <span className="ba-task-finder-common-scroll-hint">
+                      Scroll for more
+                    </span>
                   </span>
                   <div className="ba-task-finder-common-list">
                     {isResourceSearchMode
@@ -1303,12 +2081,41 @@ export function AppShell({
               </p>
               {normalizedTaskSearchQuery.length > 0 &&
                 filteredResultCount === 1 && (
-                  <p
-                    className="ba-task-finder-search-hint"
-                    id={`${taskFinderId}-search-hint`}
-                  >
-                    Press Enter to open this verified destination.
-                  </p>
+                  <>
+                    {singleTaskSearchResult && (
+                      <>
+                        <p
+                          className="ba-task-finder-search-result"
+                          id={`${taskFinderId}-search-destination`}
+                        >
+                          <strong>Verified destination:</strong>{" "}
+                          {singleTaskSearchResult.label}
+                          <span> — {singleTaskSearchResult.description}</span>
+                        </p>
+                        {isSingleCourseSearchResult && (
+                          <button
+                            className="ba-task-finder-search-action"
+                            type="button"
+                            aria-label={`Open ${singleTaskSearchResult.label} — ${singleTaskSearchResult.description}`}
+                            aria-describedby={`${taskFinderId}-search-destination ${taskFinderId}-search-hint`}
+                            onClick={() =>
+                              openSingleVerifiedTaskResult(
+                                normalizedTaskSearchQuery,
+                              )
+                            }
+                          >
+                            Open {singleTaskSearchResult.label}
+                          </button>
+                        )}
+                      </>
+                    )}
+                    <p
+                      className="ba-task-finder-search-hint"
+                      id={`${taskFinderId}-search-hint`}
+                    >
+                      Press Enter to open this verified destination.
+                    </p>
+                  </>
                 )}
             </div>
 
@@ -1331,7 +2138,7 @@ export function AppShell({
                 >
                   Search
                 </button>
-                {filteredTaskFamilies.length > 0 && (
+                {!isSingleResultSearch && filteredTaskFamilies.length > 0 && (
                   <button
                     className="ba-task-finder-jump"
                     type="button"
@@ -1342,7 +2149,7 @@ export function AppShell({
                     Areas
                   </button>
                 )}
-                {filteredTaskToolGroups.length > 0 && (
+                {!isSingleResultSearch && filteredTaskToolGroups.length > 0 && (
                   <button
                     className="ba-task-finder-jump"
                     type="button"
@@ -1363,7 +2170,8 @@ export function AppShell({
                   </button>
                 )}
                 {isResourceSearchMode ? (
-                  <>
+                  !isSingleResultSearch && (
+                    <>
                     <button
                       className="ba-task-finder-jump ba-task-finder-jump-resource-results"
                       type="button"
@@ -1390,9 +2198,10 @@ export function AppShell({
                         {RESOURCE_CATEGORY_DEFINITIONS[category].label}
                       </button>
                     ))}
-                  </>
+                    </>
+                  )
                 ) : (
-                  filteredResourceTools.length > 0 && (
+                  !isSingleResultSearch && filteredResourceTools.length > 0 && (
                     <button
                       className="ba-task-finder-jump"
                       type="button"
@@ -1441,13 +2250,13 @@ export function AppShell({
                   </strong>
                   <span>
                     {isResourceSearchMode
-                      ? "Try a broader term. Better Albert only searches original links from Other Resources."
-                      : "Try a broader term. Better Albert only searches links already available in this Albert view."}
+                      ? "No exact link is available here. Use “View Albert resource directory” below to browse Albert’s official list."
+                      : "Try a broader term, or choose “Show all” above to browse every verified destination available in this Albert view. Better Albert never invents destinations."}
                   </span>
                 </div>
               )}
 
-              {filteredTaskFamilies.length > 0 && (
+              {!isSingleResultSearch && filteredTaskFamilies.length > 0 && (
                 <section
                   className="ba-task-finder-section"
                   aria-labelledby={`${taskFinderId}-areas`}
@@ -1463,6 +2272,15 @@ export function AppShell({
                     {filteredTaskFamilies.map((pageFamily) => {
                       const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
                       const descriptionId = `${taskFinderId}-${pageFamily}`;
+                      const isCourseSearchArea =
+                        pageFamily === "home" &&
+                        isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery);
+                      const areaLabel = isCourseSearchArea
+                        ? "Find classes"
+                        : definition.label;
+                      const areaDescription = isCourseSearchArea
+                        ? "Open Course Search"
+                        : definition.navigationHint;
 
                       return (
                         <button
@@ -1471,16 +2289,20 @@ export function AppShell({
                           aria-current={
                             currentPageFamily === pageFamily ? "page" : undefined
                           }
-                          aria-label={`Open ${definition.label} — ${definition.navigationHint}`}
+                          aria-label={`Open ${areaLabel} — ${areaDescription}`}
                           key={pageFamily}
                           onClick={() =>
-                            handleTaskFinderNavigation(pageFamily)
+                            handleTaskFinderNavigation(
+                              pageFamily,
+                              normalizedTaskSearchQuery,
+                            )
                           }
                         >
                           <span className="ba-task-finder-item-copy">
-                            <strong>{definition.navigationHint}</strong>
+                            <strong>{areaDescription}</strong>
                             <span id={descriptionId}>
-                              {definition.label} · Albert area
+                              {areaLabel}
+                              {isCourseSearchArea ? "" : " · Albert area"}
                             </span>
                           </span>
                           <span aria-hidden="true">›</span>
@@ -1491,7 +2313,7 @@ export function AppShell({
                 </section>
               )}
 
-              {filteredTaskToolGroups.length > 0 && (
+              {!isSingleResultSearch && filteredTaskToolGroups.length > 0 && (
                 <section
                   className="ba-task-finder-section ba-task-finder-task-section"
                   aria-labelledby={`${taskFinderId}-links`}
@@ -1548,7 +2370,7 @@ export function AppShell({
                 </section>
               )}
 
-              {filteredResourceTools.length > 0 && (
+              {!isSingleResultSearch && filteredResourceTools.length > 0 && (
                 <section
                   className="ba-task-finder-section ba-task-finder-resource-section"
                   aria-labelledby={`${taskFinderId}-resources`}
@@ -1599,6 +2421,11 @@ export function AppShell({
                           <div className="ba-task-finder-list">
                             {tools.map((tool) => {
                               const descriptionId = `${taskFinderId}-resource-${tool.id}`;
+                              const description =
+                                useOfficialTranscriptGuidance &&
+                                tool.id === OFFICIAL_TRANSCRIPT_SHORTCUT.id
+                                  ? OFFICIAL_TRANSCRIPT_SHORTCUT.description
+                                  : tool.description;
 
                               return (
                                 <button
@@ -1613,9 +2440,7 @@ export function AppShell({
                                 >
                                   <span className="ba-task-finder-item-copy">
                                     <strong>{tool.label}</strong>
-                                    <span id={descriptionId}>
-                                      {tool.description}
-                                    </span>
+                                    <span id={descriptionId}>{description}</span>
                                   </span>
                                   <span aria-hidden="true">›</span>
                                 </button>
