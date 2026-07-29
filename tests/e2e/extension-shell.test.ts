@@ -2038,13 +2038,24 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Solving personal problems that impede academic work", "Open Student Services"],
     ["Liaison linkage with academic departments", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["Finding Your Advisor", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Find Your Advisor", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["What Can My Advisor Help With?", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["Academic Resource Center", "Open Academic Support"],
+    ["Visit the Academic Resource Center", "Open Academic Support"],
     [
       "Prepare for Your Meeting",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
     ],
     [
       "Professional Edge",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Improve Skills with Professional Edge",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Explore Academic Opportunities",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
     ],
     [
@@ -2073,7 +2084,19 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Other Resources — NYU services, offices, and support",
     ],
     [
+      "New York Resident Student Complaint Information",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Student Grievance Procedures for Certain Distance Education Students (SARA)",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
       "Kaplan All Access",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "NYU Kaplan All Access: Free Kaplan Test Prep Courses for NYU Students",
       "Open Other Resources — NYU services, offices, and support",
     ],
     [

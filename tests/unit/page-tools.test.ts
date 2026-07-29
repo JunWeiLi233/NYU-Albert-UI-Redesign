@@ -73,6 +73,27 @@ describe("page-family native tools", () => {
         "browse available courses for the upcoming term",
       ]),
     );
+
+  });
+
+  it("keeps live advisement labels on verified academic tasks", () => {
+    document.body.innerHTML = `
+      <section data-better-albert-region="advising-section"></section>
+      <section class="is_bb_LinkContainer">
+        <a href="#degree">Degree Progress Report</a>
+      </section>
+    `;
+
+    const tools = getAvailableTaskTools(document);
+    const advisor = tools.find(({ id }) => id === "advisor-network");
+    const degreeProgress = tools.find(({ id }) => id === "degree-progress");
+
+    expect(advisor?.keywords).toEqual(
+      expect.arrayContaining(["find your advisor"]),
+    );
+    expect(degreeProgress?.keywords).toEqual(
+      expect.arrayContaining(["degree progress report"]),
+    );
   });
 
   it("maps registration records wording to verified one-step tasks", () => {
@@ -1152,6 +1173,9 @@ describe("page-family native tools", () => {
       expect.arrayContaining([
         "academic tutoring at nyu",
         "academic resource center",
+        "from questions to confidence",
+        "explore the tutoring centers",
+        "tutoring at nyu",
         "securing tutorial and other academic support",
         "university learning centers",
         "writing center",
