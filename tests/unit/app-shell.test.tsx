@@ -2360,21 +2360,28 @@ describe("AppShell cross-area task handoffs", () => {
             "class search",
             "class list",
             "class offerings",
+            "class listings",
             "classes available",
             "course list",
             "course offerings",
+            "course listings",
             "available classes",
             "available courses",
+            "browse courses",
             "find course offerings",
+            "find me a course",
             "find classes",
             "find courses",
             "look for a course",
             "look for classes",
+            "look up classes",
             "search for a course",
             "search for classes",
             "search courses",
             "where can I find a course",
             "what classes are available",
+            "what courses are offered",
+            "when are classes offered",
             "which courses are offered",
           ],
           label: "Find Classes",
@@ -2403,19 +2410,26 @@ describe("AppShell cross-area task handoffs", () => {
       "class search",
       "class list",
       "class offerings",
+      "class listings",
       "classes available",
       "course list",
       "course offerings",
+      "course listings",
       "available classes",
       "available courses",
+      "browse courses",
       "find course offerings",
+      "find me a course",
       "find classes",
       "find courses",
       "look for classes",
+      "look up classes",
       "search for a course",
       "search for classes",
       "search courses",
       "what classes are available",
+      "what courses are offered",
+      "when are classes offered",
       "which courses are offered",
     ]) {
       await act(async () => {
@@ -2455,7 +2469,7 @@ describe("AppShell cross-area task handoffs", () => {
       });
     }
 
-    expect(onOpenTool).toHaveBeenCalledTimes(18);
+    expect(onOpenTool).toHaveBeenCalledTimes(25);
     expect(onOpenTool).toHaveBeenCalledWith("course-search");
   });
 

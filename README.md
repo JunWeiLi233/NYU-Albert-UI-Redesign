@@ -6,11 +6,17 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.144 includes:
+Version 0.5.145 includes:
 
 - concise newcomer phrases such as “available courses,” “find courses,”
-  “course list,” “course offerings,” “class list,” and “search courses” now
+  “find me a course,” “course list,” “course listings,” “course offerings,”
+  “class list,” “class listings,” “browse courses,” “look up classes,”
+  “what courses are offered,” “when are classes offered,” and “search courses” now
   resolve to the uniquely verified native Course Search control in one step;
+
+- “StudentLink Center” is recognized as the same conservative Other Resources
+  directory cue as “studentlink” and “student link,” without inventing a public
+  StudentLink destination;
 
 - generic “accessibility” searches no longer leak into Housing through a
   shared keyword; they use the exact Campus Resources anchor when verified or
