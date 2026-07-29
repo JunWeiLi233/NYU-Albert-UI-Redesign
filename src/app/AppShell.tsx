@@ -256,6 +256,15 @@ const OGS_ORIENTATION_CUES = new Set([
 ]);
 
 const OGS_GENERIC_RESOURCE_INTENTS = new Set(["event", "events"]);
+const GENERIC_OTHER_RESOURCES_INTENTS = new Set([
+  "accessibility",
+  "bookstore",
+  "campus map",
+  "disability services",
+  "parking",
+  "shuttle",
+  "transit",
+]);
 const GENERIC_NEW_STUDENT_RESOURCE_QUERIES = new Set([
   "what do i do first",
   "what should i do first",
@@ -488,6 +497,12 @@ function isGenericOrientationIntent(query: string): boolean {
 
 function isGenericOgsResourceIntent(query: string): boolean {
   return OGS_GENERIC_RESOURCE_INTENTS.has(
+    getMeaningfulTaskSearchValue(query),
+  );
+}
+
+function isGenericOtherResourcesIntent(query: string): boolean {
+  return GENERIC_OTHER_RESOURCES_INTENTS.has(
     getMeaningfulTaskSearchValue(query),
   );
 }
@@ -845,6 +860,9 @@ export function AppShell({
       tool.id === "ogs" &&
       (isGenericOrientationIntent(query) || isGenericOgsResourceIntent(query))
     ) {
+      return false;
+    }
+    if (allowTypos && isGenericOtherResourcesIntent(query)) {
       return false;
     }
 

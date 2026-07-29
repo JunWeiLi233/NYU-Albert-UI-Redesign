@@ -260,6 +260,72 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).not.toContain("Verified destination: OGS");
   });
 
+  it("does not typo-match parking to OGS packing guidance", async () => {
+    document.body.innerHTML = `
+      <nav id="IS_BB_HEADER_MENU">
+        <li
+          id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+          class="megaMenuSelected"
+          onclick="toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected');"
+        >
+          <a href="#">Other Resources</a>
+        </li>
+        <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
+          <a href="#ogs">OGS</a>
+        </div>
+      </nav>
+    `;
+
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "global",
+          description: "Find visa and immigration guidance",
+          featured: false,
+          id: "ogs",
+          keywords: ["packing tips"],
+          label: "OGS",
+          nativeLabels: ["OGS"],
+        },
+      ],
+      availableTaskTools: [],
+      currentPageFamily: "resources",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "parking",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain('0 results for “parking”');
+    expect(shadowRoot?.textContent).not.toContain("Verified destination: OGS");
+    expect(shadowRoot?.textContent).toContain(
+      "No exact link is available here. Use “View Albert resource directory” below",
+    );
+  });
+
   it("finds campus wi-fi through the official resource directory", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],

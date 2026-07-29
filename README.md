@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.122 includes:
+Version 0.5.123 includes:
+
+- generic campus-service searches such as “parking,” “campus map,” and
+  “shuttle” no longer typo-match unrelated international-student wording;
+  unmatched needs stay honestly on the verified Other Resources directory;
 
 - the exact “advisor” search now prefers the verified Academics destination
   over broad resource vocabulary such as spiritual-life advising;
