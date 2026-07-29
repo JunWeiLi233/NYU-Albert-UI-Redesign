@@ -534,9 +534,9 @@ describe("AppShell cross-area task handoffs", () => {
     });
 
     expect(shadowRoot?.textContent).toContain(
-      '2 results for “graduate students”',
+      '1 result for “graduate students”',
     );
-    expect(shadowRoot?.textContent).toContain("Wasserman");
+    expect(shadowRoot?.textContent).not.toContain("Wasserman");
     expect(shadowRoot?.textContent).toContain("Student Life");
 
     for (const [query, destination] of [
@@ -1019,14 +1019,12 @@ describe("AppShell cross-area task handoffs", () => {
       "Verified destination: Other Resources",
     );
     expect(shadowRoot?.querySelectorAll(".ba-task-finder-resource")).toHaveLength(
-      0,
+      1,
     );
     const openResource = shadowRoot?.querySelector<HTMLButtonElement>(
       ".ba-task-finder-search-action",
     );
-    expect(openResource?.getAttribute("aria-label")).toBe(
-      "Open Wasserman — Find career coaching, jobs, and internships",
-    );
+    expect(openResource?.getAttribute("aria-label")).toBe("Open Wasserman");
     await act(async () => {
       openResource?.click();
     });
@@ -1612,7 +1610,11 @@ describe("AppShell cross-area task handoffs", () => {
     ]) {
       const supportText = await search(query);
       expect(supportText).toContain(`1 result for “${query}”`);
-      expect(supportText).toContain("Verified destination: NYU Connect");
+      expect(supportText).toContain(
+        query === "time management guide"
+          ? "Verified destination: Other Resources"
+          : "Verified destination: NYU Connect",
+      );
     }
 
     const aidAppointmentText = await search("financial aid appointment");

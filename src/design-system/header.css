@@ -1144,6 +1144,20 @@ button {
   }
 }
 
+/* Keep the newcomer starter rail in the first viewport at short desktop
+ * heights while retaining every verified shortcut in a local scroll region. */
+@media (min-width: 900px) and (max-height: 850px) {
+  .ba-home-starter-nav {
+    align-self: start;
+    min-height: 0;
+    height: max(12rem, calc(100dvh - 31rem));
+    max-height: max(12rem, calc(100dvh - 31rem));
+    overflow-y: auto;
+    scrollbar-color: rgb(255 255 255 / 34%) transparent;
+    scrollbar-width: thin;
+  }
+}
+
 .ba-trust-note {
   flex: 0 0 auto;
   padding: var(--ba-space-3) var(--ba-space-6) var(--ba-space-4);

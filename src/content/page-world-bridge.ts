@@ -33,6 +33,17 @@ function activateNativeControlInPageWorld(
 
   control.removeAttribute(ACTIVATION_ATTRIBUTE);
   if (allowJavascriptUrl) {
+    const href = control.getAttribute("href");
+    if (href?.match(/^\s*javascript:/i)) {
+      // Keep the page-owned script and event path, but discard a string return
+      // value. Without this wrapper, a harmless assignment such as
+      // `document.body.dataset.nativeSearchActivated = 'true'` replaces the
+      // whole document with the returned string in Chromium.
+      control.setAttribute("href", `javascript:void (${href.slice(href.indexOf(":") + 1)})`);
+      control.click();
+      control.setAttribute("href", href);
+      return;
+    }
     control.click();
     return;
   }

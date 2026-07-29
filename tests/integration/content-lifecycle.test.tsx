@@ -831,6 +831,83 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
+  it("replays the Home handoff when Albert reports an intermediate workspace", async () => {
+    const nativeHome = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-home"]',
+    );
+    const nativeAcademics = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-academics"]',
+    );
+    const nativeCourseSearch = document.querySelector<HTMLAnchorElement>(
+      'a[href="/fixture-course-search"]',
+    );
+    nativeHome?.removeAttribute("aria-current");
+    nativeAcademics?.setAttribute("aria-current", "page");
+    nativeCourseSearch?.remove();
+
+    let homeClicks = 0;
+    nativeHome?.addEventListener("click", (event) => {
+      event.preventDefault();
+      homeClicks += 1;
+      if (homeClicks === 1) {
+        // Model a PeopleSoft response that briefly reports Academics after
+        // the Home navigation click before restoring the requested workspace.
+        nativeAcademics?.setAttribute("aria-current", "page");
+        nativeHome?.removeAttribute("aria-current");
+        return;
+      }
+
+      nativeHome?.setAttribute("aria-current", "page");
+      nativeAcademics?.removeAttribute("aria-current");
+      const linkColumn = document.querySelector<HTMLElement>(
+        "#nyuSSSHomeLinksStatic .is_bb_LinkColumn",
+      );
+      const item = document.createElement("div");
+      item.className = "is_bb_LinkItem";
+      const courseSearch = document.createElement("a");
+      courseSearch.href = "/fixture-course-search";
+      courseSearch.textContent = "Course Search";
+      item.append(courseSearch);
+      linkColumn?.prepend(item);
+    });
+
+    const nativeCourseSearchClick = vi.fn((event: Event) =>
+      event.preventDefault(),
+    );
+    document
+      .querySelector<HTMLElement>("#nyuSSSHomeLinksStatic")
+      ?.addEventListener("click", (event) => {
+        if (
+          event.target instanceof HTMLAnchorElement &&
+          event.target.textContent?.trim() === "Course Search"
+        ) {
+          nativeCourseSearchClick(event);
+        }
+      });
+
+    const lifecycle = await startContentScript({
+      document,
+      location: portalUrl,
+      preferenceStore: new FakePreferenceStore(true),
+      topLevel: true,
+    });
+    const shortcut = document
+      .getElementById(HEADER_HOST_ID)
+      ?.shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-course-search-shortcut",
+      );
+
+    shortcut?.click();
+    await settleLifecycle();
+    await settleLifecycle();
+    await settleLifecycle();
+    await settleLifecycle();
+
+    expect(homeClicks).toBe(2);
+    expect(nativeCourseSearchClick).toHaveBeenCalledOnce();
+    lifecycle.stop();
+  });
+
   it("routes a newcomer Course Search request from Grades through Home first", async () => {
     const nativeHome = document.querySelector<HTMLAnchorElement>(
       'a[href="/fixture-home"]',
