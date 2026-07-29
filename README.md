@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.164 includes:
+Version 0.5.165 includes:
+
+- live NYU registration checklist wording such as “Check your registration
+  date and time,” registration-hold guidance, advisor planning, contact
+  information, and Bursar/aid accounts now resolves to the shortest verified
+  Albert destination;
 
 - live NYU registration wording such as “Browse available courses for the
   upcoming term,” “Track Your Degree Progress,” and “Check Your Grades” now
