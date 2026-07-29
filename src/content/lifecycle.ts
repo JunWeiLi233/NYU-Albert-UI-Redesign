@@ -10,6 +10,7 @@ import type { PreferenceStore } from "../storage/preferences";
 import {
   getAvailablePageFamilies,
   navigateWithNativeAlbert,
+  isNativeOtherResourcesOpen,
 } from "./native-navigation";
 import {
   createCourseSearchFrameHandoff,
@@ -408,6 +409,15 @@ export async function startContentScript({
             const targetDocument = activeNativeControlDocument;
             if (!targetDocument) {
               return;
+            }
+
+            // A Course Search handoff can originate inside the newcomer
+            // finder while Albert's native Other Resources menu is open.
+            // Close that menu before changing workspace so its legacy overlay
+            // cannot remain mounted over the destination and swallow the
+            // pending Course Search activation.
+            if (isNativeOtherResourcesOpen(targetDocument)) {
+              navigateWithNativeAlbert(targetDocument, "resources");
             }
 
             courseSearchFrameHandoff?.request();
