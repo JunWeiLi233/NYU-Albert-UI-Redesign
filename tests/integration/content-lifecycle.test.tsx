@@ -321,12 +321,21 @@ describe("content-script lifecycle", () => {
     expect(
       Array.from(
         resourceSearch?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-key-link",
+        ) ?? [],
+      ).map((button) => button.textContent?.replace(/\s+/g, " ").trim()),
+    ).toEqual([
+      "Academic datesCheck NYU academic dates and deadlines›",
+      "Course materialsOpen NYU's learning platform›",
+      "Student supportFind general student services and support›",
+    ]);
+    expect(
+      Array.from(
+        resourceSearch?.querySelectorAll<HTMLButtonElement>(
           ".ba-task-finder-common-task",
         ) ?? [],
       ).map((button) => button.textContent),
     ).toEqual([
-      "Academic dates",
-      "Course materials",
       "Financial aid",
       "ID card",
       "International students",
@@ -338,7 +347,6 @@ describe("content-script lifecycle", () => {
       "Student life",
       "Career help",
       "Tech & Wi-Fi",
-      "Student support",
     ]);
 
     const resourceSearchInput = resourceSearch?.querySelector<HTMLInputElement>(

@@ -888,7 +888,6 @@ describe("AppShell cross-area task handoffs", () => {
 
   it("routes student employment to the verified Wasserman resource", async () => {
     const onOpenResource = vi.fn();
-
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
       availablePageTools: [],
@@ -1313,6 +1312,7 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).not.toContain(
       "Verified destination: Academic Calendar",
     );
+
   });
 
   it("routes pronoun wording to the verified Personal Info area", async () => {
@@ -2975,6 +2975,24 @@ describe("AppShell cross-area task handoffs", () => {
         label: "Housing",
         nativeLabels: ["Housing"],
       },
+      {
+        category: "learning-career" as const,
+        description: "Open NYU's learning platform",
+        featured: false,
+        id: "nyu-brightspace" as const,
+        keywords: ["course materials"],
+        label: "NYU Brightspace",
+        nativeLabels: ["NYU Brightspace"],
+      },
+      {
+        category: "wellbeing-campus" as const,
+        description: "Find general student services and support",
+        featured: false,
+        id: "student-services" as const,
+        keywords: ["student support"],
+        label: "Student Services",
+        nativeLabels: ["Student Services"],
+      },
     ];
     const onNavigate = vi.fn(() => {
       document
@@ -2988,7 +3006,6 @@ describe("AppShell cross-area task handoffs", () => {
         currentPageFamily: "resources",
       });
     });
-
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
       availablePageTools: [],
@@ -3043,6 +3060,22 @@ describe("AppShell cross-area task handoffs", () => {
       '[aria-label="Student Guides"]',
     );
     expect(studentGuides).not.toBeNull();
+    const keyLinks = shadowRoot?.querySelector<HTMLElement>(
+      '[aria-label="NYU Key Links"]',
+    );
+    expect(keyLinks).not.toBeNull();
+    expect(
+      Array.from(
+        keyLinks?.querySelectorAll<HTMLButtonElement>(
+          ".ba-task-finder-key-link",
+        ) ?? [],
+      ).map((button) => button.textContent?.replace(/\s+/g, " ").trim()),
+    ).toEqual([
+      "Academic datesCheck NYU academic dates and deadlines›",
+      "Course materialsOpen NYU's learning platform›",
+      "Student supportFind general student services and support›",
+    ]);
+    expect(shadowRoot?.textContent).toContain("Start here");
     expect(
       Array.from(
         studentGuides?.querySelectorAll<HTMLButtonElement>(
@@ -3095,6 +3128,7 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).not.toContain(
       "Verified destination: Academic Calendar",
     );
+
   });
 
   it("resolves the full need-help phrase only to Student Services when verified", async () => {
