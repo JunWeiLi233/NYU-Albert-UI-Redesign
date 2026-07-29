@@ -266,6 +266,9 @@ const EXACT_TASK_INTENTS = new Map<string, PageToolId>([
   ["phone", "phone-numbers"],
   ["preferred name", "demographic-information"],
 ]);
+const EXACT_RAW_TASK_INTENTS = new Map<string, PageToolId>([
+  ["where can i register", "course-search"],
+]);
 
 function normalizeTaskSearchValue(value: string): string {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -477,7 +480,10 @@ function isGenericAppointmentResourceIntent(query: string): boolean {
 }
 
 function getExactTaskIntentId(query: string): PageToolId | undefined {
-  return EXACT_TASK_INTENTS.get(getMeaningfulTaskSearchValue(query));
+  return (
+    EXACT_RAW_TASK_INTENTS.get(normalizeTaskSearchValue(query)) ??
+    EXACT_TASK_INTENTS.get(getMeaningfulTaskSearchValue(query))
+  );
 }
 
 function isBareBursarIntent(query: string): boolean {

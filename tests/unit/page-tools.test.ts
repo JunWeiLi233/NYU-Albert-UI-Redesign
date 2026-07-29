@@ -56,7 +56,7 @@ describe("page-family native tools", () => {
     );
 
     expect(courseSearch?.keywords).toEqual(
-      expect.arrayContaining(["course registration"]),
+      expect.arrayContaining(["course registration", "where can i register"]),
     );
   });
 

@@ -910,6 +910,84 @@ describe("AppShell cross-area task handoffs", () => {
     expect(bursarText).not.toContain("Verified destination: Academic Calendar");
   });
 
+  it("keeps where-can-I-register wording on Course Search", async () => {
+    const onOpenTool = vi.fn();
+
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "academic-records",
+          description: "Open registration and official records resources",
+          featured: false,
+          id: "university-registrar",
+          keywords: ["registration", "official records"],
+          label: "University Registrar",
+          nativeLabels: ["University Registrar"],
+        },
+      ],
+      availableTaskTools: [
+        {
+          description: "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          keywords: ["register", "where can i register"],
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+          pageFamily: "home",
+        },
+      ],
+      currentPageFamily: "academics",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool,
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "where can I register",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “where can I register”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Find Classes",
+    );
+    expect(shadowRoot?.textContent).not.toContain(
+      "Verified destination: University Registrar",
+    );
+
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>(".ba-task-finder-search-action")
+        ?.click();
+    });
+    expect(onOpenTool).toHaveBeenCalledWith("course-search");
+  });
+
   it("does not advertise class search without a verified Course Search path", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
