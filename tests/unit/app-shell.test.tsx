@@ -746,6 +746,115 @@ describe("AppShell cross-area task handoffs", () => {
     }
   });
 
+  it("routes everyday records and finance wording to verified destinations", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "grades", "finances"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "academic-records",
+          description: "Open registration and official records resources",
+          featured: false,
+          id: "university-registrar",
+          keywords: ["order transcript"],
+          label: "University Registrar",
+          nativeLabels: ["University Registrar"],
+        },
+      ],
+      availableTaskTools: [
+        {
+          description: "Choose an academic career and term",
+          id: "view-grades",
+          keywords: ["grades", "my report card", "report card"],
+          label: "View Grades",
+          nativeLabels: [],
+          pageFamily: "grades",
+        },
+        {
+          description: "Request proof through National Student Clearinghouse",
+          id: "enrollment-verification",
+          keywords: ["enrollment verification", "verify enrollment"],
+          label: "Proof of Enrollment",
+          nativeLabels: ["Enrollment Verification"],
+          pageFamily: "grades",
+        },
+        {
+          description: "Review coursework transferred to NYU",
+          id: "transfer-credit",
+          keywords: ["credit transfer"],
+          label: "Review Transfer Credit",
+          nativeLabels: ["Transfer Credit"],
+          pageFamily: "grades",
+        },
+        {
+          compactDescription: true,
+          description: "See what you currently owe NYU",
+          id: "bursar-balance",
+          keywords: ["current balance"],
+          label: "Check Account Balance",
+          nativeLabels: ["View Bursar Balance"],
+          pageFamily: "finances",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    const search = async (query: string) => {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      return shadowRoot?.textContent ?? "";
+    };
+
+    const reportCardText = await search("report card");
+    expect(reportCardText).toContain('1 result for “report card”');
+    expect(reportCardText).toContain("Verified destination: View Grades");
+
+    const verificationText = await search("verify enrollment");
+    expect(verificationText).toContain('1 result for “verify enrollment”');
+    expect(verificationText).toContain("Verified destination: Proof of Enrollment");
+
+    const balanceText = await search("current balance");
+    expect(balanceText).toContain('1 result for “current balance”');
+    expect(balanceText).toContain("Verified destination: Check Account Balance");
+
+    const aidText = await search("accept financial aid");
+    expect(aidText).toContain('1 result for “accept financial aid”');
+    expect(aidText).toContain("Verified destination: Finances");
+
+    const transcriptOrderText = await search("order transcript");
+    expect(transcriptOrderText).toContain('1 result for “order transcript”');
+    expect(transcriptOrderText).toContain(
+      "Verified destination: University Registrar",
+    );
+  });
+
   it("prefers exact Personal Info tasks over unrelated resource aliases", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["personal", "resources"],

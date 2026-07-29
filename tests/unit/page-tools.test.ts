@@ -72,7 +72,7 @@ describe("page-family native tools", () => {
     );
 
     expect(proofOfEnrollment?.keywords).toEqual(
-      expect.arrayContaining(["enrollment letter"]),
+      expect.arrayContaining(["enrollment letter", "verify enrollment"]),
     );
   });
 
@@ -686,6 +686,11 @@ describe("page-family native tools", () => {
     ]);
     expect(openNativePageTool(document, "unofficial-transcript")).toBe(true);
     expect(nativeTranscriptClick).toHaveBeenCalledOnce();
+
+    const gradesTasks = getAvailableTaskTools(document);
+    expect(
+      gradesTasks.find(({ id }) => id === "transfer-credit")?.keywords,
+    ).toContain("credit transfer");
   });
 
   it("exposes exact Personal Info edit controls from adapted selected sections", () => {

@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.118 includes:
+Version 0.5.119 includes:
+
+- everyday records and finance wording such as “report card,” “verify
+  enrollment,” “credit transfer,” “current balance,” “print statement,” and
+  “accept financial aid” now reaches the closest verified task or workspace;
+  “order transcript” opens the verified Registrar guidance resource;
 
 - student-language academic searches such as “degree audit,” “audit my
   degree,” and “apply to graduate” now reach the verified Degree Progress or
