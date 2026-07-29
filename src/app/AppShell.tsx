@@ -2232,7 +2232,14 @@ export function AppShell({
                           key={toolId}
                           onClick={() => {
                             if (toolId === "course-search") {
-                              if (verifiedCourseSearch) {
+                              // Resource mode is backed by Albert's native
+                              // Other Resources menu. Always use the
+                              // lifecycle handoff from that mode so it can
+                              // close the native menu before opening Course
+                              // Search; the generic tool path intentionally
+                              // assumes the current native menu is already
+                              // in a stable page state.
+                              if (verifiedCourseSearch && !isResourceSearchMode) {
                                 handleTaskFinderTool(toolId);
                               } else {
                                 closeTaskFinder();

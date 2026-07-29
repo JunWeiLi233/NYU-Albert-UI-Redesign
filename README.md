@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.182 includes:
+Version 0.5.183 includes:
+
+- newcomer resource-mode Find classes now uses the native handoff lifecycle,
+  closing Albert's Other Resources directory before opening Course Search so
+  the single combined class-search field is the only next step;
 
 - cross-area Find classes cues now describe the verified Home-first Course
   Search handoff outside Home, while retaining the explicit Academics fallback
@@ -478,7 +482,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.182` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.183` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

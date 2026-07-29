@@ -3490,6 +3490,15 @@ describe("AppShell cross-area task handoffs", () => {
         nativeLabels: ["Student Life"],
       },
     ];
+    const onOpenTool = vi.fn();
+    const courseSearchTool = {
+      description: "Search by subject, course number, title, or instructor",
+      id: "course-search" as const,
+      keywords: [],
+      label: "Find Classes",
+      nativeLabels: ["Course Search"],
+      pageFamily: "home" as const,
+    };
     const onNavigate = vi.fn(() => {
       document
         .getElementById("MENU_ID_NYU_OTHER_RESOURCES_FLDR")
@@ -3498,7 +3507,7 @@ describe("AppShell cross-area task handoffs", () => {
         availablePageFamilies: ["home", "resources"],
         availablePageTools: [],
         availableResourceTools: resources,
-        availableTaskTools: [],
+        availableTaskTools: [courseSearchTool],
         currentPageFamily: "resources",
       });
     });
@@ -3507,14 +3516,14 @@ describe("AppShell cross-area task handoffs", () => {
       availablePageFamilies: ["home", "resources"],
       availablePageTools: [],
       availableResourceTools: resources,
-      availableTaskTools: [],
+      availableTaskTools: [courseSearchTool],
       currentPageFamily: "home",
       document,
       onDisable: vi.fn(async () => undefined),
       onNavigate,
       onNavigateToCourseSearch,
       onOpenResource: vi.fn(),
-      onOpenTool: vi.fn(),
+      onOpenTool,
       onSkipToContent: vi.fn(),
     });
 
@@ -3695,6 +3704,7 @@ describe("AppShell cross-area task handoffs", () => {
       await Promise.resolve();
     });
     expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
+    expect(onOpenTool).not.toHaveBeenCalled();
 
   });
 
