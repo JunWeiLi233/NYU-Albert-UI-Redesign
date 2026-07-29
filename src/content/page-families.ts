@@ -337,6 +337,8 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "technology help",
       "academic and campus resources",
       "academic services",
+      "view the calendar",
+      "go to brightspace",
       "learn more about academic resources",
       "academic tutoring at nyu",
       "from questions to confidence",

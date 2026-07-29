@@ -2799,7 +2799,7 @@ describe("AppShell cross-area task handoffs", () => {
           description: "Open NYU's learning platform",
           featured: false,
           id: "nyu-brightspace",
-          keywords: ["course materials", "learning platform"],
+          keywords: ["course materials", "learning platform", "go to brightspace"],
           label: "NYU Brightspace",
           nativeLabels: ["NYU Brightspace"],
         },
@@ -2879,6 +2879,32 @@ describe("AppShell cross-area task handoffs", () => {
     });
 
     expect(onOpenTool).toHaveBeenCalledWith("course-search");
+
+    await act(async () => {
+      finderToggle?.click();
+      await Promise.resolve();
+    });
+    const brightspaceSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(brightspaceSearch).not.toBeNull();
+    if (!brightspaceSearch) {
+      return;
+    }
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        brightspaceSearch,
+        "Go to Brightspace",
+      );
+      brightspaceSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “Go to Brightspace”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: NYU Brightspace",
+    );
   });
 
   it("accepts concise student wording for one-step class search", async () => {
@@ -3076,7 +3102,7 @@ describe("AppShell cross-area task handoffs", () => {
           description: "Check NYU academic dates and deadlines",
           featured: true,
           id: "academic-calendar",
-          keywords: ["academic calendar", "dates"],
+          keywords: ["academic calendar", "dates", "view the calendar"],
           label: "Academic Calendar",
           nativeLabels: ["Academic Calendar"],
         },
@@ -3148,6 +3174,34 @@ describe("AppShell cross-area task handoffs", () => {
       await Promise.resolve();
     });
     expect(onOpenResource).toHaveBeenCalledWith("academic-calendar");
+
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+    const calendarSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(calendarSearch).not.toBeNull();
+    if (!calendarSearch) {
+      return;
+    }
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        calendarSearch,
+        "View the Calendar",
+      );
+      calendarSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “View the Calendar”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Academic Calendar",
+    );
   });
 
   it("keeps broad help search on the directory when Student Services is unavailable", async () => {
@@ -3510,7 +3564,7 @@ describe("AppShell cross-area task handoffs", () => {
           description: "Check NYU academic dates and deadlines",
           featured: true,
           id: "academic-calendar",
-          keywords: ["academic calendar", "dates"],
+          keywords: ["academic calendar", "dates", "view the calendar"],
           label: "Academic Calendar",
           nativeLabels: ["Academic Calendar"],
         },

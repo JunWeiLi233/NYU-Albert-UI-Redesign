@@ -2079,6 +2079,8 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["accelerated studies", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["academic tutoring at nyu", "Open Academic Support"],
     ["The Writing Center hosted by CAS", "Open Academic Support"],
+    ["View the Calendar", "Open Academic Calendar"],
+    ["Go to Brightspace", "Open NYU Brightspace"],
     ["Learn more about academic resources", "Open Other Resources — NYU services, offices, and support"],
     ["Learn more about housing and dining", "Open Housing"],
     ["Learn more about bills, payments, and refunds", "Open Finances — Check balances, pay tuition, view bills, and manage financial aid"],

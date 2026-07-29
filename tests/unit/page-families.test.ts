@@ -334,6 +334,8 @@ describe("page-family task vocabulary", () => {
         "key links",
         "student information and resources",
         "academic and campus resources",
+        "view the calendar",
+        "go to brightspace",
         "learn more about academic resources",
         "getting around campus",
         "get support",

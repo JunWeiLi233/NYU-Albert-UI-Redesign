@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.170 includes:
+Version 0.5.171 includes:
+
+- the live NYU Students hub’s exact “View the Calendar” and “Go to
+  Brightspace” wording now resolves to the verified Academic Calendar and NYU
+  Brightspace controls in one step;
 
 - live NYU Academic Services wording such as “Find Your Advisor,” “What Can
   My Advisor Help With?,” “Visit the Academic Resource Center,” “Improve
