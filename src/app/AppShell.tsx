@@ -918,9 +918,12 @@ export function AppShell({
   const verifiedCourseSearch = availableTaskTools.find(
     ({ id }) => id === "course-search",
   );
+  // Home is the first verified cross-area handoff for non-Home workspaces.
+  // Only a Home view that lacks its own Course Search control should describe
+  // the alternate Academics handoff; otherwise the visible cue must match the
+  // lifecycle's actual Home-first route.
   const canReachCourseSearchThroughAcademics =
-    currentPageFamily !== "academics" &&
-    availablePageFamilies.includes("academics");
+    currentPageFamily === "home" && availablePageFamilies.includes("academics");
   const courseSearchShortcut = (() => {
     if (isResourceSearchMode) {
       return undefined;
@@ -943,6 +946,13 @@ export function AppShell({
     if (currentPageFamily !== "home" && availablePageFamilies.includes("home")) {
       return {
         description: "Open Course Search",
+        mode: "home" as const,
+      };
+    }
+
+    if (availablePageFamilies.includes("academics")) {
+      return {
+        description: "Open Academics to find classes",
         mode: "home" as const,
       };
     }

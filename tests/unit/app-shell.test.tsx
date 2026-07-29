@@ -2582,6 +2582,33 @@ describe("AppShell cross-area task handoffs", () => {
     expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
   });
 
+  it("describes the Home-first course-search route outside Home", () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics", "grades", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "grades",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shortcut = mountedHeader.host.shadowRoot?.querySelector<HTMLButtonElement>(
+      ".ba-course-search-shortcut",
+    );
+
+    expect(shortcut?.dataset.courseSearchMode).toBe("home");
+    expect(shortcut?.textContent).toContain("Open Course Search");
+    expect(shortcut?.textContent).not.toContain(
+      "Open Academics to find classes",
+    );
+  });
+
   it("does not advertise Home status starters without their native controls", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
