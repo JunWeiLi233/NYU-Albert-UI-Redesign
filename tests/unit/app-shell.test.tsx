@@ -3298,6 +3298,7 @@ describe("AppShell cross-area task handoffs", () => {
         </li>
         <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
           <a href="#calendar">Academic Calendar</a>
+          <a href="#studentlink">StudentLink</a>
         </div>
       </nav>
     `;
@@ -3347,6 +3348,16 @@ describe("AppShell cross-area task handoffs", () => {
         keywords: ["course materials"],
         label: "NYU Brightspace",
         nativeLabels: ["NYU Brightspace"],
+      },
+      {
+        category: "money-services" as const,
+        description:
+          "Get help with your bill, financial aid, registration, and more",
+        featured: false,
+        id: "studentlink" as const,
+        keywords: ["studentlink", "student link"],
+        label: "StudentLink",
+        nativeLabels: ["StudentLink"],
       },
       {
         category: "wellbeing-campus" as const,
@@ -3455,6 +3466,7 @@ describe("AppShell cross-area task handoffs", () => {
     ).toEqual([
       "Academic datesCheck NYU academic dates and deadlines›",
       "Course materialsOpen NYU's learning platform›",
+      "StudentLinkGet help with your bill, financial aid, registration, and more›",
       "Student supportFind general student services and support›",
     ]);
     expect(shadowRoot?.textContent).toContain("Start here");
