@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.187 includes:
+Version 0.5.188 includes:
+
+- unmatched class-like searches such as “biology” now offer an explicit,
+  keyboard-accessible Course Search recovery instead of ending at a dead-end
+  zero-results message; the native Albert form remains authoritative;
 
 - one-step class search retries the verified Home handoff once when Albert
   reports an intermediate workspace, so students do not need to press Find
@@ -497,7 +501,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.187` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.188` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

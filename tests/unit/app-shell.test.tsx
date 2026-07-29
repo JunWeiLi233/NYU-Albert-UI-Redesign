@@ -2712,6 +2712,78 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("offers Course Search recovery for a free-form class query", async () => {
+    const onNavigateToCourseSearch = vi.fn();
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [
+        {
+          description:
+            "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          keywords: ["find a course"],
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+          pageFamily: "home",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch,
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "biology",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain("Looking for a class?");
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-task-finder-course-recovery .ba-task-finder-search-action",
+      )?.textContent,
+    ).toBe("Open Find classes");
+
+    await act(async () => {
+      taskSearch.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "Enter",
+        }),
+      );
+    });
+
+    expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
+  });
+
   it("opens Course Search from a course query while the current area is Academics", async () => {
     const onNavigate = vi.fn();
     const onNavigateToCourseSearch = vi.fn();
