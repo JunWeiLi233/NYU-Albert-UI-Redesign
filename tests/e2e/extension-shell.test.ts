@@ -2038,13 +2038,24 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Solving personal problems that impede academic work", "Open Student Services"],
     ["Liaison linkage with academic departments", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["Finding Your Advisor", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Find Your Advisor", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["What Can My Advisor Help With?", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["Academic Resource Center", "Open Academic Support"],
+    ["Visit the Academic Resource Center", "Open Academic Support"],
     [
       "Prepare for Your Meeting",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
     ],
     [
       "Professional Edge",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Improve Skills with Professional Edge",
+      "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
+    ],
+    [
+      "Explore Academic Opportunities",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",
     ],
     [
@@ -2068,12 +2079,27 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["accelerated studies", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["academic tutoring at nyu", "Open Academic Support"],
     ["The Writing Center hosted by CAS", "Open Academic Support"],
+    ["Learn more about academic resources", "Open Other Resources — NYU services, offices, and support"],
+    ["Learn more about housing and dining", "Open Housing"],
+    ["Learn more about bills, payments, and refunds", "Open Finances — Check balances, pay tuition, view bills, and manage financial aid"],
     [
       "student complaint information",
       "Open Other Resources — NYU services, offices, and support",
     ],
     [
+      "New York Resident Student Complaint Information",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "Student Grievance Procedures for Certain Distance Education Students (SARA)",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
       "Kaplan All Access",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
+      "NYU Kaplan All Access: Free Kaplan Test Prep Courses for NYU Students",
       "Open Other Resources — NYU services, offices, and support",
     ],
     [
@@ -2163,6 +2189,14 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["NYU Bookstores", "Open Campus Resources"],
     ["Find More Student Guides", "Open Other Resources — NYU services, offices, and support"],
     ["More about StudentLink", "Open Other Resources — NYU services, offices, and support"],
+    ["Learn more about StudentLink", "Open Other Resources — NYU services, offices, and support"],
+    ["Help with you bill, financial aid, registration, and more", "Open Other Resources — NYU services, offices, and support"],
+    ["A Student Success Specialist", "Open NYU Connect"],
+    ["Learn more about student success specialists", "Open NYU Connect"],
+    ["Learn more about academic advisors", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
+    ["Learn more about campus resources", "Open Campus Resources"],
+    ["Learn more about getting involved", "Open Student Life"],
+    ["Learn more about the student activities board", "Open Student Life"],
     [
       "Help with your bill, financial aid, registration, and more",
       "Open Other Resources — NYU services, offices, and support",

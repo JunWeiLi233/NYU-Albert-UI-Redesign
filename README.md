@@ -6,7 +6,22 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.167 includes:
+Version 0.5.170 includes:
+
+- live NYU Academic Services wording such as “Find Your Advisor,” “What Can
+  My Advisor Help With?,” “Visit the Academic Resource Center,” “Improve
+  Skills with Professional Edge,” “Explore Academic Opportunities,” and
+  “Degree Progress Report” now resolves to the shortest verified Academics,
+  Academic Support, or native degree-progress destination;
+
+- Academic Services subpages now keep their exact tutoring, complaint, SARA,
+  and Kaplan labels searchable while preserving the honest Other Resources
+  directory fallback for public-only procedures and external services;
+
+- the live NYU Students hub’s “Learn more about academic resources,” “Learn
+  more about housing and dining,” and “Learn more about bills, payments, and
+  refunds” links now follow the same one-step Academics/resources, Housing,
+  and Finances routing as their visible tab destinations;
 
 - live NYU Student Records and Transcripts wording such as “Learn about your
   FERPA rights,” “How to request your official transcript,” “Update your
@@ -20,6 +35,12 @@ Version 0.5.167 includes:
   Records,” “Managing Guest Users,” “FERPA privacy rights and how to grant
   consent to disclose information,” and “New York State Tuition Assistance
   Program (TAP)” now uses the same safe one-step destinations;
+
+- the live NYU Students hub’s exact “A Student Success Specialist,” “Learn
+  more about academic advisors,” “Learn more about campus resources,” “Learn
+  more about getting involved,” “Learn more about StudentLink,” and Student
+  Activities Board labels now resolve to the corresponding verified resource
+  or area without making a newcomer interpret NYU’s public-site hierarchy;
 
 - live NYU registration checklist wording such as “Check your registration
   date and time,” registration-hold guidance, advisor planning, contact
