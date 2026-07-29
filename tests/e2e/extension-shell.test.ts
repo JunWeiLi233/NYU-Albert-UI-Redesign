@@ -5120,6 +5120,9 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "student activities board",
     "student parent",
     "veteran student",
+    "find clubs and other student organizations on campus",
+    "explore hundreds of ways to get involved",
+    "students in the military and veterans",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(

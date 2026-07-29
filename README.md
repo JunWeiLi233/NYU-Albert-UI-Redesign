@@ -6,7 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.161 includes:
+Version 0.5.162 includes:
+
+- live NYU Communities and Getting Involved wording such as “Students in
+  the Military and Veterans,” “Find clubs and other student organizations on
+  campus,” and “Explore hundreds of ways to get involved” now routes to the
+  verified Student Life anchor in one step;
 
 - live NYU Wellbeing wording such as “Schedule appointments with doctors,
   counselors, nurses, and other experts,” urgent mental-health and medical
