@@ -687,6 +687,11 @@ function PageToolNavigation({
         </span>
         <span className="ba-tool-origin">Original Albert links</span>
       </div>
+      {isHomeStarter && (
+        <p className="ba-tool-guidance">
+          New to NYU? Start with classes, holds, and registration dates.
+        </p>
+      )}
       <div className="ba-tool-list">
         {tools.map((tool) => {
           const descriptionId = `ba-tool-description-${tool.id}`;

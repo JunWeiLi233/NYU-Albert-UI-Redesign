@@ -333,6 +333,13 @@ button {
   line-height: 1.2;
 }
 
+.ba-tool-guidance {
+  margin: calc(-1 * var(--ba-space-1)) 0 var(--ba-space-2);
+  color: rgb(255 255 255 / 78%);
+  font-size: var(--ba-font-size-xs);
+  line-height: 1.35;
+}
+
 .ba-tool-list {
   display: grid;
   gap: var(--ba-space-2);
@@ -1366,6 +1373,13 @@ button {
     margin: 0;
   }
 
+  .ba-tool-guidance {
+    display: block;
+    flex: 0 0 100%;
+    margin: calc(-1 * var(--ba-space-2)) 0 0;
+    color: var(--ba-color-muted-ink);
+  }
+
   .ba-tool-label {
     margin: 0;
     color: var(--ba-color-nyu-violet);
@@ -1785,6 +1799,12 @@ button {
 
   .ba-tool-nav {
     padding-inline: var(--ba-space-4);
+  }
+
+  .ba-tool-guidance {
+    flex: 0 0 100%;
+    margin: calc(-1 * var(--ba-space-1)) 0 0;
+    color: var(--ba-color-muted-ink);
   }
 
   .ba-tool-list {
