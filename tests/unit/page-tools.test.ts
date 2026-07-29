@@ -973,6 +973,9 @@ describe("page-family native tools", () => {
         "find tips for remote learning",
         "centralized online platform",
         "individualized guidance",
+        "a student success specialist",
+        "learn more about student success specialists",
+        "learn more about student success specialist",
       ]),
     );
     expect(wellnessCenter?.keywords).toEqual(
@@ -1029,6 +1032,8 @@ describe("page-family native tools", () => {
         "public transportation discounts",
         "green workplace",
         "students with disabilities",
+        "campus resources",
+        "learn more about campus resources",
       ]),
     );
     expect(ferpa?.keywords).toEqual(

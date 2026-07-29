@@ -6,7 +6,7 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.167 includes:
+Version 0.5.168 includes:
 
 - live NYU Student Records and Transcripts wording such as “Learn about your
   FERPA rights,” “How to request your official transcript,” “Update your
@@ -20,6 +20,12 @@ Version 0.5.167 includes:
   Records,” “Managing Guest Users,” “FERPA privacy rights and how to grant
   consent to disclose information,” and “New York State Tuition Assistance
   Program (TAP)” now uses the same safe one-step destinations;
+
+- the live NYU Students hub’s exact “A Student Success Specialist,” “Learn
+  more about academic advisors,” “Learn more about campus resources,” “Learn
+  more about getting involved,” “Learn more about StudentLink,” and Student
+  Activities Board labels now resolve to the corresponding verified resource
+  or area without making a newcomer interpret NYU’s public-site hierarchy;
 
 - live NYU registration checklist wording such as “Check your registration
   date and time,” registration-hold guidance, advisor planning, contact

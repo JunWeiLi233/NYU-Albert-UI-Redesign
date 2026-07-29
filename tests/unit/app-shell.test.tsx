@@ -238,7 +238,7 @@ describe("AppShell cross-area task handoffs", () => {
 
   it("keeps ordinary transportation searches away from Campus Safety", async () => {
     mountedHeader = mountHeader({
-      availablePageFamilies: ["home", "resources"],
+      availablePageFamilies: ["home", "academics", "resources"],
       availablePageTools: [],
       availableResourceTools: [
         {
@@ -360,9 +360,21 @@ describe("AppShell cross-area task handoffs", () => {
 
   it("keeps current community, career, and engagement labels searchable without guessing", async () => {
     mountedHeader = mountHeader({
-      availablePageFamilies: ["home", "resources"],
+      availablePageFamilies: ["home", "academics", "resources"],
       availablePageTools: [],
       availableResourceTools: [
+        {
+          category: "learning-career",
+          description: "Schedule support appointments and view your Success Network",
+          featured: false,
+          id: "nyu-connect",
+          keywords: [
+            "a student success specialist",
+            "learn more about student success specialists",
+          ],
+          label: "NYU Connect",
+          nativeLabels: ["NYU Connect"],
+        },
         {
           category: "learning-career",
           description: "Find career coaching, jobs, and internships",
@@ -400,6 +412,8 @@ describe("AppShell cross-area task handoffs", () => {
             "find clubs and other student organizations on campus",
             "explore hundreds of ways to get involved",
             "students in the military and veterans",
+            "learn more about getting involved",
+            "learn more about student activities board",
           ],
           label: "Student Life",
           nativeLabels: ["Student Life"],
@@ -415,6 +429,16 @@ describe("AppShell cross-area task handoffs", () => {
           ],
           label: "Wellness Center",
           nativeLabels: ["Wellness Center"],
+        },
+        {
+          category: "wellbeing-campus",
+          description:
+            "Find technology, accessibility, libraries, bookstores, mail, and facilities",
+          featured: false,
+          id: "campus-resources",
+          keywords: ["learn more about campus resources"],
+          label: "Campus Resources",
+          nativeLabels: ["Campus Resources"],
         },
       ],
       availableTaskTools: [],
@@ -492,6 +516,12 @@ describe("AppShell cross-area task handoffs", () => {
       ["find clubs and other student organizations on campus", "Student Life"],
       ["explore hundreds of ways to get involved", "Student Life"],
       ["students in the military and veterans", "Student Life"],
+      ["a student success specialist", "NYU Connect"],
+      ["learn more about student success specialists", "NYU Connect"],
+      ["learn more about academic advisors", "Academics"],
+      ["learn more about campus resources", "Campus Resources"],
+      ["learn more about getting involved", "Student Life"],
+      ["learn more about student activities board", "Student Life"],
       ["health wellness accessibility services", "Wellness Center"],
       [
         "career development mentorship entrepreneurship",
@@ -1581,6 +1611,8 @@ describe("AppShell cross-area task handoffs", () => {
       "Learn about your FERPA rights",
       "How to request your official transcript",
       "Certify your VA benefits",
+      "Learn more about StudentLink",
+      "Help with you bill, financial aid, registration, and more",
     ]) {
       const text = await search(query);
       expect(text).toContain(`1 result for “${query}”`);
