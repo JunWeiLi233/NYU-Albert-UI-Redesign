@@ -6,7 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.117 includes:
+Version 0.5.118 includes:
+
+- student-language academic searches such as “degree audit,” “audit my
+  degree,” and “apply to graduate” now reach the verified Degree Progress or
+  Academics workspace without changing the native graduation action;
 
 - plain-language searches such as “plan my courses,” “when do I graduate,”
   and “choose a major” now reach the verified Academic Planner, graduation

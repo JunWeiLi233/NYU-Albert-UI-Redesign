@@ -617,6 +617,11 @@ describe("page-family native tools", () => {
     ).toEqual(
       expect.arrayContaining(["expected graduation", "when do i graduate"]),
     );
+    expect(
+      academicTools.find(({ id }) => id === "degree-progress")?.keywords,
+    ).toEqual(
+      expect.arrayContaining(["audit my degree", "degree audit", "degree check"]),
+    );
   });
 
   it("allows explicitly non-transactional academic javascript destinations", () => {

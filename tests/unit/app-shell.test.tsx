@@ -1016,6 +1016,22 @@ describe("AppShell cross-area task handoffs", () => {
           nativeLabels: ["View My Graduation Status"],
           pageFamily: "academics",
         },
+        {
+          allowJavascriptUrl: true,
+          description: "Review remaining degree requirements",
+          id: "degree-progress",
+          keywords: [
+            "audit my degree",
+            "classes need",
+            "degree audit",
+            "degree check",
+            "degree requirements",
+            "remaining requirements",
+          ],
+          label: "Check Degree Progress",
+          nativeLabels: ["Degree Progress Report"],
+          pageFamily: "academics",
+        },
       ],
       currentPageFamily: "academics",
       document,
@@ -1062,6 +1078,14 @@ describe("AppShell cross-area task handoffs", () => {
     expect(graduationText).toContain(
       "Verified destination: Check Graduation Status",
     );
+
+    const degreeText = await search("degree audit");
+    expect(degreeText).toContain('1 result for “degree audit”');
+    expect(degreeText).toContain("Verified destination: Check Degree Progress");
+
+    const applicationText = await search("apply to graduate");
+    expect(applicationText).toContain('1 result for “apply to graduate”');
+    expect(applicationText).toContain("Verified destination: Academics");
 
     const majorText = await search("choose a major");
     expect(majorText).toContain('1 result for “choose a major”');
