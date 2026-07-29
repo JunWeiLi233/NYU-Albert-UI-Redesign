@@ -1072,6 +1072,7 @@ export const COURSE_SEARCH_KEYWORDS = [
   "course finder",
   "course lookup",
   "course registration",
+  "registration",
   "registration process",
   "navigate the registration process",
   "course search",
