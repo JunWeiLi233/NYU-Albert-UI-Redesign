@@ -117,6 +117,13 @@ const RESOURCE_SEARCH_SUGGESTIONS = [
   toolId: PageToolId;
 }[];
 
+const NEW_STUDENT_GUIDE_SEARCHES = [
+  { label: "Advice for Your First Semester", query: "first semester" },
+  { label: "Advice for Transfer Students", query: "transfer student" },
+  { label: "Time Management Guide", query: "time management" },
+  { label: "Student Tech Guide", query: "student tech guide" },
+] as const;
+
 const NEW_STUDENT_RESOURCE_STARTER_ORDER = [
   "academic-calendar",
   "nyu-brightspace",
@@ -1984,6 +1991,11 @@ export function AppShell({
                       ? ` ${taskFinderId}-search-help`
                       : ""
                   }${
+                    isResourceSearchMode &&
+                    resourceFinderIntent === "new-student"
+                      ? ` ${taskFinderId}-guide-help`
+                      : ""
+                  }${
                     normalizedTaskSearchQuery.length > 0 &&
                     filteredResultCount === 1
                       ? ` ${taskFinderId}-search-destination ${taskFinderId}-search-hint`
@@ -2097,6 +2109,39 @@ export function AppShell({
                   </div>
                 </div>
               )}
+              {isResourceSearchMode &&
+                resourceFinderIntent === "new-student" &&
+                normalizedTaskSearchQuery.length === 0 && (
+                  <div
+                    className="ba-task-finder-guides"
+                    role="group"
+                    aria-label="Student Guides"
+                  >
+                    <div className="ba-task-finder-guides-heading">
+                      <span className="ba-task-finder-common-label">
+                        Student Guides
+                      </span>
+                      <span id={`${taskFinderId}-guide-help`}>
+                        Search with the same newcomer wording used by NYU.
+                      </span>
+                    </div>
+                    <div className="ba-task-finder-guide-list">
+                      {NEW_STUDENT_GUIDE_SEARCHES.map(({ label, query }) => (
+                        <button
+                          className="ba-task-finder-guide"
+                          type="button"
+                          key={query}
+                          onClick={() => {
+                            setTaskSearchQuery(query);
+                            taskFinderSearchRef.current?.focus();
+                          }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               <p
                 className="ba-task-finder-search-status"
                 id={`${taskFinderId}-search-status`}
