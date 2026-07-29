@@ -1831,6 +1831,10 @@ test("exposes task-first discovery at every supported width and delegates throug
       "Open Other Resources — NYU services, offices, and support",
     ],
     [
+      "Check this page for links to virtual programming, resources and support services across campus",
+      "Open Other Resources — NYU services, offices, and support",
+    ],
+    [
       "getting around campus",
       "Open Other Resources — NYU services, offices, and support",
     ],
@@ -1992,6 +1996,10 @@ test("exposes task-first discovery at every supported width and delegates throug
     ],
     ["pre orientation events", "Open OGS"],
     ["student support", "Open Student Services"],
+    [
+      "Meet with an expert to guide you through NYU student services",
+      "Open Student Services",
+    ],
     [
       "your academic advisor",
       "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress",

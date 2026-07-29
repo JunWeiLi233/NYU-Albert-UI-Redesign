@@ -370,6 +370,8 @@ export const PAGE_FAMILY_DEFINITIONS: Record<
       "success toolbox",
       "student services",
       "student support",
+      "meet with an expert to guide you through nyu student services",
+      "check this page for links to virtual programming resources and support services across campus",
       "programs to inspire success",
       "opportunity programs",
       "surveys for success",

@@ -935,6 +935,9 @@ describe("page-family native tools", () => {
     expect(studentServices?.keywords).not.toContain("student success");
     expect(studentServices?.keywords).toContain("office of the dean of students");
     expect(studentServices?.keywords).toContain(
+      "meet with an expert to guide you through nyu student services",
+    );
+    expect(studentServices?.keywords).toContain(
       "solving personal problems that impede academic work",
     );
     expect(housing?.keywords).toContain("on campus living");
