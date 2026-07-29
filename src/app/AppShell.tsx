@@ -127,6 +127,7 @@ const NEW_STUDENT_GUIDE_SEARCHES = [
 const NEW_STUDENT_KEY_LINKS = [
   { label: "Academic dates", toolId: "academic-calendar" },
   { label: "Course materials", toolId: "nyu-brightspace" },
+  { label: "StudentLink", toolId: "studentlink" },
   { label: "Student support", toolId: "student-services" },
 ] as const satisfies readonly { label: string; toolId: PageToolId }[];
 
