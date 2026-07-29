@@ -6,7 +6,14 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.159 includes:
+Version 0.5.160 includes:
+
+- live NYU Student Success wording such as “Personalized Support,”
+  “Navigating College and NYU,” “Time Management Tips,” “Coaching and
+  Mentoring,” and “Success Toolbox” now routes to the verified NYU Connect
+  anchor in one step; leave-of-absence, glossary, Year 2, midterm-feedback,
+  and text-message labels remain honest Other Resources directory cues;
+
 
 - newcomer resource search now adds NYU-style “Browse by student need” cues
   for Academic Services, Getting Around Campus, Housing and Dining, Financial,

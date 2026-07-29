@@ -4916,6 +4916,15 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     "request assistance",
     "academic coaching",
     "schedule support appointment",
+    "personalized support",
+    "connect with a student success specialist for personalized support",
+    "navigating college and nyu",
+    "organization support",
+    "time management tips",
+    "coaching and mentoring",
+    "success toolbox",
+    "your success toolbox essential guides and resources for navigating nyu",
+    "time management guide",
   ]) {
     await resourceSearchInput.fill(query);
     await expect(
