@@ -14,6 +14,7 @@ import {
   type PageFamily,
   type PrimaryPageFamily,
 } from "../content/page-families";
+import { NATIVE_MODAL_OPEN_ATTRIBUTE } from "../content/native-theme";
 import type {
   PageToolDefinition,
   PageToolId,
@@ -858,6 +859,39 @@ export function AppShell({
       primaryNavigation.scrollTop = 0;
     }
   }, [currentPageFamily, isResourceSearchMode]);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    const ownerDocument = shell?.ownerDocument;
+    const documentElement = ownerDocument?.documentElement;
+    const MutationObserverConstructor = ownerDocument?.defaultView?.MutationObserver;
+    if (!shell || !documentElement || !MutationObserverConstructor) {
+      return;
+    }
+
+    const resetRailScroll = (): void => {
+      shell.scrollTop = 0;
+      if (primaryNavigationRef.current) {
+        primaryNavigationRef.current.scrollTop = 0;
+      }
+    };
+    const observer = new MutationObserverConstructor((records) => {
+      if (
+        records.some(
+          ({ attributeName }) =>
+            attributeName === NATIVE_MODAL_OPEN_ATTRIBUTE,
+        )
+      ) {
+        resetRailScroll();
+      }
+    });
+    observer.observe(documentElement, {
+      attributeFilter: [NATIVE_MODAL_OPEN_ATTRIBUTE],
+      attributes: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const wasNativeResourcesOpen = previousNativeResourcesOpenRef.current;

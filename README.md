@@ -6,7 +6,10 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.180 includes:
+Version 0.5.181 includes:
+
+- native modal open/close transitions now return the Better Albert rail to its
+  top-level wayfinding context, keeping Find classes and Find a task visible;
 
 - current Degree Progress reports now use a centered, scroll-bounded lightbox
   with NYU-violet title bands, a fixed readable mask, and 44px native actions;
@@ -471,7 +474,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.180` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.181` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 
