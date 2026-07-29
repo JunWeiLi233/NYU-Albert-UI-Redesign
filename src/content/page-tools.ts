@@ -42,6 +42,7 @@ export type PageToolId =
   | "financial-aid-resources"
   | "law-housing"
   | "nyu-card-center"
+  | "studentlink"
   | "nyu-brightspace"
   | "nyu-connect"
   | "nyu-summer"
@@ -425,6 +426,21 @@ const RESOURCE_TOOLS: readonly ResourceToolDefinition[] = [
     ],
     label: "NYU Card Center",
     nativeLabels: ["NYU Card Center"],
+  },
+  {
+    category: "money-services",
+    description: "Get help with your bill, financial aid, registration, and more",
+    featured: false,
+    id: "studentlink",
+    keywords: [
+      "studentlink",
+      "student link",
+      "studentlink center",
+      "help with your bill financial aid registration and more",
+      "financial aid and registration",
+    ],
+    label: "StudentLink",
+    nativeLabels: ["StudentLink", "StudentLink Center"],
   },
   {
     category: "global",
