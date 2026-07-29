@@ -3308,6 +3308,126 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("offers the verified newcomer guide from a direct resource search", async () => {
+    document.body.innerHTML = `
+      <nav id="IS_BB_HEADER_MENU">
+        <li
+          id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+          class="megaMenuSelected"
+          onclick="toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected');"
+        >
+          <a href="#">Other Resources</a>
+        </li>
+        <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
+          <a href="#calendar">Academic Calendar</a>
+        </div>
+      </nav>
+    `;
+
+    const renderResourceFinder = (): ShadowRoot | null | undefined => {
+      mountedHeader = mountHeader({
+        availablePageFamilies: ["resources"],
+        availablePageTools: [],
+        availableResourceTools: [
+          {
+            category: "academic-records",
+            description: "Check NYU academic dates and deadlines",
+            featured: true,
+            id: "academic-calendar",
+            keywords: ["academic calendar", "dates"],
+            label: "Academic Calendar",
+            nativeLabels: ["Academic Calendar"],
+          },
+        ],
+        availableTaskTools: [],
+        currentPageFamily: "resources",
+        document,
+        onDisable: vi.fn(async () => undefined),
+        onNavigate: vi.fn(),
+        onNavigateToCourseSearch: vi.fn(),
+        onOpenResource: vi.fn(),
+        onOpenTool: vi.fn(),
+        onSkipToContent: vi.fn(),
+      });
+      return mountedHeader.host.shadowRoot;
+    };
+
+    let shadowRoot = renderResourceFinder();
+    const searchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(searchInput).not.toBeNull();
+    if (!searchInput) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        searchInput,
+        "new student",
+      );
+      searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain('0 results for “new student”');
+    expect(shadowRoot?.textContent).toContain("Open New student help");
+    expect(shadowRoot?.textContent).toContain(
+      "New student help is available as a verified guide",
+    );
+
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>(
+          '[aria-label="Open New student help"]',
+        )
+        ?.click();
+      await Promise.resolve();
+    });
+
+    expect(searchInput.value).toBe("");
+    expect(shadowRoot?.textContent).toContain("New to NYU?");
+    expect(shadowRoot?.textContent).toContain("Student Guides");
+
+    mountedHeader?.unmount();
+    mountedHeader = undefined;
+    shadowRoot = renderResourceFinder();
+    const enterSearchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(enterSearchInput).not.toBeNull();
+    if (!enterSearchInput) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        enterSearchInput,
+        "first semester",
+      );
+      enterSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(shadowRoot?.textContent).toContain(
+      '0 results for “first semester”',
+    );
+
+    await act(async () => {
+      enterSearchInput.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "Enter",
+        }),
+      );
+      await Promise.resolve();
+    });
+
+    expect(enterSearchInput.value).toBe("");
+    expect(shadowRoot?.textContent).toContain("New to NYU?");
+    expect(shadowRoot?.textContent).toContain("Student Guides");
+  });
+
   it("keeps broad help search on the directory when Student Services is unavailable", async () => {
     document.body.innerHTML = `
       <nav id="IS_BB_HEADER_MENU">
