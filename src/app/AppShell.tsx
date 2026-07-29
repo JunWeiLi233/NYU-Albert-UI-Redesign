@@ -256,6 +256,16 @@ const GENERIC_APPOINTMENT_RESOURCE_INTENTS = new Set([
   "book appointment",
   "schedule appointment",
 ]);
+const EXACT_TASK_INTENTS = new Map<string, PageToolId>([
+  ["address", "addresses"],
+  ["date of birth", "demographic-information"],
+  ["email", "email-addresses"],
+  ["emergency contact", "emergency-contacts"],
+  ["gender", "demographic-information"],
+  ["legal name", "demographic-information"],
+  ["phone", "phone-numbers"],
+  ["preferred name", "demographic-information"],
+]);
 
 function normalizeTaskSearchValue(value: string): string {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -464,6 +474,14 @@ function isGenericAppointmentResourceIntent(query: string): boolean {
   return GENERIC_APPOINTMENT_RESOURCE_INTENTS.has(
     getMeaningfulTaskSearchValue(query),
   );
+}
+
+function getExactTaskIntentId(query: string): PageToolId | undefined {
+  return EXACT_TASK_INTENTS.get(getMeaningfulTaskSearchValue(query));
+}
+
+function isBareBursarIntent(query: string): boolean {
+  return getMeaningfulTaskSearchValue(query) === "bursar";
 }
 
 function isConversationalSupportQuery(query: string): boolean {
@@ -786,6 +804,9 @@ export function AppShell({
     if (isGenericAppointmentResourceIntent(query)) {
       return false;
     }
+    if (tool.id === "academic-calendar" && isBareBursarIntent(query)) {
+      return false;
+    }
     if (
       tool.id === "ogs" &&
       (isGenericOrientationIntent(query) || isGenericOgsResourceIntent(query))
@@ -889,6 +910,17 @@ export function AppShell({
           : availableTaskTools.filter((tool) =>
               matchesTool(tool, searchQuery, allowTypos),
             );
+      const exactTaskIntentId = getExactTaskIntentId(searchQuery);
+      const exactTaskIntentTool = exactTaskIntentId
+        ? matchingTaskTools.find((tool) => tool.id === exactTaskIntentId)
+        : undefined;
+      if (exactTaskIntentTool) {
+        return {
+          resourceTools: [],
+          taskFamilies: [],
+          taskTools: [exactTaskIntentTool],
+        };
+      }
       const directCourseSearch = matchingTaskTools.find(
         (tool) => tool.id === "course-search",
       );

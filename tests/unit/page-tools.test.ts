@@ -88,7 +88,7 @@ describe("page-family native tools", () => {
     );
 
     expect(bursarAccount?.keywords).toEqual(
-      expect.arrayContaining(["payment plan"]),
+      expect.arrayContaining(["payment plan", "pay my bill", "pay tuition bill"]),
     );
   });
 

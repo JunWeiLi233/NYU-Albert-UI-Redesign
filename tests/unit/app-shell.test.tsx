@@ -746,6 +746,170 @@ describe("AppShell cross-area task handoffs", () => {
     }
   });
 
+  it("prefers exact Personal Info tasks over unrelated resource aliases", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["personal", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "global",
+          description: "Find international student guidance",
+          featured: false,
+          id: "ogs",
+          keywords: ["journey to NYU email series"],
+          label: "OGS",
+          nativeLabels: ["OGS"],
+        },
+        {
+          category: "wellbeing-campus",
+          description: "Find housing information",
+          featured: false,
+          id: "housing",
+          keywords: ["gender inclusive housing"],
+          label: "Housing",
+          nativeLabels: ["Housing"],
+        },
+      ],
+      availableTaskTools: [
+        {
+          description: "Change or review a saved email in Albert",
+          id: "email-addresses",
+          keywords: ["email address"],
+          label: "Update Email Addresses",
+          nativeLabels: ["Edit Email Addresses"],
+          pageFamily: "personal",
+        },
+        {
+          description:
+            "Review official demographic information, including legal name, gender, and date of birth",
+          id: "demographic-information",
+          keywords: ["gender"],
+          label: "Review Personal Details",
+          nativeLabels: ["Demographic Information"],
+          pageFamily: "personal",
+        },
+      ],
+      currentPageFamily: "personal",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    const search = async (query: string) => {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      return shadowRoot?.textContent ?? "";
+    };
+
+    const emailText = await search("email");
+    expect(emailText).toContain('1 result for “email”');
+    expect(emailText).toContain("Verified destination: Update Email Addresses");
+    expect(emailText).not.toContain("Verified destination: OGS");
+
+    const genderText = await search("gender");
+    expect(genderText).toContain('1 result for “gender”');
+    expect(genderText).toContain("Verified destination: Review Personal Details");
+    expect(genderText).not.toContain("Verified destination: Housing");
+  });
+
+  it("keeps finance wording on the verified billing path", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "finances", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [
+        {
+          category: "academic-records",
+          description: "Check NYU academic dates and deadlines",
+          featured: true,
+          id: "academic-calendar",
+          keywords: ["bursar deadline"],
+          label: "Academic Calendar",
+          nativeLabels: ["Academic Calendar"],
+        },
+      ],
+      availableTaskTools: [
+        {
+          compactDescription: true,
+          description: "Pay tuition or review charges in NYU eSuite",
+          id: "bursar-account",
+          keywords: ["pay my bill", "pay tuition bill"],
+          label: "Pay Tuition & View Bills",
+          nativeLabels: ["View Bursar Account (log into eSuite)"],
+          pageFamily: "finances",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    shadowRoot
+      ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+      ?.click();
+    await act(async () => Promise.resolve());
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    const search = async (query: string) => {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+          taskSearch,
+          query,
+        );
+        taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+        await Promise.resolve();
+      });
+      return shadowRoot?.textContent ?? "";
+    };
+
+    const billText = await search("pay my bill");
+    expect(billText).toContain('1 result for “pay my bill”');
+    expect(billText).toContain(
+      "Verified destination: Pay Tuition & View Bills",
+    );
+
+    const bursarText = await search("bursar");
+    expect(bursarText).toContain('1 result for “bursar”');
+    expect(bursarText).toContain("Verified destination: Finances");
+    expect(bursarText).not.toContain("Verified destination: Academic Calendar");
+  });
+
   it("does not advertise class search without a verified Course Search path", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],

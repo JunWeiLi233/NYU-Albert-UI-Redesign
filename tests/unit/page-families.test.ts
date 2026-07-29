@@ -54,10 +54,14 @@ describe("page-family task vocabulary", () => {
     expect(PAGE_FAMILY_DEFINITIONS.finances.keywords).toEqual(
       expect.arrayContaining([
         "amount due",
+        "accept my aid",
         "bills payments and refunds",
+        "bursar",
         "how much owe",
         "financial aid status",
         "manage your personal finances",
+        "pay my bill",
+        "pay tuition bill",
         "review charges",
         "tuition and fees",
         "what owe",

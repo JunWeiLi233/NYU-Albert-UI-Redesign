@@ -6,8 +6,12 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.114 includes:
+Version 0.5.115 includes:
 
+- finance searches now keep “pay my bill” on the verified eSuite billing
+  control and route a bare “bursar” query to Finances instead of Academic
+  Calendar; exact “email” and “gender” searches now prefer their native
+  Personal Info tasks over unrelated resource aliases;
 - enrollment and records wording such as “proof of enrollment,” “unofficial
   transcript,” “official transcript,” and “MyHub enrollment” now reaches the
   verified Grades & Transcripts workspace from other Albert areas;
