@@ -2,6 +2,7 @@ import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { mountHeader, type MountedHeader } from "../../src/app/mount-header";
+import { NATIVE_MODAL_OPEN_ATTRIBUTE } from "../../src/content/native-theme";
 
 (globalThis as typeof globalThis & {
   IS_REACT_ACT_ENVIRONMENT?: boolean;
@@ -44,6 +45,42 @@ describe("AppShell cross-area task handoffs", () => {
     ).toBe(
       "Switches to original Albert now. Use the browser extension icon to turn Better Albert back on.",
     );
+  });
+
+  it("returns the rail to its wayfinding context after a native modal closes", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["academics"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "academics",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const shell = shadowRoot?.querySelector<HTMLElement>(".ba-shell");
+    expect(shell).not.toBeUndefined();
+    if (!shell) {
+      return;
+    }
+
+    shell.scrollTop = 240;
+    document.documentElement.setAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE, "");
+    await act(async () => Promise.resolve());
+    shell.scrollTop = 240;
+
+    document.documentElement.removeAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(shell.scrollTop).toBe(0);
   });
 
   it("explains the one-step Class Search handoff before typing", async () => {
