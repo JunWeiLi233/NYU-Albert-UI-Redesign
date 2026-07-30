@@ -392,6 +392,11 @@ button {
   color: var(--ba-color-nyu-violet-hover);
 }
 
+/* Home owns one visible course-search action above the broader task finder. */
+.ba-home-starter-nav .ba-tool-item[data-tool-id="course-search"] {
+  display: none;
+}
+
 .ba-task-finder-toggle,
 .ba-course-search-shortcut,
 .ba-task-finder {

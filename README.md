@@ -6,9 +6,11 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.194 includes:
+Version 0.5.195 includes:
 
 - the desktop rail now uses a newcomer-first hierarchy: Home’s direct Find Classes action appears once under “Start here,” repeated system-origin labels are removed from the visual path, and the area map is clearly labelled “Explore Albert” with task hints retained for assistive technology;
+
+- the live Home rail now surfaces that verified Course Search action before the broader task finder, with one click opening Albert’s native course-search form and focusing its combined subject/course/title/instructor field;
 
 Version 0.5.193 includes:
 
