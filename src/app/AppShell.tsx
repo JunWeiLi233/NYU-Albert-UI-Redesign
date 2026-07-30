@@ -1618,6 +1618,17 @@ export function AppShell({
           return undefined;
         })()
       : undefined;
+  const isNewcomerSingleResult = Boolean(
+    singleTaskSearchResult &&
+      filteredTaskFamilies.length === 1 &&
+      filteredTaskFamilies[0] === "resources" &&
+      isNewStudentResourceIntent(normalizedTaskSearchQuery),
+  );
+  const singleResultActionLabel = isNewcomerSingleResult
+    ? "Open New student help"
+    : singleTaskSearchResult
+      ? `Open ${singleTaskSearchResult.label}`
+      : undefined;
   const singleResourceTool =
     normalizedTaskSearchQuery.length > 0 &&
     filteredResultCount === 1 &&
@@ -2619,6 +2630,12 @@ export function AppShell({
                           <strong>Verified destination:</strong>{" "}
                           {singleTaskSearchResult.label}
                           <span> — {singleTaskSearchResult.description}</span>
+                          {isNewcomerSingleResult && (
+                            <span className="ba-task-finder-search-result-note">
+                              Start here for newcomer key links, student guides,
+                              and support.
+                            </span>
+                          )}
                         </p>
                         <button
                           className={`ba-task-finder-search-action${
@@ -2640,7 +2657,7 @@ export function AppShell({
                             )
                           }
                         >
-                          Open {singleTaskSearchResult.label}
+                          {singleResultActionLabel}
                         </button>
                         {singleResourceTool && (
                           <section className="ba-task-finder-single-resource-context">

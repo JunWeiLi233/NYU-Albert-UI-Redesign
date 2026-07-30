@@ -6,6 +6,13 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
+Version 0.5.191 includes:
+
+- broad newcomer searches now keep the native Other Resources destination
+  explicit while presenting a clearer “Open New student help” action and
+  explaining that verified key links, student guides, and support appear after
+  the handoff;
+
 Version 0.5.190 includes:
 
 - the exact newcomer query “registration” now takes the same verified one-step
@@ -510,7 +517,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.190` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.191` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

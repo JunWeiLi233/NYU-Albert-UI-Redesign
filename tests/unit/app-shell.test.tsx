@@ -170,6 +170,65 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("makes newcomer search results actionable without hiding the native destination", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    const searchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(searchInput).not.toBeNull();
+    if (!searchInput) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        searchInput,
+        "new student",
+      );
+      searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Other Resources",
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Start here for newcomer key links, student guides, and support.",
+    );
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-task-finder-search-action",
+      )?.textContent,
+    ).toBe("Open New student help");
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-task-finder-search-action",
+      )?.getAttribute("aria-label"),
+    ).toBe("Open Other Resources — NYU services, offices, and support");
+  });
+
   it("routes public Get Support advisor wording to Academics", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "academics", "resources"],
