@@ -692,6 +692,14 @@ button {
   color: var(--ba-color-muted-ink);
 }
 
+.ba-task-finder-search-result-note {
+  display: block;
+  margin-top: var(--ba-space-1);
+  color: var(--ba-color-nyu-violet) !important;
+  font-size: var(--ba-font-size-xs);
+  font-weight: 800;
+}
+
 .ba-task-finder-course-recovery,
 .ba-task-finder-single-resource-context {
   display: grid;
