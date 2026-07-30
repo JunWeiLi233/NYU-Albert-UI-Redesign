@@ -2069,7 +2069,7 @@ export function AppShell({
           data-page-family={currentPageFamily}
           aria-live="polite"
         >
-          <span className="ba-page-eyebrow">Workspace</span>
+          <span className="ba-page-eyebrow">You are here</span>
           <strong className="ba-page-title">{currentPage.label}</strong>
           <span className="ba-page-description">{currentPage.description}</span>
         </div>
@@ -2079,7 +2079,9 @@ export function AppShell({
             className="ba-discovery-actions"
             data-has-course-search={courseSearchShortcut ? "true" : undefined}
           >
-            {courseSearchShortcut && (
+            {courseSearchShortcut &&
+              (currentPageFamily !== "home" ||
+                courseSearchShortcut.mode !== "direct") && (
               <button
                 className="ba-course-search-shortcut"
                 type="button"
@@ -2161,9 +2163,9 @@ export function AppShell({
         <nav
           ref={primaryNavigationRef}
           className="ba-primary-nav"
-          aria-label="Better Albert areas"
+          aria-label="Explore Albert areas"
         >
-          <span className="ba-primary-label">Student services</span>
+          <span className="ba-primary-label">Explore Albert</span>
           {PRIMARY_PAGE_FAMILIES.map((pageFamily) => {
             const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
             const isAvailable = availablePageFamilies.includes(pageFamily);

@@ -210,6 +210,12 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.querySelector(".ba-tool-guidance")?.textContent).toBe(
       "New to NYU? Start with classes, holds, and registration dates.",
     );
+    expect(shadowRoot?.querySelector(".ba-course-search-shortcut")).toBeNull();
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        '.ba-home-starter-nav button[aria-label="Find Classes"]',
+      ),
+    ).not.toBeNull();
   });
 
   it("makes newcomer search results actionable without hiding the native destination", async () => {
