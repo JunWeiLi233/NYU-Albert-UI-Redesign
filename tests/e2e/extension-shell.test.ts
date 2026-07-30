@@ -231,7 +231,7 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(
     page.getByRole("button", { exact: true, name: "Academic Calendar" }),
   ).toBeVisible();
-  await expect(page.locator(".ba-primary-label")).toHaveText("Student services");
+  await expect(page.locator(".ba-primary-label")).toHaveText("Explore Albert");
   const homeStarter = page.locator(".ba-home-starter-nav");
   await expect(homeStarter.locator(".ba-tool-label")).toHaveText("Start here");
   const homeStarterGeometry = await homeStarter.evaluate((navigation) => {
@@ -256,12 +256,15 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(page.locator(".ba-resource-nav .ba-tool-label")).toHaveText(
     "NYU resources",
   );
-  await expect(
-    page.locator(".ba-nav-hint", {
-      hasText:
-        "Plan courses, manage enrollment, meet your advisor, and track degree progress",
-    }),
-  ).toBeVisible();
+  const academicsHint = page.locator(".ba-nav-hint", {
+    hasText:
+      "Plan courses, manage enrollment, meet your advisor, and track degree progress",
+  });
+  await expect(academicsHint).toHaveCount(1);
+  await expect(academicsHint).toBeHidden();
+  await expect(academicsHint).toHaveText(
+    "Plan courses, manage enrollment, meet your advisor, and track degree progress",
+  );
   await expect(
     page.locator(".ba-tool-description", {
       hasText: "Search by subject, course number, title, or instructor",

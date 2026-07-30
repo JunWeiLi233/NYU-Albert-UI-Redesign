@@ -1235,6 +1235,50 @@ button {
     outline: 3px solid var(--ba-color-ultraviolet);
     outline-offset: -3px;
   }
+
+  /*
+   * Keep the desktop rail task-first. System provenance is still available
+   * through the native accessible names, but repeated “Original Albert” and
+   * area descriptions should not compete with the newcomer’s next action.
+   */
+  .ba-tool-origin {
+    display: none;
+  }
+
+  .ba-primary-nav {
+    padding: var(--ba-space-3) var(--ba-space-6) var(--ba-space-4);
+    border-top: 1px solid rgb(255 255 255 / 20%);
+  }
+
+  .ba-primary-label {
+    padding: 0 0 var(--ba-space-2);
+    color: rgb(255 255 255 / 72%);
+  }
+
+  .ba-primary-nav .ba-nav-item {
+    padding-inline: 0;
+    border-top: 1px solid rgb(255 255 255 / 14%);
+  }
+
+  .ba-primary-nav .ba-nav-item:first-of-type {
+    border-top: 0;
+  }
+
+  .ba-primary-nav .ba-nav-hint {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ba-primary-nav .ba-nav-arrow {
+    font-size: 1rem;
+  }
 }
 
 /* Keep the newcomer starter rail in the first viewport at short desktop
