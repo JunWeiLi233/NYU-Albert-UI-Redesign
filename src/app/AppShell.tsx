@@ -1463,6 +1463,10 @@ export function AppShell({
           );
         })
       : [];
+  const showNewStudentFinderStarter =
+    !isResourceSearchMode &&
+    normalizedTaskSearchQuery.length === 0 &&
+    availableTaskFamilies.includes("resources");
   const filteredResultCount =
     filteredTaskFamilies.length +
     filteredTaskTools.length +
@@ -1475,6 +1479,10 @@ export function AppShell({
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
+  const showNewStudentRecoveryLinks =
+    isResourceSearchMode &&
+    resourceFinderIntent === "new-student" &&
+    (normalizedTaskSearchQuery.length === 0 || hasNoTaskSearchResults);
   const shouldOfferCourseSearchRecovery =
     !isResourceSearchMode &&
     hasNoTaskSearchResults &&
@@ -1519,9 +1527,7 @@ export function AppShell({
     label: string;
     toolId: PageToolId;
   }[] =
-    isResourceSearchMode &&
-    resourceFinderIntent === "new-student" &&
-    normalizedTaskSearchQuery.length === 0
+    showNewStudentRecoveryLinks
       ? (() => {
           const links: {
             description: string;
@@ -1550,18 +1556,14 @@ export function AppShell({
         })()
       : [];
   const availableNewStudentSupportLinks =
-    isResourceSearchMode &&
-    resourceFinderIntent === "new-student" &&
-    normalizedTaskSearchQuery.length === 0
+    showNewStudentRecoveryLinks
       ? NEW_STUDENT_SUPPORT_LINKS.flatMap(({ label, toolId }) => {
           const tool = availableResourceTools.find(({ id }) => id === toolId);
           return tool ? [{ description: tool.description, label, toolId }] : [];
         })
       : [];
   const availableNewStudentBrowseSuggestions =
-    isResourceSearchMode &&
-    resourceFinderIntent === "new-student" &&
-    normalizedTaskSearchQuery.length === 0
+    showNewStudentRecoveryLinks
       ? NEW_STUDENT_RESOURCE_BROWSE_SUGGESTIONS.filter(({ toolId }) =>
           availableResourceTools.some((tool) => tool.id === toolId),
         )
@@ -2354,6 +2356,31 @@ export function AppShell({
                   {` ${courseSearchHelpDestination}, then enter a subject, course number, title, or instructor.`}
                 </p>
               )}
+              {showNewStudentFinderStarter && (
+                <div
+                  className="ba-task-finder-newcomer"
+                  role="note"
+                  aria-label="New student starting point"
+                >
+                  <span className="ba-task-finder-newcomer-copy">
+                    <strong>New to NYU?</strong>
+                    <span>
+                      Start with key links, student guides, and support in one
+                      verified resource view.
+                    </span>
+                  </span>
+                  <button
+                    className="ba-task-finder-newcomer-action"
+                    type="button"
+                    aria-label="Open New student help"
+                    onClick={() =>
+                      handleTaskFinderNavigation("resources", "new student")
+                    }
+                  >
+                    Open New student help
+                  </button>
+                </div>
+              )}
               {availableNewStudentKeyLinks.length > 0 && (
                 <div
                   className="ba-task-finder-key-links"
@@ -2489,7 +2516,8 @@ export function AppShell({
               )}
               {isResourceSearchMode &&
                 resourceFinderIntent === "new-student" &&
-                normalizedTaskSearchQuery.length === 0 && (
+                (normalizedTaskSearchQuery.length === 0 ||
+                  hasNoTaskSearchResults) && (
                   <div
                     className="ba-task-finder-guides"
                     role="group"

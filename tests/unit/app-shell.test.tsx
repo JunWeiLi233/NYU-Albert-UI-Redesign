@@ -128,6 +128,48 @@ describe("AppShell cross-area task handoffs", () => {
       );
   });
 
+  it("puts a verified newcomer starting point beside default tasks", async () => {
+    const navigate = vi.fn();
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: navigate,
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    expect(
+      shadowRoot?.querySelector('[aria-label="New student starting point"]')
+        ?.textContent,
+    ).toContain("New to NYU?");
+    const newcomerAction = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Open New student help"]',
+    );
+    expect(newcomerAction?.textContent).toBe("Open New student help");
+
+    await act(async () => {
+      newcomerAction?.click();
+      await Promise.resolve();
+    });
+
+    expect(navigate).toHaveBeenCalledWith("resources");
+  });
+
   it("gives Home starters a concise newcomer cue", () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home"],
@@ -3963,6 +4005,16 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).not.toContain(
       "Verified destination: Academic Calendar",
     );
+    expect(
+      shadowRoot?.querySelector('[aria-label="NYU Key Links"]'),
+    ).not.toBeNull();
+    expect(
+      shadowRoot?.querySelector('[aria-label="Student Guides"]'),
+    ).not.toBeNull();
+    expect(
+      shadowRoot?.querySelector('[aria-label="Get Support"]'),
+    ).not.toBeNull();
+    expect(shadowRoot?.textContent).toContain("Find classes");
 
     await act(async () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(

@@ -6,6 +6,14 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
+Version 0.5.193 includes:
+
+- newcomer no-result recovery keeps verified Key Links, Student Guides, Browse by student need, and Get support paths visible under a clearly labelled “Try a verified starter” group;
+
+- the default task finder now puts a visible “New to NYU?” starting point
+  beside common tasks, opening the verified Key Links, Student Guides, Browse
+  by student need, and Get Support resource view in one action;
+
 Version 0.5.191 includes:
 
 - broad newcomer searches now keep the native Other Resources destination
@@ -517,7 +525,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.191` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.193` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 
