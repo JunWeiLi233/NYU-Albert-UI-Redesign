@@ -1463,6 +1463,10 @@ export function AppShell({
           );
         })
       : [];
+  const showNewStudentFinderStarter =
+    !isResourceSearchMode &&
+    normalizedTaskSearchQuery.length === 0 &&
+    availableTaskFamilies.includes("resources");
   const filteredResultCount =
     filteredTaskFamilies.length +
     filteredTaskTools.length +
@@ -2353,6 +2357,31 @@ export function AppShell({
                   Need a class? Choose <strong>Find classes</strong> to open
                   {` ${courseSearchHelpDestination}, then enter a subject, course number, title, or instructor.`}
                 </p>
+              )}
+              {showNewStudentFinderStarter && (
+                <div
+                  className="ba-task-finder-newcomer"
+                  role="note"
+                  aria-label="New student starting point"
+                >
+                  <span className="ba-task-finder-newcomer-copy">
+                    <strong>New to NYU?</strong>
+                    <span>
+                      Start with key links, student guides, and support in one
+                      verified resource view.
+                    </span>
+                  </span>
+                  <button
+                    className="ba-task-finder-newcomer-action"
+                    type="button"
+                    aria-label="Open New student help"
+                    onClick={() =>
+                      handleTaskFinderNavigation("resources", "new student")
+                    }
+                  >
+                    Open New student help
+                  </button>
+                </div>
               )}
               {availableNewStudentKeyLinks.length > 0 && (
                 <div
