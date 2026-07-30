@@ -392,6 +392,11 @@ button {
   color: var(--ba-color-nyu-violet-hover);
 }
 
+/* Home owns one visible course-search action above the broader task finder. */
+.ba-home-starter-nav .ba-tool-item[data-tool-id="course-search"] {
+  display: none;
+}
+
 .ba-task-finder-toggle,
 .ba-course-search-shortcut,
 .ba-task-finder {
@@ -498,6 +503,53 @@ button {
 .ba-task-finder-search-help strong {
   color: var(--ba-color-nyu-violet);
   font-weight: 800;
+}
+
+.ba-task-finder-newcomer {
+  display: grid;
+  max-width: 54rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ba-space-3);
+  padding: var(--ba-space-3);
+  border-left: 4px solid var(--ba-color-nyu-violet);
+  background: var(--ba-color-pale-violet);
+}
+
+.ba-task-finder-newcomer-copy {
+  display: grid;
+  min-width: 0;
+  gap: var(--ba-space-1);
+}
+
+.ba-task-finder-newcomer-copy > strong {
+  color: var(--ba-color-nyu-violet);
+  font-size: var(--ba-font-size-sm);
+}
+
+.ba-task-finder-newcomer-copy > span {
+  color: var(--ba-color-muted-ink);
+  font-size: var(--ba-font-size-xs);
+  line-height: 1.4;
+}
+
+.ba-task-finder-newcomer-action {
+  min-height: 44px;
+  padding: var(--ba-space-2) var(--ba-space-3);
+  border: 1px solid var(--ba-color-nyu-violet);
+  border-radius: var(--ba-radius-control);
+  background: var(--ba-color-white);
+  color: var(--ba-color-nyu-violet);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--ba-font-size-sm);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ba-task-finder-newcomer-action:hover {
+  background: var(--ba-color-nyu-violet);
+  color: var(--ba-color-white);
 }
 
 .ba-task-finder-search-clear {
@@ -692,6 +744,51 @@ button {
   color: var(--ba-color-muted-ink);
 }
 
+.ba-task-finder-search-result-note {
+  display: block;
+  margin-top: var(--ba-space-1);
+  color: var(--ba-color-nyu-violet) !important;
+  font-size: var(--ba-font-size-xs);
+  font-weight: 800;
+}
+
+.ba-task-finder-course-recovery,
+.ba-task-finder-single-resource-context {
+  display: grid;
+  max-width: 38rem;
+  gap: var(--ba-space-1);
+  padding-top: var(--ba-space-2);
+  border-top: 1px solid var(--ba-color-rule);
+}
+
+.ba-task-finder-course-recovery > strong {
+  color: var(--ba-color-nyu-violet);
+  font-size: var(--ba-font-size-sm);
+}
+
+.ba-task-finder-course-recovery > span {
+  color: var(--ba-color-muted-ink);
+  font-size: var(--ba-font-size-sm);
+  line-height: 1.4;
+}
+
+.ba-task-finder-course-recovery .ba-task-finder-search-action {
+  margin-top: var(--ba-space-1);
+}
+
+.ba-task-finder-single-resource-context {
+  margin-top: calc(var(--ba-space-1) * -1);
+}
+
+.ba-task-finder-single-resource-context > h3 {
+  margin: 0;
+  color: var(--ba-color-muted-ink);
+  font-size: var(--ba-font-size-xs);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .ba-task-finder-search-action {
   width: 100%;
   max-width: 38rem;
@@ -735,6 +832,7 @@ button {
 
 .ba-task-finder-search input:focus-visible,
 .ba-task-finder-search-clear:focus-visible,
+.ba-task-finder-newcomer-action:focus-visible,
 .ba-task-finder-common-task:focus-visible,
 .ba-task-finder-guide:focus-visible,
 .ba-task-finder-key-link:focus-visible,
@@ -1141,6 +1239,64 @@ button {
   .ba-task-finder-item:focus-visible {
     outline: 3px solid var(--ba-color-ultraviolet);
     outline-offset: -3px;
+  }
+
+  /*
+   * Keep the desktop rail task-first. System provenance is still available
+   * through the native accessible names, but repeated “Original Albert” and
+   * area descriptions should not compete with the newcomer’s next action.
+   */
+  .ba-tool-origin {
+    display: none;
+  }
+
+  .ba-primary-nav {
+    padding: var(--ba-space-3) var(--ba-space-6) var(--ba-space-4);
+    border-top: 1px solid rgb(255 255 255 / 20%);
+  }
+
+  .ba-primary-label {
+    padding: 0 0 var(--ba-space-2);
+    color: rgb(255 255 255 / 72%);
+  }
+
+  .ba-primary-nav .ba-nav-item {
+    padding-inline: 0;
+    border-top: 1px solid rgb(255 255 255 / 14%);
+  }
+
+  .ba-primary-nav .ba-nav-item:first-of-type {
+    border-top: 0;
+  }
+
+  .ba-primary-nav .ba-nav-hint {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ba-primary-nav .ba-nav-arrow {
+    font-size: 1rem;
+  }
+}
+
+/* Keep the newcomer starter rail in the first viewport at short desktop
+ * heights while retaining every verified shortcut in a local scroll region. */
+@media (min-width: 900px) and (max-height: 850px) {
+  .ba-home-starter-nav {
+    align-self: start;
+    min-height: 0;
+    height: max(12rem, calc(100dvh - 31rem));
+    max-height: max(12rem, calc(100dvh - 31rem));
+    overflow-y: auto;
+    scrollbar-color: rgb(255 255 255 / 34%) transparent;
+    scrollbar-width: thin;
   }
 }
 
@@ -1603,6 +1759,15 @@ button {
     color: rgb(255 255 255 / 74%);
     font-size: var(--ba-font-size-xs);
     line-height: 1.3;
+  }
+
+  .ba-task-finder-newcomer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ba-task-finder-newcomer-action {
+    width: 100%;
+    white-space: normal;
   }
 
   .ba-task-finder-toggle-shortcut {

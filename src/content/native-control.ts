@@ -64,6 +64,14 @@ export function activateNativeControl(
     },
     ownerWindow.location.origin,
   );
+  control.ownerDocument.dispatchEvent(
+    new ownerWindow.CustomEvent(ACTIVATION_MESSAGE, {
+      detail: {
+        token,
+        ...(options.allowJavascriptUrl ? { allowJavascriptUrl: true } : {}),
+      },
+    }),
+  );
   ownerWindow.setTimeout(() => {
     if (control.getAttribute(ACTIVATION_ATTRIBUTE) === token) {
       control.removeAttribute(ACTIVATION_ATTRIBUTE);

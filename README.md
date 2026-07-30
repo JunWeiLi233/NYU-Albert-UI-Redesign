@@ -6,7 +6,76 @@ replacing Albert authentication, data, controls, or transaction behavior.
 
 ## Implemented experience
 
-Version 0.5.171 includes:
+Version 0.5.195 includes:
+
+- the desktop rail now uses a newcomer-first hierarchy: Home’s direct Find Classes action appears once under “Start here,” repeated system-origin labels are removed from the visual path, and the area map is clearly labelled “Explore Albert” with task hints retained for assistive technology;
+
+- the live Home rail now surfaces that verified Course Search action before the broader task finder, with one click opening Albert’s native course-search form and focusing its combined subject/course/title/instructor field;
+
+Version 0.5.193 includes:
+
+- newcomer no-result recovery keeps verified Key Links, Student Guides, Browse by student need, and Get support paths visible under a clearly labelled “Try a verified starter” group;
+
+- the default task finder now puts a visible “New to NYU?” starting point
+  beside common tasks, opening the verified Key Links, Student Guides, Browse
+  by student need, and Get Support resource view in one action;
+
+Version 0.5.191 includes:
+
+- broad newcomer searches now keep the native Other Resources destination
+  explicit while presenting a clearer “Open New student help” action and
+  explaining that verified key links, student guides, and support appear after
+  the handoff;
+
+Version 0.5.190 includes:
+
+- the exact newcomer query “registration” now takes the same verified one-step
+  Course Search handoff as other class-registration wording, while specific
+  “when can I register?” and registration-hold requests keep their status-card
+  destinations;
+
+- Find classes now advances through Albert's verified enrollment-cart launcher
+  to the native Course Search form in one shell action, including the live
+  cross-origin PeopleSoft JavaScript control;
+
+- unmatched class-like searches such as “biology” now offer an explicit,
+  keyboard-accessible Course Search recovery instead of ending at a dead-end
+  zero-results message; the native Albert form remains authoritative;
+
+- one-step class search retries the verified Home handoff once when Albert
+  reports an intermediate workspace, so students do not need to press Find
+  classes twice during a slow portal transition;
+
+- direct newcomer searches such as “new student” and “first semester” now
+  offer a verified New student help guide from the NYU resource finder; Enter
+  activates the same one-step handoff without inventing a destination;
+
+- NYU’s “tech checklist for new students” and “new student registration guide”
+  wording now follows that same verified newcomer guide instead of dropping a
+  first-week student into an unlabeled resource directory;
+
+- “Incoming students” now follows the same newcomer handoff while preserving
+  the international variant’s more specific OGS destination;
+
+- newcomer resource-mode Find classes now uses the native handoff lifecycle,
+  closing Albert's Other Resources directory before opening Course Search so
+  the single combined class-search field is the only next step;
+
+- cross-area Find classes cues now describe the verified Home-first Course
+  Search handoff outside Home, while retaining the explicit Academics fallback
+  when Home has no native Course Search control;
+
+- native modal open/close transitions now return the Better Albert rail to its
+  top-level wayfinding context, keeping Find classes and Find a task visible;
+
+- current Degree Progress reports now use a centered, scroll-bounded lightbox
+  with NYU-violet title bands, a fixed readable mask, and 44px native actions;
+  the report remains Albert-owned and read-only;
+
+- the newcomer Course Search handoff now closes Albert's native Other
+  Resources overlay, waits for the Home workspace to render, and falls back to
+  Academics only when Home has no verified Course Search link, so a first-time
+  student reaches the native class-search form without a second shell action;
 
 - the live NYU Students hub’s exact “View the Calendar” and “Go to
   Brightspace” wording now resolves to the verified Academic Calendar and NYU
@@ -76,6 +145,19 @@ Version 0.5.171 includes:
   Mentoring,” and “Success Toolbox” now routes to the verified NYU Connect
   anchor in one step; leave-of-absence, glossary, Year 2, midterm-feedback,
   and text-message labels remain honest Other Resources directory cues;
+
+- the live StudentLink Get Support wording “For answers about your bill,
+  financial aid, registration, international student services, and more” now
+  resolves to the same verified StudentLink resource or honest Other
+  Resources fallback as the shorter card copy;
+
+- newcomer resource search now mirrors the live NYU Students Key Links Albert
+  card with a verified “Find classes — Open Albert Course Search” action, so a
+  new student can reach one-step course search from the resource directory;
+
+- Home now exposes the same one-action class-search handoff when Albert's
+  native Course Search appears only after entering Academics; the extension
+  activates native Academics and opens its verified Course Search control;
 
 
 - newcomer resource search now adds NYU-style “Browse by student need” cues
@@ -449,7 +531,7 @@ extension. For a release ZIP, extract it first and select the extracted folder
 that contains `manifest.json` directly. Keep only one Better Albert copy
 enabled. After updating an installed unpacked copy, use the extension manager's
 Reload action and refresh every Albert tab. Confirm the extension card shows
-version `0.5.82` and the toolbar badge shows `ON`. On desktop the native portal is
+version `0.5.194` and the toolbar badge shows `ON`. On desktop the native portal is
 offset beside the fixed Better Albert rail; Class Search opened directly never
 receives a phantom rail offset.
 

@@ -37,6 +37,7 @@ const READ_ONLY_MODAL_TITLES = new Set([
   "degree progress report",
   "my degree progress report",
 ]);
+const READ_ONLY_MODAL_SELECTORS = ["#pt_modals", "#lbContainer"] as const;
 const NATIVE_DIALOG_SELECTOR = "#pt_modals, [role='dialog']";
 
 function normalizedText(value: string | null | undefined): string {
@@ -153,14 +154,24 @@ function isPotentiallyVisible(element: HTMLElement, document: Document): boolean
 }
 
 function updateReadOnlyModalMarkers(document: Document): void {
-  for (const modal of document.querySelectorAll("#pt_modals.PSMODAL")) {
-    const title = modal.querySelector(
-      ".PTPOPUP_TITLE, .HelppopupTitleBarMiddle",
-    );
-    const normalizedTitle = (title?.textContent ?? "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .toLowerCase();
+  for (const selector of READ_ONLY_MODAL_SELECTORS) {
+    const modalContainers = document.querySelectorAll<HTMLElement>(selector);
+    // Each selector identifies one stable Albert portal. Require a single
+    // match before promoting a read-only title so duplicate markup fails open.
+    if (modalContainers.length !== 1) {
+      continue;
+    }
+    const modal = modalContainers[0];
+    if (!modal) {
+      continue;
+    }
+    const title =
+      selector === "#lbContainer"
+        ? modal.querySelector("#app_label, [role='heading']")
+        : modal.querySelector(
+            ".PTPOPUP_TITLE, .HelppopupTitleBarMiddle",
+          );
+    const normalizedTitle = normalizedText(title?.textContent);
     modal.toggleAttribute(
       READ_ONLY_MODAL_ATTRIBUTE,
       READ_ONLY_MODAL_TITLES.has(normalizedTitle),
@@ -183,7 +194,11 @@ function updateReadOnlyModalMarkers(document: Document): void {
       hasOpenCourseSearchFrame(document),
   );
   const hasOpenReadOnlyDialog = Array.from(
-    document.querySelectorAll(`#pt_modals.PSMODAL[${READ_ONLY_MODAL_ATTRIBUTE}]`),
+    document.querySelectorAll<HTMLElement>(
+      READ_ONLY_MODAL_SELECTORS.map(
+        (selector) => `${selector}[${READ_ONLY_MODAL_ATTRIBUTE}]`,
+      ).join(", "),
+    ),
   ).some((dialog) => isPotentiallyVisible(dialog as HTMLElement, document));
   document.documentElement.toggleAttribute(
     READ_ONLY_MODAL_OPEN_ATTRIBUTE,

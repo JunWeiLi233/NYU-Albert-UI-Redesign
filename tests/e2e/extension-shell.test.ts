@@ -202,9 +202,10 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
     exact: true,
     name: "Find Classes",
   });
+  await expect(primaryFindClasses).toHaveClass(/ba-course-search-shortcut/);
   await expect(primaryFindClasses).toHaveAttribute(
-    "data-primary-task",
-    "true",
+    "data-course-search-mode",
+    "direct",
   );
   await expect(primaryFindClasses).toHaveCSS(
     "background-color",
@@ -231,9 +232,12 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(
     page.getByRole("button", { exact: true, name: "Academic Calendar" }),
   ).toBeVisible();
-  await expect(page.locator(".ba-primary-label")).toHaveText("Student services");
+  await expect(page.locator(".ba-primary-label")).toHaveText("Explore Albert");
   const homeStarter = page.locator(".ba-home-starter-nav");
   await expect(homeStarter.locator(".ba-tool-label")).toHaveText("Start here");
+  await expect(
+    homeStarter.getByRole("button", { exact: true, name: "Find Classes" }),
+  ).toHaveCount(0);
   const homeStarterGeometry = await homeStarter.evaluate((navigation) => {
     const bounds = navigation.getBoundingClientRect();
     const finderBounds = document
@@ -256,12 +260,15 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(page.locator(".ba-resource-nav .ba-tool-label")).toHaveText(
     "NYU resources",
   );
-  await expect(
-    page.locator(".ba-nav-hint", {
-      hasText:
-        "Plan courses, manage enrollment, meet your advisor, and track degree progress",
-    }),
-  ).toBeVisible();
+  const academicsHint = page.locator(".ba-nav-hint", {
+    hasText:
+      "Plan courses, manage enrollment, meet your advisor, and track degree progress",
+  });
+  await expect(academicsHint).toHaveCount(1);
+  await expect(academicsHint).toBeHidden();
+  await expect(academicsHint).toHaveText(
+    "Plan courses, manage enrollment, meet your advisor, and track degree progress",
+  );
   await expect(
     page.locator(".ba-tool-description", {
       hasText: "Search by subject, course number, title, or instructor",
@@ -1973,6 +1980,7 @@ test("exposes task-first discovery at every supported width and delegates throug
     ],
     ["browse the course catalog", "Open Find Classes — Search by subject, course number, title, or instructor"],
     ["Registering for Classes", "Open Find Classes — Search by subject, course number, title, or instructor"],
+    ["registration", "Open Find Classes — Search by subject, course number, title, or instructor"],
     ["Navigate the Registration Process", "Open Find Classes — Search by subject, course number, title, or instructor"],
     ["Student Records and Transcripts", "Open Grades & Transcripts — View grades, get transcripts, and prove enrollment"],
     ["Verify Your Enrollment or Degree", "Open Grades & Transcripts — View grades, get transcripts, and prove enrollment"],
@@ -2154,7 +2162,10 @@ test("exposes task-first discovery at every supported width and delegates throug
     ["Waitlists, Swap, and Edit Swap", "Open Academics — Plan courses, manage enrollment, meet your advisor, and track degree progress"],
     ["Track Your Degree Progress", "Open Check Degree Progress — Review remaining degree requirements"],
     ["Stay on track for graduation", "Open Check Degree Progress — Review remaining degree requirements"],
-    ["Check Your Grades", "Open View Grades — Choose an academic career and term"],
+    [
+      "Check Your Grades",
+      "Open Grades & Transcripts — View grades, get transcripts, and prove enrollment",
+    ],
     ["Learn about your FERPA rights", "Open FERPA"],
     ["FERPA privacy rights and how to grant consent to disclose information", "Open FERPA"],
     ["How to request your official transcript", "Open University Registrar"],

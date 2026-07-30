@@ -7,8 +7,10 @@ import {
 } from "../app/mount-header";
 import { AdapterManager } from "../adapters/adapter-manager";
 import type { PreferenceStore } from "../storage/preferences";
+import type { PrimaryPageFamily } from "./page-families";
 import {
   getAvailablePageFamilies,
+  isNativeOtherResourcesOpen,
   navigateWithNativeAlbert,
 } from "./native-navigation";
 import {
@@ -188,6 +190,12 @@ export async function startContentScript({
   let renderFailed = false;
   let stopped = false;
   let pendingCourseSearch = false;
+  const pendingCourseSearchAttempts = new Set<PrimaryPageFamily>();
+  let pendingCourseSearchAwaitingFamily: PrimaryPageFamily | undefined;
+  let pendingCourseSearchRetryTimer: number | undefined;
+  let pendingCourseSearchReplayCount = 0;
+  let activePageFamily: ShellViewModel["currentPageFamily"] | undefined;
+  let activePageFamilies: ShellViewModel["availablePageFamilies"] = [];
   let unsubscribe = (): void => undefined;
   const window = document.defaultView;
   const adapterManager = new AdapterManager();
@@ -201,6 +209,15 @@ export async function startContentScript({
     mountedHeader = undefined;
     mountedNativeControlDocument = undefined;
     activeNativeControlDocument = undefined;
+    activePageFamily = undefined;
+    activePageFamilies = [];
+    pendingCourseSearchAttempts.clear();
+    pendingCourseSearchAwaitingFamily = undefined;
+    pendingCourseSearchReplayCount = 0;
+    if (pendingCourseSearchRetryTimer !== undefined) {
+      window?.clearTimeout(pendingCourseSearchRetryTimer);
+      pendingCourseSearchRetryTimer = undefined;
+    }
     courseSearchFrameHandoff?.stop();
     courseSearchFrameHandoff = undefined;
     lastViewModelSignature = "";
@@ -272,6 +289,96 @@ export async function startContentScript({
     }
   };
 
+  const clearPendingCourseSearch = (): void => {
+    pendingCourseSearch = false;
+    pendingCourseSearchAttempts.clear();
+    pendingCourseSearchAwaitingFamily = undefined;
+    pendingCourseSearchReplayCount = 0;
+    if (pendingCourseSearchRetryTimer !== undefined) {
+      window?.clearTimeout(pendingCourseSearchRetryTimer);
+      pendingCourseSearchRetryTimer = undefined;
+    }
+  };
+
+  const reconcilePendingCourseSearch = (
+    nativeControlDocument: Document,
+  ): void => {
+    if (!pendingCourseSearch) {
+      return;
+    }
+
+    courseSearchFrameHandoff?.request();
+    if (openNativePageTool(nativeControlDocument, "course-search")) {
+      clearPendingCourseSearch();
+      focusNativeControlDocument(document, nativeControlDocument);
+      return;
+    }
+
+    // PeopleSoft often swaps the workspace response asynchronously after the
+    // navigation click. Stay on the requested family until its native links
+    // have had a chance to render instead of immediately jumping to the next
+    // fallback family.
+    if (pendingCourseSearchAwaitingFamily) {
+      if (activePageFamily !== pendingCourseSearchAwaitingFamily) {
+        // Some PeopleSoft tenants briefly report a different workspace after
+        // the delegated navigation click (for example, Academics while the
+        // Home shell is still being restored). Re-run the original Home-first
+        // handoff once so a student never has to discover the intermediate
+        // workspace and press Find classes a second time. Keep the replay
+        // bounded; a genuinely unavailable Course Search still fails open.
+        if (pendingCourseSearchReplayCount < 1) {
+          pendingCourseSearchReplayCount += 1;
+          pendingCourseSearchAttempts.clear();
+          pendingCourseSearchAwaitingFamily = undefined;
+          if (pendingCourseSearchRetryTimer !== undefined) {
+            window?.clearTimeout(pendingCourseSearchRetryTimer);
+            pendingCourseSearchRetryTimer = undefined;
+          }
+          if (window) {
+            pendingCourseSearchRetryTimer = window.setTimeout(() => {
+              pendingCourseSearchRetryTimer = undefined;
+              reconcilePendingCourseSearch(nativeControlDocument);
+            }, 100);
+          }
+        }
+        return;
+      }
+      if (pendingCourseSearchRetryTimer !== undefined) {
+        return;
+      }
+      pendingCourseSearchAwaitingFamily = undefined;
+    }
+
+    // Course Search is normally exposed from Home. Academics is a verified
+    // fallback for tenants where Home renders no Course Search link. Try both
+    // in a bounded order so a request from Grades, Finances, or Personal Info
+    // cannot strand a student on an intermediate workspace.
+    const nextPageFamily = (['home', 'academics'] as const).find(
+      (pageFamily) =>
+        activePageFamilies.includes(pageFamily) &&
+        !pendingCourseSearchAttempts.has(pageFamily),
+    );
+    if (!nextPageFamily) {
+      clearPendingCourseSearch();
+      return;
+    }
+
+    pendingCourseSearchAttempts.add(nextPageFamily);
+    pendingCourseSearchAwaitingFamily = nextPageFamily;
+    if (window) {
+      pendingCourseSearchRetryTimer = window.setTimeout(() => {
+        pendingCourseSearchRetryTimer = undefined;
+        pendingCourseSearchAwaitingFamily = undefined;
+        reconcilePendingCourseSearch(nativeControlDocument);
+      }, 1_000);
+    }
+    if (!navigateWithNativeAlbert(nativeControlDocument, nextPageFamily)) {
+      clearPendingCourseSearch();
+      return;
+    }
+    focusNativeControlDocument(document, nativeControlDocument);
+  };
+
   const reconcile = (): void => {
     if (reconcileTimer !== undefined) {
       window?.clearTimeout(reconcileTimer);
@@ -303,6 +410,8 @@ export async function startContentScript({
       rollback();
       return;
     }
+
+    activePageFamily = classification.pageFamily;
 
     try {
       applyNativeTheme(
@@ -361,6 +470,7 @@ export async function startContentScript({
         }
       }
       const nextSignature = viewModelSignature(viewModel);
+      activePageFamilies = viewModel.availablePageFamilies;
       activeNativeControlDocument = nativeControlDocument;
 
       if (
@@ -402,12 +512,30 @@ export async function startContentScript({
             if (!targetDocument) {
               return;
             }
-            pendingCourseSearch = true;
-            if (!navigateWithNativeAlbert(targetDocument, "home")) {
-              pendingCourseSearch = false;
+
+            // A Course Search handoff can originate inside the newcomer
+            // finder while Albert's native Other Resources menu is open.
+            // Close that menu before changing workspace so its legacy overlay
+            // cannot remain mounted over the destination and swallow the
+            // pending Course Search activation.
+            if (isNativeOtherResourcesOpen(targetDocument)) {
+              navigateWithNativeAlbert(targetDocument, "resources");
+            }
+
+            courseSearchFrameHandoff?.request();
+            if (openNativePageTool(targetDocument, "course-search")) {
+              clearPendingCourseSearch();
+              focusNativeControlDocument(document, targetDocument);
               return;
             }
-            focusNativeControlDocument(document, targetDocument);
+
+            pendingCourseSearch = true;
+            pendingCourseSearchAttempts.clear();
+            pendingCourseSearchAwaitingFamily = undefined;
+            if (activePageFamily === "home") {
+              pendingCourseSearchAttempts.add("home");
+            }
+            reconcilePendingCourseSearch(targetDocument);
           },
           onOpenResource: (toolId) => {
             if (openNativeResourceTool(nativeControlDocument, toolId)) {
@@ -447,12 +575,8 @@ export async function startContentScript({
         });
         mountedNativeControlDocument = nativeControlDocument;
         lastViewModelSignature = nextSignature;
-        if (pendingCourseSearch && classification.pageFamily === "home") {
-          courseSearchFrameHandoff?.request();
-          if (openNativePageTool(nativeControlDocument, "course-search")) {
-            pendingCourseSearch = false;
-            focusNativeControlDocument(document, nativeControlDocument);
-          }
+        if (pendingCourseSearch) {
+          reconcilePendingCourseSearch(nativeControlDocument);
         }
         return;
       }
@@ -461,12 +585,8 @@ export async function startContentScript({
         mountedHeader.update(viewModel);
         lastViewModelSignature = nextSignature;
       }
-      if (pendingCourseSearch && classification.pageFamily === "home") {
-        courseSearchFrameHandoff?.request();
-        if (openNativePageTool(nativeControlDocument, "course-search")) {
-          pendingCourseSearch = false;
-          focusNativeControlDocument(document, nativeControlDocument);
-        }
+      if (pendingCourseSearch) {
+        reconcilePendingCourseSearch(nativeControlDocument);
       }
     } catch {
       renderFailed = true;

@@ -14,6 +14,7 @@ import {
   type PageFamily,
   type PrimaryPageFamily,
 } from "../content/page-families";
+import { NATIVE_MODAL_OPEN_ATTRIBUTE } from "../content/native-theme";
 import type {
   PageToolDefinition,
   PageToolId,
@@ -124,11 +125,16 @@ const NEW_STUDENT_GUIDE_SEARCHES = [
   { label: "Student Tech Guide", query: "student tech guide" },
 ] as const;
 
-const NEW_STUDENT_KEY_LINKS = [
+const NEW_STUDENT_KEY_LINKS: readonly {
+  label: string;
+  toolId: PageToolId;
+}[] = [
+  { label: "Find classes", toolId: "course-search" },
   { label: "Academic dates", toolId: "academic-calendar" },
   { label: "Course materials", toolId: "nyu-brightspace" },
+  { label: "StudentLink", toolId: "studentlink" },
   { label: "Student support", toolId: "student-services" },
-] as const satisfies readonly { label: string; toolId: PageToolId }[];
+];
 
 const NEW_STUDENT_SUPPORT_LINKS = [
   { label: "Academic support", toolId: "academic-support" },
@@ -254,6 +260,7 @@ const COURSE_SEARCH_FILLER_WORDS = new Set([
 
 const NEW_STUDENT_RESOURCE_INTENTS = [
   "new student",
+  "incoming student",
   "first year student",
   "newly admitted student",
   "what do i do first",
@@ -268,6 +275,8 @@ const NEW_STUDENT_RESOURCE_INTENTS = [
   "advice for transfer students",
   "transfer student",
   "student tech guide",
+  "tech checklist for new students",
+  "new student registration guide",
   "orientation",
 ] as const;
 
@@ -290,9 +299,11 @@ const GENERIC_OTHER_RESOURCES_INTENTS = new Set([
   "bookstore",
   "campus map",
   "disability services",
+  "housing dining",
   "parking",
   "shuttle",
   "transit",
+  "wellbeing resources",
 ]);
 const GENERIC_RESOURCE_SUPPORT_INTENTS = new Set(["help", "need help"]);
 const GENERIC_NEW_STUDENT_RESOURCE_QUERIES = new Set([
@@ -307,6 +318,7 @@ const GENERIC_APPOINTMENT_RESOURCE_INTENTS = new Set([
 ]);
 const EXACT_TASK_INTENTS = new Map<string, PageToolId>([
   ["address", "addresses"],
+  ["check your grades", "view-grades"],
   ["date of birth", "demographic-information"],
   ["email", "email-addresses"],
   ["emergency contact", "emergency-contacts"],
@@ -324,6 +336,8 @@ const EXACT_PAGE_FAMILY_INTENTS = new Map<string, PrimaryPageFamily>([
   ["advisor", "academics"],
   ["student records and transcripts", "grades"],
   ["verify your enrollment or degree", "grades"],
+  ["where are my grades", "grades"],
+  ["where can i get my grades", "grades"],
   ["graduation and diplomas", "academics"],
   ["graduation checklist", "academics"],
   ["applying to graduate", "academics"],
@@ -339,6 +353,10 @@ const EXACT_PAGE_FAMILY_INTENTS = new Map<string, PrimaryPageFamily>([
   ["financial aid refunds", "finances"],
   ["when to expect a refund", "finances"],
   ["housing payments and tax documents", "finances"],
+  ["managing guest users", "personal"],
+  ["update your student records", "personal"],
+  ["updating your student records", "personal"],
+  ["certify your eligibility for ny state tap", "resources"],
   ["contact the bursar team", "finances"],
   ["uaw students", "finances"],
   ["time management", "resources"],
@@ -415,6 +433,7 @@ const EXACT_RESOURCE_INTENTS = new Map<string, PageToolId>([
   ["technology help", "campus-resources"],
   ["involved", "student-life"],
   ["campus events", "student-life"],
+  ["graduate students", "student-life"],
 ]);
 
 function getExactResourceIntentId(query: string): PageToolId | undefined {
@@ -656,6 +675,23 @@ function isExplicitCourseSearchQuery(query: string): boolean {
   );
 }
 
+function isLikelyClassSearchRecoveryQuery(query: string): boolean {
+  const normalizedQuery = normalizeTaskSearchValue(query);
+  if (normalizedQuery.length < 3) {
+    return false;
+  }
+
+  // A free-form subject, catalog number, title, or instructor search is not
+  // necessarily a verified task alias. Keep the recovery conservative enough
+  // to avoid treating short navigation words as courses, while still making
+  // the common "biology" / "BIO 101" path one action away.
+  const words = normalizedQuery.split(/\s+/).filter(Boolean);
+  return (
+    /\d/.test(normalizedQuery) ||
+    (words.length <= 2 && words.some((word) => word.length >= 4))
+  );
+}
+
 function PageToolNavigation({
   isHomeStarter = false,
   onOpenResourceDirectory,
@@ -835,6 +871,7 @@ export function AppShell({
   const taskAreaHeadingRef = useRef<HTMLHeadingElement>(null);
   const taskShortcutHeadingRef = useRef<HTMLHeadingElement>(null);
   const resourceSectionHeadingRef = useRef<HTMLHeadingElement>(null);
+  const singleResourceContextHeadingRef = useRef<HTMLHeadingElement>(null);
   const shellRef = useRef<HTMLElement>(null);
   const primaryNavigationRef = useRef<HTMLElement>(null);
   const resourceCategoryHeadingRefs = useRef<
@@ -853,6 +890,39 @@ export function AppShell({
       primaryNavigation.scrollTop = 0;
     }
   }, [currentPageFamily, isResourceSearchMode]);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    const ownerDocument = shell?.ownerDocument;
+    const documentElement = ownerDocument?.documentElement;
+    const MutationObserverConstructor = ownerDocument?.defaultView?.MutationObserver;
+    if (!shell || !documentElement || !MutationObserverConstructor) {
+      return;
+    }
+
+    const resetRailScroll = (): void => {
+      shell.scrollTop = 0;
+      if (primaryNavigationRef.current) {
+        primaryNavigationRef.current.scrollTop = 0;
+      }
+    };
+    const observer = new MutationObserverConstructor((records) => {
+      if (
+        records.some(
+          ({ attributeName }) =>
+            attributeName === NATIVE_MODAL_OPEN_ATTRIBUTE,
+        )
+      ) {
+        resetRailScroll();
+      }
+    });
+    observer.observe(documentElement, {
+      attributeFilter: [NATIVE_MODAL_OPEN_ATTRIBUTE],
+      attributes: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const wasNativeResourcesOpen = previousNativeResourcesOpenRef.current;
@@ -876,27 +946,59 @@ export function AppShell({
   const availableTaskFamilies = PRIMARY_PAGE_FAMILIES.filter((pageFamily) =>
     availablePageFamilies.includes(pageFamily),
   );
-  const verifiedCourseSearch = availableTaskTools.find(
-    ({ id }) => id === "course-search",
-  );
-  const courseSearchShortcut =
-    !isResourceSearchMode && currentPageFamily !== "home"
-      ? verifiedCourseSearch
-        ? {
-            description: verifiedCourseSearch.description,
-            mode: "direct" as const,
-          }
-        : availablePageFamilies.includes("home")
-          ? {
-              description: "Open Course Search",
-              mode: "home" as const,
-            }
-          : undefined
-      : undefined;
+  const verifiedCourseSearch =
+    availableTaskTools.find(({ id }) => id === "course-search") ??
+    availablePageTools.find(({ id }) => id === "course-search");
+  // Home is the first verified cross-area handoff for non-Home workspaces.
+  // Only a Home view that lacks its own Course Search control should describe
+  // the alternate Academics handoff; otherwise the visible cue must match the
+  // lifecycle's actual Home-first route.
+  const canReachCourseSearchThroughAcademics =
+    currentPageFamily === "home" && availablePageFamilies.includes("academics");
+  const courseSearchShortcut = (() => {
+    if (isResourceSearchMode) {
+      return undefined;
+    }
+
+    if (verifiedCourseSearch) {
+      return {
+        description: verifiedCourseSearch.description,
+        mode: "direct" as const,
+      };
+    }
+
+    if (canReachCourseSearchThroughAcademics) {
+      return {
+        description: "Open Academics to find classes",
+        mode: "home" as const,
+      };
+    }
+
+    if (currentPageFamily !== "home" && availablePageFamilies.includes("home")) {
+      return {
+        description: "Open Course Search",
+        mode: "home" as const,
+      };
+    }
+
+    if (availablePageFamilies.includes("academics")) {
+      return {
+        description: "Open Academics to find classes",
+        mode: "home" as const,
+      };
+    }
+
+    return undefined;
+  })();
   const hasCourseSearchDestination = Boolean(
     verifiedCourseSearch ||
+      canReachCourseSearchThroughAcademics ||
       (currentPageFamily !== "home" && availablePageFamilies.includes("home")),
   );
+  const courseSearchHelpDestination =
+    courseSearchShortcut?.description === "Open Academics to find classes"
+      ? "Albert’s verified class-search path"
+      : "Albert’s Course Search";
   const isCrossAreaCourseSearchIntent = (query: string): boolean =>
     courseSearchShortcut?.mode === "home" &&
     (isExplicitCourseSearchQuery(query) ||
@@ -994,6 +1096,29 @@ export function AppShell({
   };
   const filterTaskSearchResults = (query: string) => {
     const findResults = (searchQuery: string, allowTypos = false) => {
+      const registrationCourseSearch =
+        !isResourceSearchMode &&
+        normalizeTaskSearchValue(searchQuery) === "registration" &&
+        courseSearchShortcut;
+      if (registrationCourseSearch) {
+        const directCourseSearch = availableTaskTools.find(
+          (tool) => tool.id === "course-search",
+        );
+        if (registrationCourseSearch.mode === "home") {
+          return {
+            resourceTools: [],
+            taskFamilies: ["home" as const],
+            taskTools: [],
+          };
+        }
+        if (directCourseSearch) {
+          return {
+            resourceTools: [],
+            taskFamilies: [],
+            taskTools: [directCourseSearch],
+          };
+        }
+      }
       let matchingResourceTools = availableResourceTools.filter((tool) =>
         matchesResource(tool, searchQuery, allowTypos),
       );
@@ -1064,9 +1189,46 @@ export function AppShell({
           : availableTaskTools.filter((tool) =>
               matchesTool(tool, searchQuery, allowTypos),
             );
+      if (
+        !isResourceSearchMode &&
+        searchQuery.trim().length > 0 &&
+        isNewStudentResourceIntent(searchQuery) &&
+        availableTaskFamilies.includes("resources")
+      ) {
+        return {
+          resourceTools: [],
+          taskFamilies: ["resources" as const],
+          taskTools: [],
+        };
+      }
+      if (
+        !isResourceSearchMode &&
+        isGenericOtherResourcesIntent(searchQuery) &&
+        availableTaskFamilies.includes("resources")
+      ) {
+        return {
+          resourceTools: [],
+          taskFamilies: ["resources" as const],
+          taskTools: [],
+        };
+      }
+      const conversationalCourseSearch =
+        isConversationalCourseSearchIntent(searchQuery);
+      const crossAreaCourseSearch =
+        courseSearchShortcut?.mode === "home" &&
+        (isExplicitCourseSearchQuery(searchQuery) ||
+          conversationalCourseSearch ||
+          getMeaningfulTaskSearchValue(searchQuery) === "class schedule");
+      if (crossAreaCourseSearch) {
+        return {
+          resourceTools: [],
+          taskFamilies: ["home" as const],
+          taskTools: [],
+        };
+      }
       const exactTaskIntentId = getExactTaskIntentId(searchQuery);
       const exactTaskIntentTool = exactTaskIntentId
-        ? matchingTaskTools.find((tool) => tool.id === exactTaskIntentId)
+        ? availableTaskTools.find((tool) => tool.id === exactTaskIntentId)
         : undefined;
       if (exactTaskIntentTool) {
         return {
@@ -1082,7 +1244,7 @@ export function AppShell({
         : undefined;
       if (
         exactPageFamily &&
-        matchingTaskTools.length === 0 &&
+        (matchingTaskTools.length === 0 || exactPageFamily === "resources") &&
         !isResourceSearchMode &&
         exactResourceLabelTools.length === 0 &&
         exactResourceAliasTools.length === 0
@@ -1096,8 +1258,6 @@ export function AppShell({
       const directCourseSearch = matchingTaskTools.find(
         (tool) => tool.id === "course-search",
       );
-      const conversationalCourseSearch =
-        isConversationalCourseSearchIntent(searchQuery);
       if (
         (isExplicitCourseSearchQuery(searchQuery) ||
           conversationalCourseSearch) &&
@@ -1160,7 +1320,15 @@ export function AppShell({
                 matchesFamily(pageFamily, searchQuery, allowTypos),
             );
 
-      return { resourceTools, taskFamilies, taskTools };
+      return {
+        resourceTools:
+          searchQuery.trim().length > 0 &&
+          taskTools.some((tool) => tool.id === "course-search")
+            ? []
+            : resourceTools,
+        taskFamilies,
+        taskTools,
+      };
     };
     const strictResults = findResults(query);
     const countResults = ({
@@ -1295,6 +1463,10 @@ export function AppShell({
           );
         })
       : [];
+  const showNewStudentFinderStarter =
+    !isResourceSearchMode &&
+    normalizedTaskSearchQuery.length === 0 &&
+    availableTaskFamilies.includes("resources");
   const filteredResultCount =
     filteredTaskFamilies.length +
     filteredTaskTools.length +
@@ -1307,6 +1479,20 @@ export function AppShell({
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
+  const showNewStudentRecoveryLinks =
+    isResourceSearchMode &&
+    resourceFinderIntent === "new-student" &&
+    (normalizedTaskSearchQuery.length === 0 || hasNoTaskSearchResults);
+  const shouldOfferCourseSearchRecovery =
+    !isResourceSearchMode &&
+    hasNoTaskSearchResults &&
+    hasCourseSearchDestination &&
+    isLikelyClassSearchRecoveryQuery(normalizedTaskSearchQuery);
+  const shouldOfferNewStudentGuide =
+    isResourceSearchMode &&
+    resourceFinderIntent !== "new-student" &&
+    hasNoTaskSearchResults &&
+    isNewStudentResourceIntent(normalizedTaskSearchQuery);
   const availableResourceSearchSuggestions = (() => {
     if (
       !isResourceSearchMode ||
@@ -1336,28 +1522,48 @@ export function AppShell({
             NEW_STUDENT_RESOURCE_STARTER_ORDER.length),
     );
   })();
-  const availableNewStudentKeyLinks =
-    isResourceSearchMode &&
-    resourceFinderIntent === "new-student" &&
-    normalizedTaskSearchQuery.length === 0
-      ? NEW_STUDENT_KEY_LINKS.flatMap(({ label, toolId }) => {
-          const tool = availableResourceTools.find(({ id }) => id === toolId);
-          return tool ? [{ description: tool.description, label, toolId }] : [];
-        })
+  const availableNewStudentKeyLinks: readonly {
+    description: string;
+    label: string;
+    toolId: PageToolId;
+  }[] =
+    showNewStudentRecoveryLinks
+      ? (() => {
+          const links: {
+            description: string;
+            label: string;
+            toolId: PageToolId;
+          }[] = [];
+          for (const { label, toolId } of NEW_STUDENT_KEY_LINKS) {
+            if (toolId === "course-search") {
+              if (verifiedCourseSearch || hasCourseSearchDestination) {
+                links.push({
+                  description: "Open Albert Course Search",
+                  label,
+                  toolId,
+                });
+              }
+              continue;
+            }
+            const tool = availableResourceTools.find(
+              ({ id }) => id === toolId,
+            );
+            if (tool) {
+              links.push({ description: tool.description, label, toolId });
+            }
+          }
+          return links;
+        })()
       : [];
   const availableNewStudentSupportLinks =
-    isResourceSearchMode &&
-    resourceFinderIntent === "new-student" &&
-    normalizedTaskSearchQuery.length === 0
+    showNewStudentRecoveryLinks
       ? NEW_STUDENT_SUPPORT_LINKS.flatMap(({ label, toolId }) => {
           const tool = availableResourceTools.find(({ id }) => id === toolId);
           return tool ? [{ description: tool.description, label, toolId }] : [];
         })
       : [];
   const availableNewStudentBrowseSuggestions =
-    isResourceSearchMode &&
-    resourceFinderIntent === "new-student" &&
-    normalizedTaskSearchQuery.length === 0
+    showNewStudentRecoveryLinks
       ? NEW_STUDENT_RESOURCE_BROWSE_SUGGESTIONS.filter(({ toolId }) =>
           availableResourceTools.some((tool) => tool.id === toolId),
         )
@@ -1368,17 +1574,25 @@ export function AppShell({
           const pageFamily = filteredTaskFamilies[0];
           if (pageFamily) {
             const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
+            const personalRecordQuery =
+              pageFamily === "personal" &&
+              /contact information|student records|guest users/i.test(
+                normalizedTaskSearchQuery,
+              );
             if (
               pageFamily === "home" &&
               isCrossAreaCourseSearchIntent(normalizedTaskSearchQuery)
             ) {
               return {
-                description: "Open Course Search",
+                description:
+                  courseSearchShortcut?.description ?? "Open Course Search",
                 label: "Find classes",
               };
             }
             return {
-              description: definition.navigationHint,
+              description: personalRecordQuery
+                ? definition.description
+                : definition.navigationHint,
               label: definition.label,
             };
           }
@@ -1405,6 +1619,23 @@ export function AppShell({
 
           return undefined;
         })()
+      : undefined;
+  const isNewcomerSingleResult = Boolean(
+    singleTaskSearchResult &&
+      filteredTaskFamilies.length === 1 &&
+      filteredTaskFamilies[0] === "resources" &&
+      isNewStudentResourceIntent(normalizedTaskSearchQuery),
+  );
+  const singleResultActionLabel = isNewcomerSingleResult
+    ? "Open New student help"
+    : singleTaskSearchResult
+      ? `Open ${singleTaskSearchResult.label}`
+      : undefined;
+  const singleResourceTool =
+    normalizedTaskSearchQuery.length > 0 &&
+    filteredResultCount === 1 &&
+    filteredResourceTools.length === 1
+      ? filteredResourceTools[0]
       : undefined;
   const hasFilteredResults = filteredResultCount > 0;
   const taskSearchResultSummary =
@@ -1605,6 +1836,12 @@ export function AppShell({
     onOpenResource(toolId);
   };
 
+  const openNewStudentGuide = (): void => {
+    setResourceFinderIntent("new-student");
+    setTaskSearchQuery("");
+    taskFinderSearchRef.current?.focus();
+  };
+
   const openSingleVerifiedTaskResult = (query: string): boolean => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
     const {
@@ -1651,6 +1888,15 @@ export function AppShell({
     }
 
     event.preventDefault();
+    if (shouldOfferNewStudentGuide) {
+      openNewStudentGuide();
+      return;
+    }
+    if (shouldOfferCourseSearchRecovery) {
+      closeTaskFinder();
+      onNavigateToCourseSearch();
+      return;
+    }
     if (filteredResultCount !== 1) {
       return;
     }
@@ -1823,7 +2069,7 @@ export function AppShell({
           data-page-family={currentPageFamily}
           aria-live="polite"
         >
-          <span className="ba-page-eyebrow">Workspace</span>
+          <span className="ba-page-eyebrow">You are here</span>
           <strong className="ba-page-title">{currentPage.label}</strong>
           <span className="ba-page-description">{currentPage.description}</span>
         </div>
@@ -1915,9 +2161,9 @@ export function AppShell({
         <nav
           ref={primaryNavigationRef}
           className="ba-primary-nav"
-          aria-label="Better Albert areas"
+          aria-label="Explore Albert areas"
         >
-          <span className="ba-primary-label">Student services</span>
+          <span className="ba-primary-label">Explore Albert</span>
           {PRIMARY_PAGE_FAMILIES.map((pageFamily) => {
             const definition = PAGE_FAMILY_DEFINITIONS[pageFamily];
             const isAvailable = availablePageFamilies.includes(pageFamily);
@@ -2107,9 +2353,33 @@ export function AppShell({
                   id={`${taskFinderId}-search-help`}
                 >
                   Need a class? Choose <strong>Find classes</strong> to open
-                  Albert’s Course Search, then enter a subject, course number,
-                  title, or instructor.
+                  {` ${courseSearchHelpDestination}, then enter a subject, course number, title, or instructor.`}
                 </p>
+              )}
+              {showNewStudentFinderStarter && (
+                <div
+                  className="ba-task-finder-newcomer"
+                  role="note"
+                  aria-label="New student starting point"
+                >
+                  <span className="ba-task-finder-newcomer-copy">
+                    <strong>New to NYU?</strong>
+                    <span>
+                      Start with key links, student guides, and support in one
+                      verified resource view.
+                    </span>
+                  </span>
+                  <button
+                    className="ba-task-finder-newcomer-action"
+                    type="button"
+                    aria-label="Open New student help"
+                    onClick={() =>
+                      handleTaskFinderNavigation("resources", "new student")
+                    }
+                  >
+                    Open New student help
+                  </button>
+                </div>
               )}
               {availableNewStudentKeyLinks.length > 0 && (
                 <div
@@ -2133,7 +2403,25 @@ export function AppShell({
                           type="button"
                           aria-label={`${label} — ${description}`}
                           key={toolId}
-                          onClick={() => handleTaskFinderResource(toolId)}
+                          onClick={() => {
+                            if (toolId === "course-search") {
+                              // Resource mode is backed by Albert's native
+                              // Other Resources menu. Always use the
+                              // lifecycle handoff from that mode so it can
+                              // close the native menu before opening Course
+                              // Search; the generic tool path intentionally
+                              // assumes the current native menu is already
+                              // in a stable page state.
+                              if (verifiedCourseSearch && !isResourceSearchMode) {
+                                handleTaskFinderTool(toolId);
+                              } else {
+                                closeTaskFinder();
+                                onNavigateToCourseSearch();
+                              }
+                              return;
+                            }
+                            handleTaskFinderResource(toolId);
+                          }}
                         >
                           <span className="ba-task-finder-item-copy">
                             <strong>{label}</strong>
@@ -2184,7 +2472,7 @@ export function AppShell({
                             </button>
                           ),
                         )
-                      : availableTaskSearchSuggestions.map(
+                        : availableTaskSearchSuggestions.map(
                           ({ label, query }) => (
                             <button
                               className="ba-task-finder-common-task"
@@ -2194,6 +2482,24 @@ export function AppShell({
                               }
                               key={query}
                               onClick={() => {
+                                const suggestion = TASK_SEARCH_SUGGESTIONS.find(
+                                  (candidate) => candidate.query === query,
+                                );
+                                const requiredTaskId =
+                                  suggestion &&
+                                  "requiresTaskId" in suggestion
+                                    ? suggestion.requiresTaskId
+                                    : undefined;
+                                if (
+                                  requiredTaskId &&
+                                  availableTaskTools.some(
+                                    ({ id }) => id === requiredTaskId,
+                                  ) &&
+                                  !isCrossAreaCourseSearchIntent(query)
+                                ) {
+                                  handleTaskFinderTool(requiredTaskId);
+                                  return;
+                                }
                                 if (openSingleVerifiedTaskResult(query)) {
                                   return;
                                 }
@@ -2210,7 +2516,8 @@ export function AppShell({
               )}
               {isResourceSearchMode &&
                 resourceFinderIntent === "new-student" &&
-                normalizedTaskSearchQuery.length === 0 && (
+                (normalizedTaskSearchQuery.length === 0 ||
+                  hasNoTaskSearchResults) && (
                   <div
                     className="ba-task-finder-guides"
                     role="group"
@@ -2314,6 +2621,31 @@ export function AppShell({
               >
                 {taskSearchResultSummary}
               </p>
+              {shouldOfferCourseSearchRecovery && (
+                <section
+                  className="ba-task-finder-course-recovery"
+                  aria-labelledby={`${taskFinderId}-course-recovery-title`}
+                >
+                  <strong id={`${taskFinderId}-course-recovery-title`}>
+                    Looking for a class?
+                  </strong>
+                  <span>
+                    Search Albert by subject, course number, title, or
+                    instructor in the verified Course Search form.
+                  </span>
+                  <button
+                    className="ba-task-finder-search-action"
+                    type="button"
+                    aria-label={`Open Find classes with ${normalizedTaskSearchQuery}`}
+                    onClick={() => {
+                      closeTaskFinder();
+                      onNavigateToCourseSearch();
+                    }}
+                  >
+                    Open Find classes
+                  </button>
+                </section>
+              )}
               {normalizedTaskSearchQuery.length > 0 &&
                 filteredResultCount === 1 && (
                   <>
@@ -2326,11 +2658,26 @@ export function AppShell({
                           <strong>Verified destination:</strong>{" "}
                           {singleTaskSearchResult.label}
                           <span> — {singleTaskSearchResult.description}</span>
+                          {isNewcomerSingleResult && (
+                            <span className="ba-task-finder-search-result-note">
+                              Start here for newcomer key links, student guides,
+                              and support.
+                            </span>
+                          )}
                         </p>
                         <button
-                          className="ba-task-finder-search-action"
+                          className={`ba-task-finder-search-action${
+                            filteredTaskTools.length === 1 &&
+                            filteredTaskTools[0]?.id !== "course-search"
+                              ? " ba-task-finder-tool"
+                              : ""
+                          }${singleResourceTool ? " ba-task-finder-resource" : ""}`}
                           type="button"
-                          aria-label={`Open ${singleTaskSearchResult.label} — ${singleTaskSearchResult.description}`}
+                          aria-label={`Open ${singleTaskSearchResult.label}${
+                            filteredResourceTools.length === 0
+                              ? ` — ${singleTaskSearchResult.description}`
+                              : ""
+                          }`}
                           aria-describedby={`${taskFinderId}-search-destination ${taskFinderId}-search-hint`}
                           onClick={() =>
                             openSingleVerifiedTaskResult(
@@ -2338,8 +2685,17 @@ export function AppShell({
                             )
                           }
                         >
-                          Open {singleTaskSearchResult.label}
+                          {singleResultActionLabel}
                         </button>
+                        {singleResourceTool && (
+                          <section className="ba-task-finder-single-resource-context">
+                            <h3 ref={singleResourceContextHeadingRef} tabIndex={-1}>
+                              {RESOURCE_CATEGORY_DEFINITIONS[
+                                singleResourceTool.category
+                              ].label}
+                            </h3>
+                          </section>
+                        )}
                       </>
                     )}
                     <p
@@ -2434,28 +2790,50 @@ export function AppShell({
                     </>
                   )
                 ) : (
-                  !isSingleResultSearch && filteredResourceTools.length > 0 && (
-                    <button
-                      className="ba-task-finder-jump"
-                      type="button"
-                      aria-label="NYU resources"
-                      onClick={() =>
-                        focusTaskFinderTarget(
-                          resourceSectionHeadingRef.current,
-                        )
-                      }
-                    >
-                      <span className="ba-task-finder-jump-full">
-                        NYU resources
-                      </span>
-                      <span
-                        className="ba-task-finder-jump-compact"
-                        aria-hidden="true"
+                  <>
+                    {isSingleResultSearch && singleResourceTool && (
+                      <button
+                        className="ba-task-finder-jump"
+                        type="button"
+                        aria-label={
+                          RESOURCE_CATEGORY_DEFINITIONS[
+                            singleResourceTool.category
+                          ].label
+                        }
+                        onClick={() =>
+                          focusTaskFinderTarget(
+                            singleResourceContextHeadingRef.current,
+                          )
+                        }
                       >
-                        Resources
-                      </span>
-                    </button>
-                  )
+                        {RESOURCE_CATEGORY_DEFINITIONS[
+                          singleResourceTool.category
+                        ].label}
+                      </button>
+                    )}
+                    {!isSingleResultSearch && filteredResourceTools.length > 0 && (
+                      <button
+                        className="ba-task-finder-jump"
+                        type="button"
+                        aria-label="NYU resources"
+                        onClick={() =>
+                          focusTaskFinderTarget(
+                            resourceSectionHeadingRef.current,
+                          )
+                        }
+                      >
+                        <span className="ba-task-finder-jump-full">
+                          NYU resources
+                        </span>
+                        <span
+                          className="ba-task-finder-jump-compact"
+                          aria-hidden="true"
+                        >
+                          Resources
+                        </span>
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
               <button
@@ -2482,10 +2860,22 @@ export function AppShell({
                     No verified destination matches “{taskSearchQuery.trim()}”
                   </strong>
                   <span>
-                    {isResourceSearchMode
+                    {shouldOfferNewStudentGuide
+                      ? "New student help is available as a verified guide. Open it to browse NYU key links, student guides, and support."
+                      : isResourceSearchMode
                       ? "No exact link is available here. Use “View Albert resource directory” below to browse Albert’s official list."
                       : "Try a broader term, or choose “Show all” above to browse every verified destination available in this Albert view. Better Albert never invents destinations."}
                   </span>
+                  {shouldOfferNewStudentGuide && (
+                    <button
+                      className="ba-task-finder-search-action"
+                      type="button"
+                      aria-label="Open New student help"
+                      onClick={openNewStudentGuide}
+                    >
+                      Open New student help
+                    </button>
+                  )}
                 </div>
               )}
 

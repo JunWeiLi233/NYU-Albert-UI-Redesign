@@ -2,6 +2,7 @@ import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { mountHeader, type MountedHeader } from "../../src/app/mount-header";
+import { NATIVE_MODAL_OPEN_ATTRIBUTE } from "../../src/content/native-theme";
 
 (globalThis as typeof globalThis & {
   IS_REACT_ACT_ENVIRONMENT?: boolean;
@@ -46,21 +47,50 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("returns the rail to its wayfinding context after a native modal closes", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["academics"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "academics",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const shell = shadowRoot?.querySelector<HTMLElement>(".ba-shell");
+    expect(shell).not.toBeUndefined();
+    if (!shell) {
+      return;
+    }
+
+    shell.scrollTop = 240;
+    document.documentElement.setAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE, "");
+    await act(async () => Promise.resolve());
+    shell.scrollTop = 240;
+
+    document.documentElement.removeAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(shell.scrollTop).toBe(0);
+  });
+
   it("explains the one-step Class Search handoff before typing", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home"],
       availablePageTools: [],
       availableResourceTools: [],
-      availableTaskTools: [
-        {
-          description:
-            "Search by subject, course number, title, or instructor",
-          id: "course-search",
-          label: "Find Classes",
-          nativeLabels: ["Course Search"],
-          pageFamily: "home",
-        },
-      ],
+      // Albert exposes Home's verified Course Search as a page tool; keep the
+      // task-tool list empty to cover that live eligibility path.
+      availableTaskTools: [],
       currentPageFamily: "home",
       document,
       onDisable: vi.fn(async () => undefined),
@@ -91,7 +121,51 @@ describe("AppShell cross-area task handoffs", () => {
       );
   });
 
+  it("puts a verified newcomer starting point beside default tasks", async () => {
+    const navigate = vi.fn();
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: navigate,
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    expect(
+      shadowRoot?.querySelector('[aria-label="New student starting point"]')
+        ?.textContent,
+    ).toContain("New to NYU?");
+    const newcomerAction = shadowRoot?.querySelector<HTMLButtonElement>(
+      '[aria-label="Open New student help"]',
+    );
+    expect(newcomerAction?.textContent).toBe("Open New student help");
+
+    await act(async () => {
+      newcomerAction?.click();
+      await Promise.resolve();
+    });
+
+    expect(navigate).toHaveBeenCalledWith("resources");
+  });
+
   it("gives Home starters a concise newcomer cue", () => {
+    const onNavigateToCourseSearch = vi.fn();
+    const onOpenTool = vi.fn();
     mountedHeader = mountHeader({
       availablePageFamilies: ["home"],
       availablePageTools: [
@@ -118,9 +192,9 @@ describe("AppShell cross-area task handoffs", () => {
       document,
       onDisable: vi.fn(async () => undefined),
       onNavigate: vi.fn(),
-      onNavigateToCourseSearch: vi.fn(),
+      onNavigateToCourseSearch,
       onOpenResource: vi.fn(),
-      onOpenTool: vi.fn(),
+      onOpenTool,
       onSkipToContent: vi.fn(),
     });
 
@@ -131,6 +205,81 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.querySelector(".ba-tool-guidance")?.textContent).toBe(
       "New to NYU? Start with classes, holds, and registration dates.",
     );
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        '.ba-course-search-shortcut[aria-label="Find classes"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        '.ba-home-starter-nav button[aria-label="Find Classes"]',
+      ),
+    ).not.toBeNull();
+
+    const directCourseSearch = shadowRoot?.querySelector<HTMLButtonElement>(
+      '.ba-course-search-shortcut[aria-label="Find classes"]',
+    );
+    directCourseSearch?.click();
+    expect(onOpenTool).toHaveBeenCalledWith("course-search");
+  });
+
+  it("makes newcomer search results actionable without hiding the native destination", async () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    const searchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(searchInput).not.toBeNull();
+    if (!searchInput) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        searchInput,
+        "new student",
+      );
+      searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Other Resources",
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Start here for newcomer key links, student guides, and support.",
+    );
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-task-finder-search-action",
+      )?.textContent,
+    ).toBe("Open New student help");
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-task-finder-search-action",
+      )?.getAttribute("aria-label"),
+    ).toBe("Open Other Resources — NYU services, offices, and support");
   });
 
   it("routes public Get Support advisor wording to Academics", async () => {
@@ -497,9 +646,9 @@ describe("AppShell cross-area task handoffs", () => {
     });
 
     expect(shadowRoot?.textContent).toContain(
-      '2 results for “graduate students”',
+      '1 result for “graduate students”',
     );
-    expect(shadowRoot?.textContent).toContain("Wasserman");
+    expect(shadowRoot?.textContent).not.toContain("Wasserman");
     expect(shadowRoot?.textContent).toContain("Student Life");
 
     for (const [query, destination] of [
@@ -982,14 +1131,12 @@ describe("AppShell cross-area task handoffs", () => {
       "Verified destination: Other Resources",
     );
     expect(shadowRoot?.querySelectorAll(".ba-task-finder-resource")).toHaveLength(
-      0,
+      1,
     );
     const openResource = shadowRoot?.querySelector<HTMLButtonElement>(
       ".ba-task-finder-search-action",
     );
-    expect(openResource?.getAttribute("aria-label")).toBe(
-      "Open Wasserman — Find career coaching, jobs, and internships",
-    );
+    expect(openResource?.getAttribute("aria-label")).toBe("Open Wasserman");
     await act(async () => {
       openResource?.click();
     });
@@ -1378,6 +1525,22 @@ describe("AppShell cross-area task handoffs", () => {
       "Verified destination: Academic Calendar",
     );
 
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "incoming students",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “incoming students”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: Other Resources",
+    );
+
   });
 
   it("routes pronoun wording to the verified Personal Info area", async () => {
@@ -1559,7 +1722,11 @@ describe("AppShell cross-area task handoffs", () => {
     ]) {
       const supportText = await search(query);
       expect(supportText).toContain(`1 result for “${query}”`);
-      expect(supportText).toContain("Verified destination: NYU Connect");
+      expect(supportText).toContain(
+        query === "time management guide"
+          ? "Verified destination: Other Resources"
+          : "Verified destination: NYU Connect",
+      );
     }
 
     const aidAppointmentText = await search("financial aid appointment");
@@ -2190,6 +2357,7 @@ describe("AppShell cross-area task handoffs", () => {
             "browse available classes",
             "enroll in classes for the next term at your designated registration day and time",
             "register",
+            "registration",
             "where can i register",
             "registering for classes",
             "registration process",
@@ -2225,6 +2393,7 @@ describe("AppShell cross-area task handoffs", () => {
     }
 
     for (const query of [
+      "registration",
       "where can I register",
       "how do I register",
       "registering for classes",
@@ -2256,7 +2425,7 @@ describe("AppShell cross-area task handoffs", () => {
           ?.click();
       });
     }
-    expect(onOpenTool).toHaveBeenCalledTimes(7);
+    expect(onOpenTool).toHaveBeenCalledTimes(8);
     expect(onOpenTool).toHaveBeenNthCalledWith(1, "course-search");
     expect(onOpenTool).toHaveBeenNthCalledWith(2, "course-search");
     expect(onOpenTool).toHaveBeenNthCalledWith(3, "course-search");
@@ -2511,6 +2680,67 @@ describe("AppShell cross-area task handoffs", () => {
     ).not.toContain("Find classes");
   });
 
+  it("offers a verified Academics handoff for class search from Home", async () => {
+    const onNavigateToCourseSearch = vi.fn();
+
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch,
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    const shortcut = shadowRoot?.querySelector<HTMLButtonElement>(
+      ".ba-course-search-shortcut",
+    );
+
+    expect(shortcut?.dataset.courseSearchMode).toBe("home");
+    expect(shortcut?.textContent).toContain("Open Academics to find classes");
+
+    await act(async () => {
+      shortcut?.click();
+      await Promise.resolve();
+    });
+
+    expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
+  });
+
+  it("describes the Home-first course-search route outside Home", () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics", "grades", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "grades",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shortcut = mountedHeader.host.shadowRoot?.querySelector<HTMLButtonElement>(
+      ".ba-course-search-shortcut",
+    );
+
+    expect(shortcut?.dataset.courseSearchMode).toBe("home");
+    expect(shortcut?.textContent).toContain("Open Course Search");
+    expect(shortcut?.textContent).not.toContain(
+      "Open Academics to find classes",
+    );
+  });
+
   it("does not advertise Home status starters without their native controls", async () => {
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
@@ -2594,6 +2824,78 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).toContain(
       "choose “Show all” above to browse every verified destination available in this Albert view",
     );
+  });
+
+  it("offers Course Search recovery for a free-form class query", async () => {
+    const onNavigateToCourseSearch = vi.fn();
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "resources"],
+      availablePageTools: [],
+      availableResourceTools: [],
+      availableTaskTools: [
+        {
+          description:
+            "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          keywords: ["find a course"],
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+          pageFamily: "home",
+        },
+      ],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch,
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const shadowRoot = mountedHeader.host.shadowRoot;
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>('[aria-label="Find a task"]')
+        ?.click();
+      await Promise.resolve();
+    });
+
+    const taskSearch = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(taskSearch).not.toBeNull();
+    if (!taskSearch) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "biology",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain("Looking for a class?");
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        ".ba-task-finder-course-recovery .ba-task-finder-search-action",
+      )?.textContent,
+    ).toBe("Open Find classes");
+
+    await act(async () => {
+      taskSearch.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "Enter",
+        }),
+      );
+    });
+
+    expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
   });
 
   it("opens Course Search from a course query while the current area is Academics", async () => {
@@ -3210,6 +3512,164 @@ describe("AppShell cross-area task handoffs", () => {
     );
   });
 
+  it("offers the verified newcomer guide from a direct resource search", async () => {
+    document.body.innerHTML = `
+      <nav id="IS_BB_HEADER_MENU">
+        <li
+          id="MENU_ID_NYU_OTHER_RESOURCES_FLDR"
+          class="megaMenuSelected"
+          onclick="toggleMegaMenu('MENU_ID_NYU_OTHER_RESOURCES_FLDR', 'SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR', 'megaMenuSelected');"
+        >
+          <a href="#">Other Resources</a>
+        </li>
+        <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
+          <a href="#calendar">Academic Calendar</a>
+        </div>
+      </nav>
+    `;
+
+    const renderResourceFinder = (): ShadowRoot | null | undefined => {
+      mountedHeader = mountHeader({
+        availablePageFamilies: ["resources"],
+        availablePageTools: [],
+        availableResourceTools: [
+          {
+            category: "academic-records",
+            description: "Check NYU academic dates and deadlines",
+            featured: true,
+            id: "academic-calendar",
+            keywords: ["academic calendar", "dates"],
+            label: "Academic Calendar",
+            nativeLabels: ["Academic Calendar"],
+          },
+        ],
+        availableTaskTools: [],
+        currentPageFamily: "resources",
+        document,
+        onDisable: vi.fn(async () => undefined),
+        onNavigate: vi.fn(),
+        onNavigateToCourseSearch: vi.fn(),
+        onOpenResource: vi.fn(),
+        onOpenTool: vi.fn(),
+        onSkipToContent: vi.fn(),
+      });
+      return mountedHeader.host.shadowRoot;
+    };
+
+    let shadowRoot = renderResourceFinder();
+    const searchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(searchInput).not.toBeNull();
+    if (!searchInput) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        searchInput,
+        "new student",
+      );
+      searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain('0 results for “new student”');
+    expect(shadowRoot?.textContent).toContain("Open New student help");
+    expect(shadowRoot?.textContent).toContain(
+      "New student help is available as a verified guide",
+    );
+
+    await act(async () => {
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>(
+          '[aria-label="Open New student help"]',
+        )
+        ?.click();
+      await Promise.resolve();
+    });
+
+    expect(searchInput.value).toBe("");
+    expect(shadowRoot?.textContent).toContain("New to NYU?");
+    expect(shadowRoot?.textContent).toContain("Student Guides");
+
+    mountedHeader?.unmount();
+    shadowRoot = renderResourceFinder();
+    const enterSearchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(enterSearchInput).not.toBeNull();
+    if (!enterSearchInput) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        enterSearchInput,
+        "tech checklist for new students",
+      );
+      enterSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(shadowRoot?.textContent).toContain(
+      '0 results for “tech checklist for new students”',
+    );
+
+    await act(async () => {
+      enterSearchInput.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "Enter",
+        }),
+      );
+      await Promise.resolve();
+    });
+
+    expect(enterSearchInput.value).toBe("");
+    expect(shadowRoot?.textContent).toContain("New to NYU?");
+    expect(shadowRoot?.textContent).toContain("Student Guides");
+
+    mountedHeader?.unmount();
+    mountedHeader = undefined;
+    shadowRoot = renderResourceFinder();
+    const registrationSearchInput = shadowRoot?.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    expect(registrationSearchInput).not.toBeNull();
+    if (!registrationSearchInput) {
+      return;
+    }
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        registrationSearchInput,
+        "new student registration guide",
+      );
+      registrationSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '0 results for “new student registration guide”',
+    );
+    expect(shadowRoot?.textContent).toContain("Open New student help");
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        registrationSearchInput,
+        "incoming students",
+      );
+      registrationSearchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(shadowRoot?.textContent).toContain(
+      '0 results for “incoming students”',
+    );
+    expect(shadowRoot?.textContent).toContain("Open New student help");
+  });
+
   it("keeps broad help search on the directory when Student Services is unavailable", async () => {
     document.body.innerHTML = `
       <nav id="IS_BB_HEADER_MENU">
@@ -3298,6 +3758,7 @@ describe("AppShell cross-area task handoffs", () => {
         </li>
         <div id="SUBMENU_ID_NYU_OTHER_RESOURCES_FLDR">
           <a href="#calendar">Academic Calendar</a>
+          <a href="#studentlink">StudentLink</a>
         </div>
       </nav>
     `;
@@ -3349,6 +3810,21 @@ describe("AppShell cross-area task handoffs", () => {
         nativeLabels: ["NYU Brightspace"],
       },
       {
+        category: "money-services" as const,
+        description:
+          "Get help with your bill, financial aid, registration, and more",
+        featured: false,
+        id: "studentlink" as const,
+        keywords: [
+          "studentlink",
+          "student link",
+          "help with you bill financial aid registration and more",
+          "for answers about your bill financial aid registration international student services and more",
+        ],
+        label: "StudentLink",
+        nativeLabels: ["StudentLink"],
+      },
+      {
         category: "wellbeing-campus" as const,
         description: "Find general student services and support",
         featured: false,
@@ -3376,6 +3852,15 @@ describe("AppShell cross-area task handoffs", () => {
         nativeLabels: ["Student Life"],
       },
     ];
+    const onOpenTool = vi.fn();
+    const courseSearchTool = {
+      description: "Search by subject, course number, title, or instructor",
+      id: "course-search" as const,
+      keywords: [],
+      label: "Find Classes",
+      nativeLabels: ["Course Search"],
+      pageFamily: "home" as const,
+    };
     const onNavigate = vi.fn(() => {
       document
         .getElementById("MENU_ID_NYU_OTHER_RESOURCES_FLDR")
@@ -3384,22 +3869,23 @@ describe("AppShell cross-area task handoffs", () => {
         availablePageFamilies: ["home", "resources"],
         availablePageTools: [],
         availableResourceTools: resources,
-        availableTaskTools: [],
+        availableTaskTools: [courseSearchTool],
         currentPageFamily: "resources",
       });
     });
+    const onNavigateToCourseSearch = vi.fn();
     mountedHeader = mountHeader({
       availablePageFamilies: ["home", "resources"],
       availablePageTools: [],
       availableResourceTools: resources,
-      availableTaskTools: [],
+      availableTaskTools: [courseSearchTool],
       currentPageFamily: "home",
       document,
       onDisable: vi.fn(async () => undefined),
       onNavigate,
-      onNavigateToCourseSearch: vi.fn(),
+      onNavigateToCourseSearch,
       onOpenResource: vi.fn(),
-      onOpenTool: vi.fn(),
+      onOpenTool,
       onSkipToContent: vi.fn(),
     });
 
@@ -3453,11 +3939,14 @@ describe("AppShell cross-area task handoffs", () => {
         ) ?? [],
       ).map((button) => button.textContent?.replace(/\s+/g, " ").trim()),
     ).toEqual([
+      "Find classesOpen Albert Course Search›",
       "Academic datesCheck NYU academic dates and deadlines›",
       "Course materialsOpen NYU's learning platform›",
+      "StudentLinkGet help with your bill, financial aid, registration, and more›",
       "Student supportFind general student services and support›",
     ]);
     expect(shadowRoot?.textContent).toContain("Start here");
+
     const supportLinks = shadowRoot?.querySelector<HTMLElement>(
       '[aria-label="Get Support"]',
     );
@@ -3473,6 +3962,7 @@ describe("AppShell cross-area task handoffs", () => {
       "Student successSchedule support appointments and view your Success Network›",
       "Get involvedFind clubs, activities, and community support›",
     ]);
+
     expect(
       Array.from(
         studentGuides?.querySelectorAll<HTMLButtonElement>(
@@ -3526,6 +4016,67 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).not.toContain(
       "Verified destination: Academic Calendar",
     );
+    expect(
+      shadowRoot?.querySelector('[aria-label="NYU Key Links"]'),
+    ).not.toBeNull();
+    expect(
+      shadowRoot?.querySelector('[aria-label="Student Guides"]'),
+    ).not.toBeNull();
+    expect(
+      shadowRoot?.querySelector('[aria-label="Get Support"]'),
+    ).not.toBeNull();
+    expect(shadowRoot?.textContent).toContain("Find classes");
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "Help with you bill, financial aid, registration, and more",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(shadowRoot?.textContent).toContain(
+      '1 result for “Help with you bill, financial aid, registration, and more”',
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: StudentLink",
+    );
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "For answers about your bill, financial aid, registration, international student services, and more",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(shadowRoot?.textContent).toContain(
+      "1 result for “For answers about your bill, financial aid, registration, international student services, and more”",
+    );
+    expect(shadowRoot?.textContent).toContain(
+      "Verified destination: StudentLink",
+    );
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
+        taskSearch,
+        "",
+      );
+      taskSearch.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+    });
+    const findClassesKeyLink = Array.from(
+      shadowRoot?.querySelectorAll<HTMLButtonElement>(
+        '[aria-label="NYU Key Links"] .ba-task-finder-key-link',
+      ) ?? [],
+    ).find((button) => button.textContent?.includes("Find classes"));
+    expect(findClassesKeyLink).not.toBeUndefined();
+    await act(async () => {
+      findClassesKeyLink?.click();
+      await Promise.resolve();
+    });
+    expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
+    expect(onOpenTool).not.toHaveBeenCalled();
 
   });
 

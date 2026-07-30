@@ -60,6 +60,37 @@ describe("course-search handoff", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
+  it("directly activates PeopleSoft's verified javascript Search anchor", () => {
+    document.body.innerHTML = `
+      <h3>Find Classes to add to your Enrollment cart using the options below</h3>
+      <label><input type="radio" checked>Class Search</label>
+      <a href="javascript:submitAction_win0(document.win0,'SMALL_BUTTON');">Search</a>
+    `;
+    const search = document.querySelector<HTMLAnchorElement>("a");
+    const click = vi.fn((event: Event) => event.preventDefault());
+    search?.addEventListener("click", click);
+
+    expect(advanceToNativeClassSearch(document)).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
+  it("recognizes a dynamically selected Class Search radio", () => {
+    document.body.innerHTML = `
+      <h3>Find Classes to add to your Enrollment cart using the options below</h3>
+      <label>
+        <input type="radio" name="mode" aria-checked="true">
+        Class Search
+      </label>
+      <button type="button">Search</button>
+    `;
+    const search = document.querySelector<HTMLButtonElement>("button");
+    const click = vi.fn();
+    search?.addEventListener("click", click);
+
+    expect(advanceToNativeClassSearch(document)).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
   it("recognizes PeopleSoft's linked image and adjacent radio label", () => {
     document.body.innerHTML = `
       <h3>Find Classes to add to your Enrollment cart using the options below</h3>
@@ -87,6 +118,40 @@ describe("course-search handoff", () => {
     `;
     const search = document.querySelector<HTMLAnchorElement>("a");
     const click = vi.fn((event: Event) => event.preventDefault());
+    search?.addEventListener("click", click);
+
+    expect(advanceToNativeClassSearch(document)).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
+  it("ignores hidden duplicate launcher headings from PeopleSoft templates", () => {
+    loadNativeLauncher();
+    const hiddenHeading = document.createElement("h3");
+    hiddenHeading.textContent =
+      "Find Classes to add to your Enrollment cart using the options below";
+    hiddenHeading.hidden = true;
+    document.body.prepend(hiddenHeading);
+    const search = Array.from(document.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "Search",
+    );
+    const click = vi.fn();
+    search?.addEventListener("click", click);
+
+    expect(advanceToNativeClassSearch(document)).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
+  it("accepts an accessible heading with a tenant-specific suffix", () => {
+    loadNativeLauncher();
+    const heading = document.querySelector("h3");
+    if (!heading) {
+      throw new Error("Expected launcher heading");
+    }
+    heading.textContent += " — Summer 2026";
+    const search = Array.from(document.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "Search",
+    );
+    const click = vi.fn();
     search?.addEventListener("click", click);
 
     expect(advanceToNativeClassSearch(document)).toBe(true);

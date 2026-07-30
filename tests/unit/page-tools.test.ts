@@ -1221,6 +1221,33 @@ describe("page-family native tools", () => {
     expect(click).toHaveBeenCalledOnce();
   });
 
+  it("exposes StudentLink only when its exact native anchor is verified", () => {
+    document.body.innerHTML = nativeResourceMenu(
+      '<li><a href="#studentlink">StudentLink</a></li>',
+    );
+    const studentLink = document.querySelector<HTMLAnchorElement>(
+      'a[href="#studentlink"]',
+    );
+    const click = vi.fn((event: Event) => event.preventDefault());
+    studentLink?.addEventListener("click", click);
+
+    expect(getAvailableResourceTools(document).map(({ id }) => id)).toEqual([
+      "studentlink",
+    ]);
+    expect(
+      getAvailableResourceTools(document).find(({ id }) => id === "studentlink")
+        ?.keywords,
+    ).toContain("help with you bill financial aid registration and more");
+    expect(
+      getAvailableResourceTools(document).find(({ id }) => id === "studentlink")
+        ?.keywords,
+    ).toContain(
+      "for answers about your bill financial aid registration international student services and more",
+    );
+    expect(openNativeResourceTool(document, "studentlink")).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+
   it("ignores resource lookalikes outside the exact direct submenu boundary", () => {
     document.body.innerHTML = `
       <a href="#outside">Academic Calendar</a>
