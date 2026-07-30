@@ -202,9 +202,10 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
     exact: true,
     name: "Find Classes",
   });
+  await expect(primaryFindClasses).toHaveClass(/ba-course-search-shortcut/);
   await expect(primaryFindClasses).toHaveAttribute(
-    "data-primary-task",
-    "true",
+    "data-course-search-mode",
+    "direct",
   );
   await expect(primaryFindClasses).toHaveCSS(
     "background-color",
@@ -234,6 +235,9 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   await expect(page.locator(".ba-primary-label")).toHaveText("Explore Albert");
   const homeStarter = page.locator(".ba-home-starter-nav");
   await expect(homeStarter.locator(".ba-tool-label")).toHaveText("Start here");
+  await expect(
+    homeStarter.getByRole("button", { exact: true, name: "Find Classes" }),
+  ).toHaveCount(0);
   const homeStarterGeometry = await homeStarter.evaluate((navigation) => {
     const bounds = navigation.getBoundingClientRect();
     const finderBounds = document

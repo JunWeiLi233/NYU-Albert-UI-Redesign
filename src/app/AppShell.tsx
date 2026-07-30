@@ -946,9 +946,9 @@ export function AppShell({
   const availableTaskFamilies = PRIMARY_PAGE_FAMILIES.filter((pageFamily) =>
     availablePageFamilies.includes(pageFamily),
   );
-  const verifiedCourseSearch = availableTaskTools.find(
-    ({ id }) => id === "course-search",
-  );
+  const verifiedCourseSearch =
+    availableTaskTools.find(({ id }) => id === "course-search") ??
+    availablePageTools.find(({ id }) => id === "course-search");
   // Home is the first verified cross-area handoff for non-Home workspaces.
   // Only a Home view that lacks its own Course Search control should describe
   // the alternate Academics handoff; otherwise the visible cue must match the
@@ -2079,9 +2079,7 @@ export function AppShell({
             className="ba-discovery-actions"
             data-has-course-search={courseSearchShortcut ? "true" : undefined}
           >
-            {courseSearchShortcut &&
-              (currentPageFamily !== "home" ||
-                courseSearchShortcut.mode !== "direct") && (
+            {courseSearchShortcut && (
               <button
                 className="ba-course-search-shortcut"
                 type="button"

@@ -88,16 +88,9 @@ describe("AppShell cross-area task handoffs", () => {
       availablePageFamilies: ["home"],
       availablePageTools: [],
       availableResourceTools: [],
-      availableTaskTools: [
-        {
-          description:
-            "Search by subject, course number, title, or instructor",
-          id: "course-search",
-          label: "Find Classes",
-          nativeLabels: ["Course Search"],
-          pageFamily: "home",
-        },
-      ],
+      // Albert exposes Home's verified Course Search as a page tool; keep the
+      // task-tool list empty to cover that live eligibility path.
+      availableTaskTools: [],
       currentPageFamily: "home",
       document,
       onDisable: vi.fn(async () => undefined),
@@ -171,6 +164,8 @@ describe("AppShell cross-area task handoffs", () => {
   });
 
   it("gives Home starters a concise newcomer cue", () => {
+    const onNavigateToCourseSearch = vi.fn();
+    const onOpenTool = vi.fn();
     mountedHeader = mountHeader({
       availablePageFamilies: ["home"],
       availablePageTools: [
@@ -197,9 +192,9 @@ describe("AppShell cross-area task handoffs", () => {
       document,
       onDisable: vi.fn(async () => undefined),
       onNavigate: vi.fn(),
-      onNavigateToCourseSearch: vi.fn(),
+      onNavigateToCourseSearch,
       onOpenResource: vi.fn(),
-      onOpenTool: vi.fn(),
+      onOpenTool,
       onSkipToContent: vi.fn(),
     });
 
@@ -210,12 +205,22 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.querySelector(".ba-tool-guidance")?.textContent).toBe(
       "New to NYU? Start with classes, holds, and registration dates.",
     );
-    expect(shadowRoot?.querySelector(".ba-course-search-shortcut")).toBeNull();
+    expect(
+      shadowRoot?.querySelector<HTMLButtonElement>(
+        '.ba-course-search-shortcut[aria-label="Find classes"]',
+      ),
+    ).not.toBeNull();
     expect(
       shadowRoot?.querySelector<HTMLButtonElement>(
         '.ba-home-starter-nav button[aria-label="Find Classes"]',
       ),
     ).not.toBeNull();
+
+    const directCourseSearch = shadowRoot?.querySelector<HTMLButtonElement>(
+      '.ba-course-search-shortcut[aria-label="Find classes"]',
+    );
+    directCourseSearch?.click();
+    expect(onOpenTool).toHaveBeenCalledWith("course-search");
   });
 
   it("makes newcomer search results actionable without hiding the native destination", async () => {
