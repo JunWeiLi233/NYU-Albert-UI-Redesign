@@ -4005,6 +4005,16 @@ describe("AppShell cross-area task handoffs", () => {
     expect(shadowRoot?.textContent).not.toContain(
       "Verified destination: Academic Calendar",
     );
+    expect(
+      shadowRoot?.querySelector('[aria-label="NYU Key Links"]'),
+    ).not.toBeNull();
+    expect(
+      shadowRoot?.querySelector('[aria-label="Student Guides"]'),
+    ).not.toBeNull();
+    expect(
+      shadowRoot?.querySelector('[aria-label="Get Support"]'),
+    ).not.toBeNull();
+    expect(shadowRoot?.textContent).toContain("Find classes");
 
     await act(async () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(

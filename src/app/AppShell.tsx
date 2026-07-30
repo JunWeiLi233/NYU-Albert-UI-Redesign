@@ -1479,6 +1479,10 @@ export function AppShell({
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 1;
   const hasNoTaskSearchResults =
     normalizedTaskSearchQuery.length > 0 && filteredResultCount === 0;
+  const showNewStudentRecoveryLinks =
+    isResourceSearchMode &&
+    resourceFinderIntent === "new-student" &&
+    (normalizedTaskSearchQuery.length === 0 || hasNoTaskSearchResults);
   const shouldOfferCourseSearchRecovery =
     !isResourceSearchMode &&
     hasNoTaskSearchResults &&
@@ -1523,9 +1527,7 @@ export function AppShell({
     label: string;
     toolId: PageToolId;
   }[] =
-    isResourceSearchMode &&
-    resourceFinderIntent === "new-student" &&
-    normalizedTaskSearchQuery.length === 0
+    showNewStudentRecoveryLinks
       ? (() => {
           const links: {
             description: string;
@@ -1554,18 +1556,14 @@ export function AppShell({
         })()
       : [];
   const availableNewStudentSupportLinks =
-    isResourceSearchMode &&
-    resourceFinderIntent === "new-student" &&
-    normalizedTaskSearchQuery.length === 0
+    showNewStudentRecoveryLinks
       ? NEW_STUDENT_SUPPORT_LINKS.flatMap(({ label, toolId }) => {
           const tool = availableResourceTools.find(({ id }) => id === toolId);
           return tool ? [{ description: tool.description, label, toolId }] : [];
         })
       : [];
   const availableNewStudentBrowseSuggestions =
-    isResourceSearchMode &&
-    resourceFinderIntent === "new-student" &&
-    normalizedTaskSearchQuery.length === 0
+    showNewStudentRecoveryLinks
       ? NEW_STUDENT_RESOURCE_BROWSE_SUGGESTIONS.filter(({ toolId }) =>
           availableResourceTools.some((tool) => tool.id === toolId),
         )
@@ -2518,7 +2516,8 @@ export function AppShell({
               )}
               {isResourceSearchMode &&
                 resourceFinderIntent === "new-student" &&
-                normalizedTaskSearchQuery.length === 0 && (
+                (normalizedTaskSearchQuery.length === 0 ||
+                  hasNoTaskSearchResults) && (
                   <div
                     className="ba-task-finder-guides"
                     role="group"
