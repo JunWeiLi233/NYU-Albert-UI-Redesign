@@ -17,6 +17,8 @@ interface ClassSearchPlan {
   filter?: Element;
   form?: HTMLFormElement;
   groups: readonly Element[];
+  directoryGroups: readonly Element[];
+  directoryGrids: readonly Element[];
   primarySearch?: {
     action?: Element;
     input: HTMLInputElement;
@@ -27,6 +29,7 @@ interface ClassSearchPlan {
   resultActions?: Element;
   resultRows: readonly Element[];
   root: Element;
+  search?: Element;
   selectorSearch?: {
     action: Element;
     controls: readonly HTMLSelectElement[];
@@ -396,6 +399,83 @@ function collectResultRows(results: Element | undefined): readonly Element[] {
   return Array.from(results.querySelectorAll("table > tbody > tr, tbody > tr"));
 }
 
+function isSubjectDirectoryGrid(element: Element): boolean {
+  const rows = Array.from(
+    element.querySelectorAll<HTMLElement>(
+      ":scope > tbody > tr, :scope > tr, [role='row']",
+    ),
+  );
+  if (rows.length < 2) {
+    return false;
+  }
+
+  const links = Array.from(element.querySelectorAll<HTMLAnchorElement>("a"));
+  const subjectLinks = links.filter((link) => {
+    const href = link.getAttribute("href")?.trim().toLowerCase() ?? "";
+    return href.startsWith("javascript:") || href.startsWith("#");
+  });
+  if (subjectLinks.length < 2) {
+    return false;
+  }
+
+  const rowsWithSubjectLinks = rows.filter((row) =>
+    row.querySelector("a[href^='javascript:'], a[href^='#']"),
+  );
+  return rowsWithSubjectLinks.length >= 2;
+}
+
+function collectSubjectDirectoryData(root: Element): {
+  groups: readonly Element[];
+  grids: readonly Element[];
+} {
+  const groups: Element[] = [];
+  const grids: Element[] = [];
+  for (const group of root.querySelectorAll(".ps_box-group")) {
+    const candidates = Array.from(
+      group.querySelectorAll("table, .ps_grid-flex, .ps_box-grid"),
+    );
+    const tableCandidates = candidates.filter((candidate) =>
+      candidate.matches("table"),
+    );
+    const groupGrids = (tableCandidates.length > 0
+      ? tableCandidates
+      : candidates
+    ).filter(isSubjectDirectoryGrid);
+    if (groupGrids.length === 0) {
+      continue;
+    }
+    groups.push(group);
+    for (const grid of groupGrids) {
+      if (!grids.includes(grid)) {
+        grids.push(grid);
+      }
+    }
+  }
+  return { groups, grids };
+}
+
+function sharedContainer(
+  root: Element,
+  elements: readonly Element[],
+): Element | undefined {
+  const first = elements[0];
+  if (!first || elements.length < 2) {
+    return undefined;
+  }
+  let candidate = first.parentElement;
+  while (candidate && root.contains(candidate)) {
+    const current = candidate;
+    if (elements.every((element) => current.contains(element))) {
+      return current;
+    }
+    if (candidate === root) {
+      break;
+    }
+    candidate = candidate.parentElement;
+  }
+  return undefined;
+}
+
 function findResultActions(
   root: Element,
   results: Element | undefined,
@@ -446,22 +526,30 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
     }
 
     const fluidRoot = uniqueElement(context.document, ".ps_box-page");
-    const fluidFilter = uniqueElement(
-      context.document,
-      ".ps_box-search, .ps_box-filter, .psc_search-filter",
-    );
-    const fluidResults = uniqueElement(
-      context.document,
-      ".ps_grid-flex, .ps_box-grid",
-    );
+    const fluidSearch = fluidRoot
+      ? uniqueElement(fluidRoot, ".ps_box-search")
+      : undefined;
+    const fluidFilter = fluidRoot
+      ? uniqueElement(fluidRoot, ".ps_box-filter") ??
+        uniqueElement(fluidRoot, ".ps_box-search, .psc_search-filter")
+      : undefined;
+    const fluidResultCandidates = fluidRoot
+      ? Array.from(fluidRoot.querySelectorAll(".ps_grid-flex, .ps_box-grid"))
+      : [];
+    const fluidResults =
+      fluidResultCandidates.length === 1
+        ? fluidResultCandidates[0]
+        : undefined;
+    const fluidDirectoryData = fluidRoot
+      ? collectSubjectDirectoryData(fluidRoot)
+      : { groups: [], grids: [] };
     if (
       fluidRoot &&
       fluidFilter &&
-      fluidResults &&
-      fluidRoot.contains(fluidFilter) &&
-      fluidRoot.contains(fluidResults)
+      (fluidResults || fluidDirectoryData.groups.length > 0) &&
+      fluidRoot.contains(fluidFilter)
     ) {
-      const primarySearch = findPrimarySearch(fluidFilter);
+      const primarySearch = findPrimarySearch(fluidSearch ?? fluidFilter);
       const validationState = findValidationState(fluidFilter);
       const resultActions = findResultActions(fluidRoot, fluidResults);
       const resultRows = collectResultRows(fluidResults);
@@ -470,10 +558,13 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
         ...(emptyState ? { emptyState } : {}),
         filter: fluidFilter,
         groups: [],
-        results: fluidResults,
+        directoryGroups: fluidDirectoryData.groups,
+        directoryGrids: fluidDirectoryData.grids,
+        ...(fluidResults ? { results: fluidResults } : {}),
         ...(resultActions ? { resultActions } : {}),
         resultRows,
         root: fluidRoot,
+        ...(fluidSearch ? { search: fluidSearch } : {}),
         ...(primarySearch ? { primarySearch } : {}),
         ...(validationState ? { validationState } : {}),
         title:
@@ -504,6 +595,7 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
         const classicGroups = Array.from(
           classicRoot.querySelectorAll(".ps_box-group"),
         );
+        const classicDirectoryData = collectSubjectDirectoryData(classicRoot);
         const classicFilterGroup = classicGroups.find(
           (group) =>
             (!classicResults || !group.contains(classicResults)) &&
@@ -538,6 +630,8 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
             : {}),
           form: classicForm,
           groups: classicResults ? classicGroups : [],
+          directoryGroups: classicDirectoryData.groups,
+          directoryGrids: classicDirectoryData.grids,
           ...(classicResults ? { results: classicResults } : {}),
           ...(resultActions ? { resultActions } : {}),
           resultRows,
@@ -583,12 +677,18 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
       filterCandidates.length === 1 ? filterCandidates[0] : undefined;
     const legacyResults =
       resultCandidates.length === 1 ? resultCandidates[0] : undefined;
+    const legacyDirectoryData = collectSubjectDirectoryData(legacyRoot);
     const body =
       legacyFilter &&
       legacyResults &&
       legacyFilter.parentElement === legacyResults.parentElement
         ? legacyFilter.parentElement ?? undefined
-        : undefined;
+        : legacyFilter && legacyDirectoryData.groups.length > 0
+          ? sharedContainer(legacyRoot, [
+              legacyFilter,
+              ...legacyDirectoryData.groups,
+            ])
+          : undefined;
 
     const legacyResultRows = collectResultRows(legacyResults);
     const emptyState = findEmptyState(legacyResults, legacyResultRows);
@@ -602,6 +702,8 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
       ...(legacyFilter ? { filter: legacyFilter } : {}),
       form: legacyForm,
       groups,
+      directoryGroups: legacyDirectoryData.groups,
+      directoryGrids: legacyDirectoryData.grids,
       ...(legacyResults ? { results: legacyResults } : {}),
       ...(resultActions ? { resultActions } : {}),
       resultRows: legacyResultRows,
@@ -644,6 +746,12 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
         ) {
           markRegion(journal, group, "group");
         }
+      }
+      for (const group of plan.directoryGroups) {
+        markRegion(journal, group, "directory-group");
+      }
+      for (const grid of plan.directoryGrids) {
+        markRegion(journal, grid, "directory-grid");
       }
       if (plan.filter) {
         markRegion(journal, plan.filter, "filter");
@@ -753,6 +861,8 @@ export class ClassSearchAdapter implements StructuralAdapter<ClassSearchPlan> {
           plan.root,
           ...(plan.form ? [plan.form] : []),
           ...(plan.body ? [plan.body] : []),
+          ...plan.directoryGroups,
+          ...plan.directoryGrids,
           ...(plan.filter ? [plan.filter] : []),
           ...(plan.primarySearch
             ? [

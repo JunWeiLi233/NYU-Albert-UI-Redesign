@@ -258,6 +258,10 @@ button {
   display: none;
 }
 
+.ba-nav-icon {
+  display: none;
+}
+
 .ba-nav-hint {
   color: currentColor;
   font-size: var(--ba-font-size-xs);
@@ -1284,6 +1288,32 @@ button {
   .ba-primary-nav .ba-nav-arrow {
     font-size: 1rem;
   }
+
+  /*
+   * The finder is the active workspace, so its desktop content should use the
+   * full area beside the rail instead of stopping at the old 54rem dashboard
+   * cap. Keep the intro copy readable, but let search, jumps, and result
+   * groups expand to the viewport edge.
+   */
+  .ba-task-finder-heading,
+  .ba-task-finder-search,
+  .ba-task-finder-search-row,
+  .ba-task-finder-search-help,
+  .ba-task-finder-newcomer,
+  .ba-task-finder-common,
+  .ba-task-finder-guides,
+  .ba-task-finder-browse,
+  .ba-task-finder-key-links,
+  .ba-task-finder-support-links,
+  .ba-task-finder-course-recovery,
+  .ba-task-finder-single-resource-context,
+  .ba-task-finder-search-action,
+  .ba-task-finder-jump-nav,
+  .ba-task-finder-sections,
+  .ba-task-finder[data-single-result="true"] .ba-task-finder-sections {
+    width: 100%;
+    max-width: none;
+  }
 }
 
 /* Keep the newcomer starter rail in the first viewport at short desktop
@@ -2205,6 +2235,340 @@ button {
   .ba-task-finder-search-clear {
     justify-self: start;
   }
+}
+
+/*
+ * Desktop rail: follow the official NYU pattern of a narrow violet index with
+ * short, scannable destinations. The previous rail treated page context,
+ * discovery, quick access, area navigation, and resources as equally large
+ * cards; that made the navigation feel like a second dashboard. Keep every
+ * native-backed action in the DOM, but let the page own the detail and let
+ * the rail own wayfinding.
+ */
+@media (min-width: 900px) {
+  .ba-identity-row {
+    min-height: 6.5rem;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--ba-space-2);
+    padding: var(--ba-space-3) var(--ba-space-2);
+  }
+
+  .ba-brand-lockup {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--ba-space-1);
+  }
+
+  .ba-nyu {
+    font-size: 1.45rem;
+    letter-spacing: -0.06em;
+  }
+
+  .ba-brand-rule,
+  .ba-product-name,
+  .ba-product-status,
+  .ba-local-status {
+    display: none;
+  }
+
+  .ba-shell-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ba-disable-button {
+    width: calc(100% - var(--ba-space-2));
+    min-height: 44px;
+    padding: var(--ba-space-2) var(--ba-space-1);
+    border-color: rgb(255 255 255 / 50%);
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+
+  .ba-workspace-row {
+    display: flex;
+    min-height: 0;
+    min-width: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+
+  .ba-page-context {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ba-discovery-actions {
+    width: auto;
+    margin: 0 var(--ba-space-2);
+    gap: 2px;
+  }
+
+  .ba-course-search-shortcut,
+  .ba-task-finder-toggle {
+    min-height: 52px;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 0;
+    padding: var(--ba-space-2) var(--ba-space-1);
+    text-align: center;
+  }
+
+  .ba-course-search-shortcut-copy,
+  .ba-task-finder-toggle-copy {
+    display: block;
+    width: 100%;
+  }
+
+  .ba-course-search-shortcut-copy > strong,
+  .ba-task-finder-toggle-copy > strong {
+    display: block;
+    font-size: 0.6875rem;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .ba-course-search-shortcut-copy > span,
+  .ba-task-finder-toggle-copy > span,
+  .ba-task-finder-toggle-actions,
+  .ba-course-search-shortcut-arrow {
+    display: none;
+  }
+
+  .ba-task-finder-toggle {
+    border-color: rgb(255 255 255 / 58%);
+    background: transparent;
+    color: var(--ba-color-white);
+  }
+
+  .ba-task-finder-toggle:hover {
+    border-color: var(--ba-color-white);
+    background: rgb(255 255 255 / 12%);
+    color: var(--ba-color-white);
+  }
+
+  .ba-tool-nav,
+  .ba-resource-nav {
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: var(--ba-space-2) var(--ba-space-1);
+    border-top: 1px solid rgb(255 255 255 / 20%);
+  }
+
+  /* The short-viewport starter safeguard is for the wide dashboard layout;
+   * on the 92px rail it would create a blank block below one action. */
+  .ba-home-starter-nav {
+    height: fit-content;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .ba-tool-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ba-tool-guidance,
+  .ba-tool-description,
+  .ba-tool-arrow {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ba-tool-list {
+    width: 100%;
+    height: fit-content;
+    min-height: 0;
+    flex: 0 0 auto;
+    gap: 2px;
+  }
+
+  /*
+   * The rail is a wayfinding index, not a second task dashboard. Keep one
+   * explicit resource-search entry here; the broad task finder still exposes
+   * every verified page shortcut when a student needs a specific action.
+   */
+  .ba-tool-nav .ba-tool-item:not(.ba-home-resource-item) {
+    display: none;
+  }
+
+  .ba-tool-nav:not(:has(.ba-home-resource-item)) {
+    display: none;
+  }
+
+  .ba-resource-nav {
+    display: none;
+  }
+
+  .ba-tool-item,
+  .ba-resource-item {
+    min-height: 44px;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 0;
+    padding: var(--ba-space-2) var(--ba-space-1);
+    border-color: transparent;
+    text-align: center;
+  }
+
+  .ba-tool-name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: center;
+    font-size: 0.6875rem;
+    line-height: 1.15;
+  }
+
+  .ba-tool-copy {
+    justify-items: center;
+  }
+
+  .ba-primary-nav {
+    min-height: 0;
+    padding: var(--ba-space-2) 0;
+    border-top: 1px solid rgb(255 255 255 / 20%);
+  }
+
+  .ba-primary-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ba-nav-item {
+    display: grid;
+    min-height: 44px;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    gap: 2px;
+    padding: var(--ba-space-1);
+    border: 0;
+    border-bottom: 1px solid rgb(255 255 255 / 14%);
+    text-align: left;
+  }
+
+  /* Keep the active marker from sitting under the compact letter tile. */
+  .ba-primary-nav .ba-nav-item {
+    padding-inline: var(--ba-space-2);
+  }
+
+  .ba-nav-label-full {
+    display: none;
+  }
+
+  .ba-nav-label-compact {
+    display: inline;
+    font-size: 0.6875rem;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .ba-nav-icon {
+    display: grid;
+    grid-column: 1;
+    grid-row: 1;
+    width: 1.5rem;
+    height: 1.5rem;
+    place-items: center;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+  }
+
+  .ba-nav-icon svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .ba-nav-copy {
+    grid-column: 2;
+    grid-row: 1;
+    justify-items: start;
+  }
+
+  .ba-nav-label-text {
+    font-size: 0.6875rem;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .ba-nav-hint,
+  .ba-nav-arrow {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ba-nav-item-resources {
+    margin-top: auto;
+    border-top: 1px solid rgb(255 255 255 / 30%);
+  }
+
+  .ba-trust-note {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Find classes is a destination shortcut, not a persistent active tab. */
+.ba-course-search-shortcut {
+  background: var(--ba-color-nyu-violet);
+  color: var(--ba-color-white);
+}
+
+.ba-course-search-shortcut .ba-course-search-shortcut-copy > span {
+  color: rgb(255 255 255 / 78%);
+}
+
+.ba-course-search-shortcut[data-course-search-active="true"] {
+  background: var(--ba-color-white);
+  color: var(--ba-color-nyu-violet);
+}
+
+.ba-course-search-shortcut[data-course-search-active="true"]
+  .ba-course-search-shortcut-copy
+  > span {
+  color: var(--ba-color-muted-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

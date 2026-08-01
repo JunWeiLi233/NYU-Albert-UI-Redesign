@@ -211,6 +211,13 @@ describe("AppShell cross-area task handoffs", () => {
       ),
     ).not.toBeNull();
     expect(
+      shadowRoot
+        ?.querySelector<HTMLButtonElement>(
+          '.ba-course-search-shortcut[aria-label="Find classes"]',
+        )
+        ?.getAttribute("data-course-search-active"),
+    ).toBeNull();
+    expect(
       shadowRoot?.querySelector<HTMLButtonElement>(
         '.ba-home-starter-nav button[aria-label="Find Classes"]',
       ),
@@ -2712,6 +2719,76 @@ describe("AppShell cross-area task handoffs", () => {
     });
 
     expect(onNavigateToCourseSearch).toHaveBeenCalledOnce();
+  });
+
+  it("marks Find classes active only on an Academics page with its native search", () => {
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["academics"],
+      availablePageTools: [
+        {
+          description:
+            "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+        },
+      ],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "academics",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate: vi.fn(),
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    expect(
+      mountedHeader.host.shadowRoot
+        ?.querySelector<HTMLButtonElement>(
+          ".ba-course-search-shortcut",
+        )
+        ?.getAttribute("data-course-search-active"),
+    ).toBe("true");
+  });
+
+  it("routes the Academics navigation item to the Academics workspace", async () => {
+    const onNavigate = vi.fn();
+
+    mountedHeader = mountHeader({
+      availablePageFamilies: ["home", "academics"],
+      availablePageTools: [
+        {
+          description:
+            "Search by subject, course number, title, or instructor",
+          id: "course-search",
+          label: "Find Classes",
+          nativeLabels: ["Course Search"],
+        },
+      ],
+      availableResourceTools: [],
+      availableTaskTools: [],
+      currentPageFamily: "home",
+      document,
+      onDisable: vi.fn(async () => undefined),
+      onNavigate,
+      onNavigateToCourseSearch: vi.fn(),
+      onOpenResource: vi.fn(),
+      onOpenTool: vi.fn(),
+      onSkipToContent: vi.fn(),
+    });
+
+    const classesNavigation = mountedHeader?.host.shadowRoot?.querySelector<HTMLButtonElement>(
+      '[data-page-family="academics"]',
+    );
+    await act(async () => {
+      classesNavigation?.click();
+      await Promise.resolve();
+    });
+
+    expect(onNavigate).toHaveBeenCalledWith("academics");
   });
 
   it("describes the Home-first course-search route outside Home", () => {

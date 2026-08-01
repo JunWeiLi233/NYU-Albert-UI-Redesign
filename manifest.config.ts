@@ -9,6 +9,7 @@ export default defineManifest({
   permissions: ["storage"],
   host_permissions: [
     "https://sis.portal.nyu.edu/*",
+    "https://albert.nyu.edu/albert_index.html",
     "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL*",
     "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL*",
   ],
@@ -23,6 +24,7 @@ export default defineManifest({
     {
       matches: [
         "https://sis.portal.nyu.edu/*",
+        "https://albert.nyu.edu/albert_index.html",
         "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL*",
         "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL*",
       ],

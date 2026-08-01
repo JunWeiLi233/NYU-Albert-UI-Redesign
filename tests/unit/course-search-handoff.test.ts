@@ -4,6 +4,7 @@ import {
   advanceToNativeClassSearch,
   createCourseSearchFrameHandoff,
   hasOpenCourseSearchFrame,
+  isClassSearchUrl,
   isCourseSearchRelayUrl,
   isEnrollmentCartUrl,
   isTrustedCourseSearchIntentSource,
@@ -194,6 +195,140 @@ describe("course-search handoff", () => {
     );
   });
 
+  it("finds an allowlisted cart frame mounted inside an open shadow root", () => {
+    const host = document.createElement("div");
+    const shadowRoot = host.attachShadow({ mode: "open" });
+    shadowRoot.innerHTML =
+      '<iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL"></iframe>';
+    document.body.append(host);
+
+    const frame = shadowRoot.querySelector<HTMLIFrameElement>("iframe");
+    const postMessage = vi.fn();
+    if (!frame) {
+      throw new Error("Expected a shadow-root frame");
+    }
+    Object.defineProperty(frame, "contentWindow", {
+      configurable: true,
+      value: {
+        get location(): never {
+          throw new DOMException("cross-origin", "SecurityError");
+        },
+        postMessage,
+      },
+    });
+
+    const handoff = createCourseSearchFrameHandoff(document);
+    handoff.request();
+    handoff.stop();
+
+    expect(postMessage).toHaveBeenCalledWith(
+      { type: "better-albert:open-native-course-search" },
+      "*",
+    );
+    expect(hasOpenCourseSearchFrame(document)).toBe(true);
+  });
+
+  it("responds directly to a verified frame-ready source", () => {
+    const postMessage = vi.fn();
+    const frameWindow = { postMessage } as unknown as Window;
+    const handoff = createCourseSearchFrameHandoff(document);
+    handoff.request();
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: { type: "better-albert:course-search-frame-ready" },
+        origin: "https://sis.nyu.edu",
+        source: frameWindow,
+      }),
+    );
+
+    expect(postMessage).toHaveBeenCalledWith(
+      { type: "better-albert:open-native-course-search" },
+      "https://sis.nyu.edu",
+    );
+    handoff.stop();
+  });
+
+  it("routes verified Course Search wheel deltas to its bounded modal", () => {
+    document.body.innerHTML = `
+      <section id="pt_modals" data-better-albert-course-search-modal>
+        <iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL"></iframe>
+      </section>
+    `;
+    const modal = document.querySelector<HTMLElement>("#pt_modals");
+    if (!modal) {
+      throw new Error("Expected a Course Search modal");
+    }
+    modal.scrollTop = 20;
+
+    const handoff = createCourseSearchFrameHandoff(document);
+    handoff.request();
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: { type: "better-albert:course-search-scroll", deltaY: 160 },
+        origin: "https://sis.nyu.edu",
+        source: {} as Window,
+      }),
+    );
+
+    expect(modal.scrollTop).toBe(180);
+    handoff.stop();
+  });
+
+  it("keeps the scroll bridge active after the cart navigates to Class Search", () => {
+    document.body.innerHTML = `
+      <section id="pt_modals" data-better-albert-course-search-modal>
+        <iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL"></iframe>
+      </section>
+    `;
+    const modal = document.querySelector<HTMLElement>("#pt_modals");
+    if (!modal) {
+      throw new Error("Expected a Course Search modal");
+    }
+    modal.scrollTop = 40;
+
+    const handoff = createCourseSearchFrameHandoff(document);
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: { type: "better-albert:course-search-scroll", deltaY: 220 },
+        origin: "https://sis.nyu.edu",
+        source: {} as Window,
+      }),
+    );
+
+    expect(isClassSearchUrl(
+      "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL?Page=1",
+    )).toBe(true);
+    expect(hasOpenCourseSearchFrame(document)).toBe(true);
+    expect(modal.scrollTop).toBe(260);
+    handoff.stop();
+  });
+
+  it("uses the unique native modal during marker reconciliation", () => {
+    document.body.innerHTML = `
+      <section id="pt_modals">
+        <iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL"></iframe>
+      </section>
+    `;
+    const modal = document.querySelector<HTMLElement>("#pt_modals");
+    if (!modal) {
+      throw new Error("Expected a Course Search modal");
+    }
+    modal.scrollTop = 10;
+
+    const handoff = createCourseSearchFrameHandoff(document);
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: { type: "better-albert:course-search-scroll", deltaY: 90 },
+        origin: "https://sis.nyu.edu",
+        source: {} as Window,
+      }),
+    );
+
+    expect(modal.scrollTop).toBe(100);
+    handoff.stop();
+  });
+
   it("does not send the handoff to an untrusted frame source", () => {
     document.body.innerHTML =
       '<iframe src="https://example.com/unknown-frame"></iframe>';
@@ -232,6 +367,11 @@ describe("course-search handoff", () => {
         "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL",
       ),
     ).toBe(false);
+    expect(
+      isClassSearchUrl(
+        "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL",
+      ),
+    ).toBe(true);
     expect(
       isCourseSearchRelayUrl(
         "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/SA/s/WEBLIB_NYU_NCOA.ISCRIPT1.FieldFormula.IScript_Open",

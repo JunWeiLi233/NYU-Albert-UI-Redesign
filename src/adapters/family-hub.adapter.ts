@@ -26,6 +26,10 @@ const ACADEMIC_STEP_ATTRIBUTE = "data-better-albert-academic-step";
 const PERSONAL_GROUP_ATTRIBUTE = "data-better-albert-personal-group";
 const FALLBACK_SECTION_LABEL_ATTRIBUTE =
   "data-better-albert-section-label";
+const SCHEDULE_HEADING_ATTRIBUTE = "data-better-albert-schedule-heading";
+const SCHEDULE_HEADING_ROW_ATTRIBUTE =
+  "data-better-albert-schedule-heading-row";
+const ERROR_SECTION_LABEL = "error-section";
 const ACADEMIC_JOURNEY = [
   { label: "Step 1 of 5 · Plan your path", region: "planning-section" },
   { label: "Step 2 of 5 · Check requirements", region: "degree-section" },
@@ -62,6 +66,7 @@ interface FamilyHubPlan {
   directoryItems: readonly Element[];
   directories: readonly Element[];
   enrollmentForm: HTMLFormElement | undefined;
+  errorSection: Element | undefined;
   financialAidTarget: Element | undefined;
   gradeViewerTarget: Element | undefined;
   homeHoldsTarget: Element | undefined;
@@ -168,6 +173,25 @@ function findHomeScheduleSections(
 
   const cuedCandidates = eligibleCandidates.filter(hasScheduleCue);
   return cuedCandidates.length === 1 ? cuedCandidates : [];
+}
+
+function findNativeErrorSection(
+  contentRoot: Element,
+): Element | undefined {
+  const errorHeading = Array.from(
+    contentRoot.querySelectorAll<HTMLElement>("*"),
+  ).find(
+    (candidate) => normalizedText(candidate.textContent) === "error getting content",
+  );
+  if (!errorHeading) {
+    return undefined;
+  }
+
+  let section: Element = errorHeading;
+  while (section.parentElement && section.parentElement !== contentRoot) {
+    section = section.parentElement;
+  }
+  return section;
 }
 
 function normalizedAttentionHeading(
@@ -653,6 +677,7 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
         this.family,
         sections,
       ),
+      errorSection: findNativeErrorSection(contentRoot),
       financialAidTarget: findFinancialAidTarget(this.family, sections),
       gradeViewerTarget: findGradeViewerTarget(this.family, sections),
       homeHoldsTarget: findHomeAttentionTarget(
@@ -707,6 +732,7 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
       ...plan.directories,
       ...plan.inlineMirroredDirectories,
       ...(plan.enrollmentForm ? [plan.enrollmentForm] : []),
+      ...(plan.errorSection ? [plan.errorSection] : []),
       ...(plan.financialAidTarget ? [plan.financialAidTarget] : []),
       ...(plan.gradeViewerTarget ? [plan.gradeViewerTarget] : []),
       ...(plan.homeHoldsTarget ? [plan.homeHoldsTarget] : []),
@@ -816,6 +842,35 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
       });
       for (const scheduleSection of plan.scheduleSections) {
         markRegion(journal, scheduleSection, "schedule-section");
+        const scheduleHeading = Array.from(
+          scheduleSection.querySelectorAll<HTMLElement>("*"),
+        ).find(
+          (candidate) =>
+            normalizedText(candidate.textContent) ===
+            "today and weekly schedule",
+        );
+        if (scheduleHeading) {
+          journal.setAttribute(
+            scheduleHeading,
+            SCHEDULE_HEADING_ATTRIBUTE,
+            "true",
+          );
+          let headingRow = scheduleHeading.parentElement;
+          while (
+            headingRow &&
+            headingRow.parentElement &&
+            headingRow.parentElement !== scheduleSection
+          ) {
+            headingRow = headingRow.parentElement;
+          }
+          if (headingRow && headingRow !== scheduleSection) {
+            journal.setAttribute(
+              headingRow,
+              SCHEDULE_HEADING_ROW_ATTRIBUTE,
+              "true",
+            );
+          }
+        }
         if (!hasScheduleCue(scheduleSection)) {
           journal.setAttribute(
             scheduleSection,
@@ -919,6 +974,9 @@ export class FamilyHubAdapter implements StructuralAdapter<FamilyHubPlan> {
             ENROLLMENT_GUIDANCE,
           );
         }
+      }
+      if (plan.errorSection) {
+        markRegion(journal, plan.errorSection, ERROR_SECTION_LABEL);
       }
       if (plan.financialAidTarget) {
         markFocusTarget(journal, plan.financialAidTarget);

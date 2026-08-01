@@ -197,6 +197,49 @@ describe("Class Search card result rows", () => {
     expect(document.documentElement.outerHTML).toBe(before);
   });
 
+  it("marks multi-group subject directories without treating them as result rows", () => {
+    const document = fixture("tests/fixtures/albert-class-search-legacy.html");
+    const main = document.querySelector("#legacy-main");
+    if (!main) {
+      throw new Error("Legacy fixture main region is missing");
+    }
+    const directory = document.createElement("section");
+    directory.className = "ps_box-group";
+    directory.innerHTML = `
+      <h2>College of Arts and Science</h2>
+      <table class="ps_grid-flex">
+        <tbody>
+          <tr><td><a href="javascript:submitAction()">American Studies</a></td></tr>
+          <tr><td><a href="javascript:submitAction()">Anthropology</a></td></tr>
+        </tbody>
+      </table>`;
+    main.append(directory);
+
+    const manager = new AdapterManager();
+    expect(
+      manager.reconcile({
+        document,
+        location: CLASS_SEARCH_LOCATION,
+        pageFamily: "academics",
+        topLevel: false,
+      }),
+    ).toBe("class-search");
+
+    expect(
+      document.querySelector('[data-better-albert-region="directory-group"]'),
+    ).toBe(directory);
+    expect(
+      document.querySelector('[data-better-albert-region="directory-grid"]'),
+    ).toBe(directory.querySelector("table"));
+    expect(
+      document.querySelectorAll('[data-better-albert-region="result-row"]'),
+    ).toHaveLength(0);
+
+    manager.rollback();
+    expect(directory.hasAttribute("data-better-albert-region")).toBe(false);
+    expect(directory.querySelector("table")?.hasAttribute("data-better-albert-region")).toBe(false);
+  });
+
   it("adds reversible neutral recovery guidance to one proven empty result status", () => {
     const document = fixture("tests/fixtures/albert-class-search-empty.html");
     const manager = new AdapterManager();

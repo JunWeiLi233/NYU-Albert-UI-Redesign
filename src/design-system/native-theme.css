@@ -12,7 +12,7 @@ html[data-better-albert-enabled] {
   --ba-native-rule-strong: #c9c5cc;
   --ba-native-danger: #b42318;
   --ba-native-danger-surface: #fff1f0;
-  --ba-native-rail: 264px;
+  --ba-native-rail: 92px;
   --ba-native-font: "NYU Perstare", NYUPerstare, "Helvetica Neue", Helvetica,
     Cantarell, Ubuntu, Roboto, Noto, Arial, sans-serif;
 }
@@ -292,30 +292,139 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
  */
 html[data-better-albert-enabled][data-better-albert-compact-header]
   #IS_BB_HEADER_WRAPPER {
-  display: flex !important;
+  display: block !important;
   box-sizing: border-box !important;
   width: 100% !important;
-  min-height: 48px !important;
-  height: auto !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 8px !important;
-  padding: 2px 16px !important;
-  overflow-x: auto !important;
-  border-bottom: 1px solid var(--ba-native-rule) !important;
-  background: var(--ba-native-surface) !important;
+  min-height: 60px !important;
+  height: 60px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: var(--ba-native-violet) !important;
 }
 
 html[data-better-albert-enabled][data-better-albert-compact-header]
   #IS_BB_HEADER_WRAPPER
-  :where(a, button) {
+  #IS_BB_HEADER {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 60px !important;
+  height: 60px !important;
+  margin: 0 !important;
+  background: var(--ba-native-violet) !important;
+  color: var(--ba-native-surface) !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_LOGO_CONTAINER {
+  box-sizing: border-box !important;
+  width: 300px !important;
+  height: 60px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-position: 16px 50% !important;
+  background-size: 90px auto !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_LOGO_CONTAINER
+  > a {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 60px !important;
+  height: 60px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: transparent !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_WRAPPER
+  #IS_BB_HEADER
+  #IS_BB_MENU_ROW {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 60px !important;
+  height: 60px !important;
+  margin: 0 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_WRAPPER
+  #IS_BB_HEADER
+  .headerNav {
+  box-sizing: border-box !important;
+  height: 60px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_WRAPPER
+  #IS_BB_HEADER
+  .headerNavUL {
+  display: flex !important;
+  min-height: 60px !important;
+  height: 60px !important;
+  align-items: center !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_WRAPPER
+  #IS_BB_HEADER
+  .IS_BB_LINKS_MENU_DESKTOP {
+  display: flex !important;
+  min-height: 60px !important;
+  height: 60px !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 20px !important;
+  border-left: 1px solid rgb(255 255 255 / 28%) !important;
+  color: var(--ba-native-surface) !important;
+  font-family: var(--ba-native-font) !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_WRAPPER
+  #IS_BB_HEADER
+  .IS_BB_RSPV_HEADER_LINK {
+    display: flex !important;
+    min-height: 60px !important;
+    height: 60px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_WRAPPER
+  #IS_BB_HEADER
+  .IS_BB_RSPV_HEADER_LINK
+  > a {
   display: inline-flex !important;
   box-sizing: border-box !important;
   min-height: 44px !important;
   flex: 0 0 auto !important;
   align-items: center !important;
-  padding: 8px 12px !important;
-  border: 1px solid var(--ba-native-rule-strong) !important;
+  padding: 8px 16px !important;
+  border: 1px solid rgb(255 255 255 / 72%) !important;
   border-radius: 3px !important;
   background: var(--ba-native-surface) !important;
   color: var(--ba-native-violet) !important;
@@ -324,6 +433,55 @@ html[data-better-albert-enabled][data-better-albert-compact-header]
   line-height: 1.25 !important;
   text-underline-offset: 3px !important;
   white-space: nowrap !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_BB_HEADER_WRAPPER
+  #IS_BB_HEADER
+  .isRspToggleMenuIcon
+  > a {
+  min-height: 44px !important;
+  border: 1px solid rgb(255 255 255 / 72%) !important;
+  background: transparent !important;
+  color: var(--ba-native-surface) !important;
+}
+
+/* The alert is native content; only give its existing banner a stable place
+ * in the masthead so it cannot push or overlap the native controls. */
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_CL_ALERTS {
+  position: absolute !important;
+  z-index: 500 !important;
+  inset: 0 0 auto !important;
+  width: 100% !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none;
+}
+
+html[data-better-albert-enabled][data-better-albert-compact-header]
+  #IS_CL_ALERTS
+  .is_alertHeader {
+  display: flex !important;
+  width: min(16rem, calc(100% - 2rem)) !important;
+  min-height: 32px !important;
+  height: 32px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
+  padding: 6px 16px !important;
+  border: 0 !important;
+  border-radius: 0 0 3px 3px !important;
+  background: #2ea154 !important;
+  color: var(--ba-native-surface) !important;
+  font-family: var(--ba-native-font) !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  pointer-events: auto;
 }
 
 @media (min-width: 900px) {
@@ -519,8 +677,11 @@ html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
   width: 100% !important;
   max-width: 100%;
   margin: 0 !important;
-  padding: 32px !important;
+  padding: 24px !important;
   border: 1px solid var(--ba-native-rule);
+  /* Keep the rail boundary neutral; the workspace accent belongs on the top
+   * edge only, not as a full-height purple stripe. */
+  border-left: 1px solid var(--ba-native-rule) !important;
   border-top: 6px solid var(--ba-native-violet);
   background: var(--ba-native-surface);
 }
@@ -528,12 +689,12 @@ html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
 html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
   [data-better-albert-region="workspace"]::before {
   display: block;
-  margin-bottom: 24px;
-  padding-bottom: 24px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--ba-native-rule);
   color: var(--ba-native-ink);
   content: attr(data-better-albert-label);
-  font-size: clamp(2.25rem, 5vw, 4.75rem);
+  font-size: clamp(2rem, 3.5vw, 3.75rem);
   font-weight: 900;
   letter-spacing: -0.055em;
   line-height: 0.92;
@@ -561,7 +722,7 @@ html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
   max-width: 100% !important;
   margin: 0 !important;
   grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.85fr);
-  gap: 24px;
+  gap: 16px;
   clear: both;
   align-items: start;
 }
@@ -593,7 +754,7 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-academics"]
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
   [data-better-albert-layout="family-content"] {
-  grid-template-columns: minmax(0, 0.8fr) minmax(280px, 1.2fr);
+  grid-template-columns: minmax(0, 0.85fr) minmax(280px, 1.15fr);
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="family-finances"]
@@ -626,6 +787,52 @@ html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
 html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
   [data-better-albert-region="attention-section"] {
   grid-column: 2;
+}
+
+/* Albert sometimes returns a full native error document inside the Home
+ * workspace. Keep the useful message, but collapse its legacy whitespace and
+ * present it as one full-width Better Albert status card. */
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-region="error-section"] {
+  display: block !important;
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  box-sizing: border-box;
+  margin: 0 !important;
+  padding: clamp(24px, 5vw, 64px) !important;
+  border: 1px solid var(--ba-native-rule) !important;
+  border-top: 6px solid var(--ba-native-violet) !important;
+  background: var(--ba-native-page) !important;
+  color: var(--ba-native-ink);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-region="error-section"]
+  :where(h1, h2, h3) {
+  margin: 0 0 12px;
+  color: var(--ba-native-ink);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-region="error-section"]
+  :where(p, div) {
+  max-width: 60rem;
+  margin: 0 0 10px;
+  color: var(--ba-native-muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter^="family-"]
+  [data-better-albert-region="error-section"]
+  a {
+  color: var(--ba-native-violet-dark);
+  font-weight: 800;
+  text-underline-offset: 3px;
 }
 
 /*
@@ -751,10 +958,12 @@ html[data-better-albert-enabled]
   [data-better-albert-region="attention-section"]
   .NYU_same_height_width {
   display: grid !important;
+  container-type: inline-size;
   width: 100% !important;
   max-width: 100%;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
-  gap: 12px;
+  grid-auto-rows: minmax(180px, auto);
+  gap: 8px;
 }
 
 html[data-better-albert-enabled]
@@ -764,12 +973,13 @@ html[data-better-albert-enabled]
   box-sizing: border-box;
   width: 100% !important;
   max-width: 100%;
+  min-width: 0;
   min-height: 112px;
   align-content: start;
-  gap: 8px;
+  gap: 6px;
   float: none !important;
   margin: 0 !important;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid var(--ba-native-rule);
 }
 
@@ -784,8 +994,255 @@ html[data-better-albert-enabled]
   [data-better-albert-region="attention-section"]
   .nyuSSS_ThirdW
   > :where(h2, h3) {
-  font-size: 1rem;
-  line-height: 1.25;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="attention-section"]
+  .nyuSSS_ThirdW
+  > :where(p, [role="status"], a) {
+  font-size: 0.82rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * To Do is a status card, not a loose list of links. Keep Albert's native
+ * labels, checkmarks, and urgency colors, but give the card a clear NYU-style
+ * title band and dependable rows for keyboard and touch interaction.
+ */
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"] {
+  box-sizing: border-box;
+  min-height: 180px;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"]
+  > :where(h2, h3) {
+  box-sizing: border-box;
+  margin: 0 !important;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--ba-native-rule);
+  border-inline-start: 4px solid var(--ba-native-violet);
+  font-size: 1.1rem !important;
+  line-height: 1.2;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"]
+  :where(ul, ol) {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 10px 12px 14px;
+  list-style: none;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"]
+  :where(li) {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0 6px;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"]
+  :where(li, a) {
+  overflow-wrap: anywhere;
+  white-space: normal !important;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"]
+  :where(li > a, > a) {
+  display: flex;
+  min-height: 44px;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  line-height: 1.3;
+}
+
+/* Albert may wrap To Do anchors in a small status container. Normalize the
+ * descendant anchor too so its icon and label stay one predictable row in
+ * either markup variant. */
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"]
+  :where(a) {
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 6px 0;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"]
+  :where(li img, li svg, > img, > svg, a > img, a > svg) {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  order: -1;
+  object-fit: contain;
+}
+
+/* Keep To Do details on the same content column as the title instead of
+ * letting the status icons hug the card edge. */
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"]
+  > :not(:first-child) {
+  margin-inline: 22px 12px;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="todo-status"]
+  :where(ul, ol) {
+  padding-inline-start: 44px;
+}
+
+/* Keep the adjacent Holds and Enrollment Dates cards on the same visual
+ * system while leaving their native warning and informational semantics
+ * untouched. */
+html[data-better-albert-enabled]
+  :where(
+    [data-better-albert-region="holds-status"],
+    [data-better-albert-region="registration-time"]
+  ) {
+  box-sizing: border-box;
+  min-height: 180px;
+  min-width: 0;
+  overflow: visible;
+  padding: 0 !important;
+}
+
+html[data-better-albert-enabled]
+  :where(
+    [data-better-albert-region="holds-status"],
+    [data-better-albert-region="registration-time"]
+  )
+  > :where(h2, h3) {
+  box-sizing: border-box;
+  margin: 0 !important;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--ba-native-rule);
+  border-inline-start: 4px solid var(--ba-native-violet);
+  font-size: 1.1rem !important;
+  line-height: 1.2;
+}
+
+/* Some Albert releases wrap the live heading in a presentation element
+ * instead of exposing an h2/h3 as the card's direct child. Style that first
+ * native heading container as the same title band so the violet rule never
+ * collides with the text. */
+html[data-better-albert-enabled]
+  :where(
+    [data-better-albert-region="holds-status"],
+    [data-better-albert-region="registration-time"]
+  )
+  > :first-child {
+  box-sizing: border-box;
+  display: block;
+  margin: 0 !important;
+  padding: 16px 18px 12px !important;
+  border-bottom: 1px solid var(--ba-native-rule);
+  border-inline-start: 4px solid var(--ba-native-violet);
+  font-size: 1.1rem !important;
+  line-height: 1.2;
+  white-space: normal !important;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="holds-status"]
+  :where(ul, ol) {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 10px 12px 14px;
+  list-style: none;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="holds-status"]
+  :where(li) {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0 6px;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="holds-status"]
+  :where(li, a) {
+  overflow-wrap: anywhere;
+  white-space: normal !important;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="holds-status"]
+  :where(li > a, > a) {
+  display: flex;
+  min-height: 44px;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  line-height: 1.3;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="holds-status"]
+  :where(li img, li svg, > img, > svg) {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  object-fit: contain;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="holds-status"]
+  > :not(:first-child) {
+  margin-inline: 12px;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="registration-time"]
+  > :where(p, [role="status"]) {
+  min-width: 0;
+  margin: 0 !important;
+  padding: 8px 18px 0;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal !important;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="registration-time"]
+  > :where(p, [role="status"]):last-child {
+  padding-bottom: 16px;
+}
+
+html[data-better-albert-enabled]
+  [data-better-albert-region="registration-time"]
+  > :not(:first-child) {
+  margin-inline: 12px;
 }
 
 html[data-better-albert-enabled]
@@ -810,6 +1267,30 @@ html[data-better-albert-enabled]
     [data-better-albert-region="attention-section"]
     .nyuSSS_ThirdW:last-child:nth-child(odd) {
     grid-column: 1 / -1;
+  }
+}
+
+@container (min-width: 900px) {
+  html[data-better-albert-enabled]
+    [data-better-albert-region="todo-status"]
+    :where(a) {
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 899px) {
+  html[data-better-albert-enabled]
+    [data-better-albert-region="attention-section"]
+    .NYU_same_height_width {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  html[data-better-albert-enabled]
+    [data-better-albert-region="attention-section"]
+    .NYU_same_height_width {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1083,6 +1564,534 @@ html[data-better-albert-enabled] [data-better-albert-region="directory-item"] :w
   font-weight: 800;
   line-height: 1.35;
   text-underline-offset: 3px;
+}
+
+/*
+ * The Home shopping-cart workspace is the densest native surface in Albert:
+ * term tabs, schedule links, cart status, enrolled-course status, and the
+ * exam notice arrive as one legacy block. Give it the same editorial
+ * hierarchy as the rest of Better Albert while keeping every native link,
+ * toggle, heading, and empty-state message in place.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"] {
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+  /* Legacy responses expose this heading as plain text rather than a
+   * semantic heading element, so center the section text at the container. */
+  text-align: center;
+  padding: 0 !important;
+  border: 1px solid var(--ba-native-rule);
+  background: var(--ba-native-page);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  > :first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  border-bottom: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  > :first-child
+  :where(a, button) {
+  display: inline-flex;
+  min-height: 56px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border: 0;
+  border-right: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-muted);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  > :first-child
+  :where(a, button):is([aria-current="page"], [aria-selected="true"], .selected) {
+  border-top: 4px solid var(--ba-native-violet);
+  background: #dcecfb;
+  color: var(--ba-native-violet-dark);
+  font-weight: 900;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp,
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ba-native-rule);
+  background: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  :where(a, button) {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-violet-dark);
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 3px;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  :where(a, button):hover {
+  background: var(--ba-native-pale-violet);
+}
+
+/* Some live Albert builds omit the legacy link-wrapper class. Keep the
+ * presentation resilient by styling verified schedule links directly; the
+ * links remain native anchors and continue to own their existing handlers. */
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  a {
+  display: inline-flex;
+  min-height: 40px;
+  box-sizing: border-box;
+  align-items: center;
+  margin: 0 4px 4px 0;
+  padding: 7px 9px;
+  border: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-violet-dark);
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 3px;
+  vertical-align: middle;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  a:hover {
+  background: var(--ba-native-pale-violet);
+}
+
+/* Legacy Home variants can expose the schedule links without the wrapper
+ * class. Direct link-bearing children get the same compact wrapping behavior
+ * while preserving each native anchor and its original event handler. Keep
+ * display declarations non-important so Albert can hide its native legend
+ * popup after the user activates the X control. */
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  > :where(div, p):has(a) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  box-sizing: border-box;
+  width: auto !important;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 12px;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp
+  > :where(a, button, div, p, li),
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  > :where(a, button, div, p, li) {
+  width: auto !important;
+  min-width: 0;
+  grid-column: auto !important;
+  margin: 0;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp
+  > :where(a, button),
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  > :where(a, button) {
+  display: inline-flex !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp
+  > :where(div, p):has(a),
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  > :where(div, p):has(a) {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+
+/* Albert renders one action trio for every term in the response. Only the
+ * native-selected term should occupy the presentation grid; when Albert
+ * toggles `.selected`, the matching trio becomes visible without changing
+ * the underlying controls or their event handlers. */
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp
+  > .isSSS_ShCtLnkDC:not(.selected),
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  > .isSSS_ShCtLnkDC:not(.selected) {
+  display: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp
+  > .isSSS_ShCtLnkL,
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  > .isSSS_ShCtLnkL {
+  grid-column: 1 / -1 !important;
+}
+
+/* Keep the six schedule actions as one deliberate card grid. Some Albert
+ * releases mark the link wrapper itself while others nest it under the
+ * schedule section; both variants use the same full-width cards here. */
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp,
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp {
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 0;
+  background: transparent;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp
+  > :where(a, button, div, p, li),
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  > :where(a, button, div, p, li) {
+  width: 100% !important;
+  min-height: 64px;
+  box-sizing: border-box;
+  margin: 0 !important;
+  padding: 14px 16px;
+  border: 1px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+  grid-column: auto !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp
+  > :where(a, button),
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  > :where(a, button) {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  color: var(--ba-native-violet-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Keep the native term switch authoritative after the card normalization
+ * above; inactive action trios must not leave empty grid cells behind. */
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp
+  > .isSSS_ShCtLnkDC:not(.selected),
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  .isSSS_ShCtLnkWrp
+  > .isSSS_ShCtLnkDC:not(.selected) {
+  display: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  > :where(h1, h2, h3) {
+  margin: 0;
+  padding: 24px 24px 12px;
+  color: var(--ba-native-violet-dark);
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-weight: 900;
+  letter-spacing: 0.055em;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-schedule-heading] {
+  display: block !important;
+  box-sizing: border-box;
+  text-align: center !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  > :where(button, input[type="button"], input[type="submit"]) {
+  display: flex;
+  min-height: 52px;
+  width: min(100% - 48px, 680px);
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  margin: 4px 24px 24px;
+  padding: 12px 18px;
+  border: 2px solid var(--ba-native-rule-strong);
+  background: var(--ba-native-surface);
+  color: var(--ba-native-ink);
+  font-weight: 900;
+  line-height: 1.3;
+  text-align: left;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="schedule-section"]
+  > :where(button, input[type="button"], input[type="submit"]):hover {
+  border-color: var(--ba-native-violet);
+  background: var(--ba-native-pale-violet);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="enrollment-section"].isSSS_ShopCart {
+  display: block !important;
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 24px 0 0;
+  padding: 0 !important;
+  border: 1px solid var(--ba-native-rule);
+  /* The shop-cart wrapper can contain the entire Home workspace in older
+   * Albert markup; a violet left accent there becomes a page-height stripe. */
+  border-left: 1px solid var(--ba-native-rule);
+  background: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="enrollment-section"].isSSS_ShopCart
+  > :where(h1, h2, h3) {
+  margin: 0;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--ba-native-rule);
+  color: var(--ba-native-ink);
+  font-size: clamp(1.15rem, 2vw, 1.75rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="enrollment-section"].isSSS_ShopCart
+  .isSSS_ShCtEmpWrp {
+  display: flex !important;
+  min-height: 128px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 20px 24px;
+  background: var(--ba-native-page);
+  color: var(--ba-native-ink);
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  line-height: 1.45;
+  text-align: center;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="enrollment-section"].isSSS_ShopCart
+  .isSSS_ShCtEmpWrp
+  :where(a, button) {
+  color: var(--ba-native-violet-dark);
+  font-weight: 900;
+  text-underline-offset: 4px;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-region="enrollment-section"].isSSS_ShopCart
+  :where(button, input[type="button"], input[type="submit"]) {
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  color: var(--ba-native-violet-dark);
+  font-weight: 800;
+}
+
+/*
+ * The enrolled-course table keeps its body in native table layout, but some
+ * PeopleSoft releases apply `display: block` to the first header row and its
+ * cells. That makes the seven visible labels stack in a narrow left column
+ * while the body still uses the shared course grid. Restore only the header
+ * geometry; the native Eval/URL cells remain hidden and all controls/data stay
+ * in their original table.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  :where(
+    [data-better-albert-region="schedule-section"],
+    [data-better-albert-region="enrollment-section"].isSSS_ShopCart
+  )
+  .isSSS_ShCtSchTable
+  > :where(thead, tbody)
+  > tr:first-child {
+  display: table-row !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  :where(
+    [data-better-albert-region="schedule-section"],
+    [data-better-albert-region="enrollment-section"].isSSS_ShopCart
+  )
+  .isSSS_ShCtSchTable
+  > :where(thead, tbody)
+  > tr:first-child
+  > :where(th, td):is(:nth-child(-n + 6), :nth-child(9)) {
+  display: table-cell !important;
+  vertical-align: middle;
+}
+
+@media (max-width: 899px) {
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp,
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"]
+    .isSSS_ShCtLnkWrp {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"]
+    > :first-child {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"]
+    > :first-child
+    :where(a, button) {
+    flex: 0 0 auto;
+    padding-inline: 18px;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"].isSSS_ShCtLnkWrp,
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"]
+    .isSSS_ShCtLnkWrp {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"]
+    > :where(div, p):has(a) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: 6px;
+    padding: 12px;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"]
+    > :where(div, p):has(a)
+    a {
+    width: 100%;
+    margin: 0;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"]
+    .isSSS_ShCtLnkWrp
+    :where(a, button) {
+    width: 100%;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"]
+    > :where(h1, h2, h3) {
+    padding-inline: 16px;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="schedule-section"]
+    > :where(button, input[type="button"], input[type="submit"]) {
+    width: calc(100% - 32px);
+    margin-inline: 16px;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="enrollment-section"].isSSS_ShopCart
+    > :where(h1, h2, h3) {
+    padding: 18px 16px;
+    font-size: 1.4rem;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+    [data-better-albert-region="enrollment-section"].isSSS_ShopCart
+    .isSSS_ShCtEmpWrp {
+    min-height: 132px;
+    padding: 24px 16px;
+    text-align: left;
+  }
+}
+
+/* The schedule title is a direct child of Albert's three-column link grid in
+ * some releases. Keep this rule after the legacy child-width normalization so
+ * that it spans the whole grid instead of remaining centered in column one. */
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-schedule-heading] {
+  display: block !important;
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  margin-inline: 0 !important;
+  text-align: center !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="family-home"]
+  [data-better-albert-schedule-heading-row] {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  margin-inline: 0 !important;
+  text-align: center !important;
 }
 
 html[data-better-albert-enabled]
@@ -1519,6 +2528,63 @@ html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
 html[data-better-albert-enabled][data-better-albert-adapter="albert-workspace"]
   [data-better-albert-layout="generic-workspace"] > * {
   grid-column: 1 / -1;
+}
+
+/*
+ * Generic Albert responses can contain a legacy error panel with a large
+ * table-shaped spacer around a short message. Keep the native wording and
+ * links, but collapse that spacer into a calm, full-width status area so an
+ * error page reads as intentional rather than leaving a blank right column.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="albert-workspace"]
+  [data-better-albert-region="error-section"] {
+  display: block !important;
+  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: clamp(48px, 5vw, 80px) clamp(24px, 7vw, 96px) !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--ba-native-ink);
+  text-align: center;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="albert-workspace"]
+  [data-better-albert-region="error-section"]
+  :where(h1, h2, h3, h4, h5, h6, [role="heading"]) {
+  /* The sentence below is the actionable native status. Keep this technical
+   * title available to assistive technology without making it compete with
+   * the useful message in the visual error state. */
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="albert-workspace"]
+  [data-better-albert-region="error-section"]
+  :where(p, div, span) {
+  max-width: 68rem;
+  margin: 0 auto 10px;
+  color: var(--ba-native-muted);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  line-height: 1.5;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="albert-workspace"]
+  [data-better-albert-region="error-section"]
+  a {
+  color: var(--ba-native-violet-dark);
+  font-weight: 800;
+  text-underline-offset: 3px;
 }
 
 html[data-better-albert-enabled][data-better-albert-adapter="peoplesoft-deep"]
@@ -2951,4 +4017,696 @@ html[data-better-albert-enabled]
   html[data-better-albert-enabled] [data-better-albert-region] {
     forced-color-adjust: auto;
   }
+}
+
+/*
+ * Public Albert login/launcher
+ *
+ * Authentication remains entirely native. This route gets only a scoped
+ * presentation layer: the original logo, links, forms, and destinations stay
+ * in place and keep their native event/validation behavior.
+ */
+html[data-better-albert-enabled][data-better-albert-authentication] {
+  min-height: 100%;
+  background: var(--ba-native-page);
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication] body {
+  min-height: 100vh;
+  background: var(--ba-native-page);
+  color: var(--ba-native-ink);
+  font-family: var(--ba-native-font);
+}
+
+/* The public launcher ships a centered inline-block shell. Expand only that
+ * native login structure so its presentation follows the viewport instead of
+ * inheriting the old 375–500px desktop column. */
+html[data-better-albert-enabled][data-better-albert-authentication]
+  body
+  > main {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  background: var(--ba-native-page) !important;
+  text-align: left !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #header.headerContent {
+  display: flex !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 84px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 16px clamp(20px, 8vw, 128px) !important;
+  background: var(--ba-native-violet) !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #header.headerContent
+  .headerLogo {
+  display: block !important;
+  box-sizing: border-box !important;
+  max-width: 180px !important;
+  max-height: 52px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #albert.pageTitle {
+  box-sizing: border-box !important;
+  width: min(100% - 2rem, 52rem) !important;
+  max-width: none !important;
+  margin: clamp(2.5rem, 8vw, 6rem) auto 1.5rem !important;
+  color: var(--ba-native-violet) !important;
+  font-family: var(--ba-native-font) !important;
+  font-size: clamp(2rem, 5vw, 3.75rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1.05 !important;
+  text-align: center !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  .centerContent {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: min(100% - 2rem, 52rem) !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #announcement.announcementContent {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 0 1.5rem !important;
+  padding: 0 !important;
+  color: var(--ba-native-danger) !important;
+  font-family: var(--ba-native-font) !important;
+  font-weight: 700 !important;
+  line-height: 1.45 !important;
+  text-align: left !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  .textBoxContainer {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: clamp(1rem, 2.5vw, 1.5rem) !important;
+  border: 1px solid var(--ba-native-rule-strong) !important;
+  border-top: 6px solid var(--ba-native-violet) !important;
+  background: var(--ba-native-surface) !important;
+  text-align: left !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  .textBox {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  .textBox
+  > div {
+  box-sizing: border-box !important;
+  padding-top: 12px !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  .textBox
+  > div:first-child {
+  padding-top: 0 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  .textBox
+  .buttonLink {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 56px !important;
+  margin: 0 !important;
+  padding: 14px 16px !important;
+  font-size: 1.125rem !important;
+  line-height: 1.2 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #ptbr_header_container,
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #NYU_DEFAULT_HEADER,
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #Header_Container,
+html[data-better-albert-enabled][data-better-albert-authentication]
+  body > header:first-child {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 84px !important;
+  height: auto !important;
+  margin: 0 !important;
+  background: var(--ba-native-violet) !important;
+  color: #ffffff !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #Header_Container {
+  display: flex !important;
+  align-items: center !important;
+  padding: 16px clamp(20px, 8vw, 128px) !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #NYU_ALBERT_LOGO {
+  display: flex !important;
+  min-height: 52px !important;
+  align-items: center !important;
+  color: #ffffff !important;
+  font-size: clamp(1.5rem, 3vw, 2.25rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.025em !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #NYU_ALBERT_LOGO a,
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #NYU_ALBERT_LOGO img {
+  max-height: 52px !important;
+  color: #ffffff !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #IS_BB_HEADER_WRAPPER,
+html[data-better-albert-enabled][data-better-albert-authentication]
+  #IS_BB_HEADER_MENU {
+  display: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  [data-better-albert-login-heading] {
+  display: block !important;
+  box-sizing: border-box;
+  width: min(100% - 2rem, 52rem);
+  margin: clamp(2.5rem, 8vw, 6rem) auto 1.5rem;
+  color: var(--ba-native-violet);
+  font-family: var(--ba-native-font);
+  font-size: clamp(2rem, 5vw, 3.75rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  [data-better-albert-login-content] {
+  box-sizing: border-box;
+  width: min(100% - 2rem, 44rem);
+  margin: 0 auto clamp(3rem, 8vw, 7rem);
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--ba-native-rule-strong);
+  border-top: 6px solid var(--ba-native-violet);
+  background: var(--ba-native-surface);
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  [data-better-albert-login-content]
+  :is(p, div, span, label) {
+  color: var(--ba-native-ink);
+  font-family: var(--ba-native-font);
+  line-height: 1.45;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  [data-better-albert-login-content]
+  :is(a, button, input[type="submit"], input[type="button"]) {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  margin: 12px 0 0;
+  padding: 12px 16px;
+  border: 2px solid var(--ba-native-violet);
+  border-radius: 0;
+  background: var(--ba-native-surface);
+  color: var(--ba-native-violet);
+  font: inherit;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: left;
+  text-decoration: none;
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  [data-better-albert-login-content]
+  :is(a, button, input[type="submit"], input[type="button"]):hover {
+  background: var(--ba-native-pale-violet);
+}
+
+html[data-better-albert-enabled][data-better-albert-authentication]
+  [data-better-albert-login-content]
+  :is(a, button, input[type="submit"], input[type="button"]):focus-visible {
+  outline: 3px solid var(--ba-native-focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 599px) {
+  html[data-better-albert-enabled][data-better-albert-authentication]
+    #Header_Container {
+    padding-inline: 16px !important;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-authentication]
+    [data-better-albert-login-heading] {
+    margin-top: 2rem;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-authentication]
+    [data-better-albert-login-content] {
+    padding: 20px;
+  }
+}
+
+/*
+ * Class Search subject directory
+ *
+ * The live PeopleSoft directory uses a table-like column layout with a fixed
+ * intrinsic width. At the modal's available width that layout pushes the last
+ * subjects behind an internal scrollbar. The adapter marks only verified
+ * subject-directory groups and their native link grids, so this presentation
+ * change cannot affect a course-results table or an unrelated Albert page.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  :where(
+    [data-better-albert-region="directory-group"],
+    [data-better-albert-region="directory-grid"]
+  ) {
+  box-sizing: border-box;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-group"] {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 1px solid var(--ba-native-rule) !important;
+  background: var(--ba-native-surface) !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-group"]
+  :where(
+    h2,
+    h3,
+    .PAPAGETITLE,
+    .ps_box-group-title,
+    .ps_box-group-header,
+    .ps_box-group-label
+  ) {
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 16px 20px !important;
+  border-bottom: 1px solid var(--ba-native-rule) !important;
+  border-inline-start: 5px solid var(--ba-native-violet) !important;
+  background: var(--ba-native-surface) !important;
+  color: var(--ba-native-violet-dark) !important;
+  font-size: clamp(1.1rem, 2vw, 1.5rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.2 !important;
+  overflow-wrap: anywhere;
+}
+
+/* Keep multiple native grid columns inside the same flexible directory card. */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-group"]
+  :where(.ps_grid-flex, .ps_box-grid, table) {
+  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"] {
+  display: block !important;
+  table-layout: fixed !important;
+  height: auto !important;
+  max-height: none !important;
+  border-spacing: 0 !important;
+  border-collapse: separate !important;
+  overflow: visible !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  > :where(tbody, [role="rowgroup"]) {
+  display: grid !important;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 220px), 1fr)
+  ) !important;
+  gap: 1px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  background: var(--ba-native-rule) !important;
+}
+
+/* PeopleSoft may wrap the table in a .ps_grid-flex container or omit the
+ * browser-created tbody. Apply the same geometry through either wrapper. */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  :where(table, tbody, [role="rowgroup"], tr, [role="row"], [role="column"]) {
+  box-sizing: border-box;
+  height: auto !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  :where(table, tbody, [role="rowgroup"]) {
+  display: grid !important;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 220px), 1fr)
+  ) !important;
+  gap: 1px !important;
+  width: 100% !important;
+  background: var(--ba-native-rule) !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  :where(table, tbody, [role="rowgroup"])
+  > :where(tbody, tr, [role="rowgroup"], [role="row"]) {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 64px !important;
+  background: var(--ba-native-surface) !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  > :where(tbody, [role="rowgroup"])
+  > :where(tr, [role="row"]) {
+  display: block !important;
+  box-sizing: border-box;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  background: var(--ba-native-surface) !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  > :where(tbody, [role="rowgroup"])
+  > :where(tr, [role="row"])
+  > :where(td, [role="cell"]) {
+  display: block !important;
+  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  :where(a, button) {
+  display: flex !important;
+  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 64px !important;
+  height: auto !important;
+  max-height: none !important;
+  align-items: center;
+  padding: 14px 16px !important;
+  overflow-wrap: anywhere;
+  white-space: normal !important;
+  font-size: 1rem !important;
+  line-height: 1.3 !important;
+  overflow: visible !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  :where(td, [role="cell"]) {
+  min-height: 64px !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  :where(a, button):hover {
+  background: var(--ba-native-pale-violet);
+}
+
+/* The directory is a second column on wide screens and stacks below filters. */
+@media (min-width: 900px) {
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search"]
+    > [data-better-albert-region="directory-group"],
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search-body"]
+    > [data-better-albert-region="directory-group"] {
+    grid-column: 2 !important;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-layout="class-search-body"] {
+    grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+@media (max-width: 899px) {
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-region="directory-group"] {
+    grid-column: 1 !important;
+  }
+
+  html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+    [data-better-albert-region="directory-grid"]
+    > :where(tbody, [role="rowgroup"]) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+/*
+ * Compact the legacy Enrollment Cart scaffold. The native cart reserves large
+ * fixed-height bands around its step indicator, identity copy, and empty-cart
+ * guidance. Those bands push the actual class-search action below the fold.
+ * Only the adapter-marked legacy document is affected; native controls and
+ * their source order remain unchanged.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+[data-better-albert-layout="class-search-legacy"] {
+  width: min(calc(100% - 24px), 1120px) !important;
+  margin: 8px auto !important;
+  padding: 10px 16px 14px !important;
+  border-top-width: 4px !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="page-title"] {
+  margin: 0 0 8px !important;
+  padding: 0 0 8px !important;
+  font-size: clamp(1.6rem, 3.5vw, 2.3rem) !important;
+  line-height: 1.05 !important;
+  text-align: center;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="group"] {
+  box-sizing: border-box;
+  height: auto !important;
+  min-height: 0 !important;
+  margin-block: 3px !important;
+  padding: 4px 8px !important;
+}
+
+/* Keep the compact scaffold open and editorial instead of stacking gray boxes. */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="group"],
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="group"]
+  :where(
+    .ps_box-group,
+    .ps_box-row,
+    .ps_box-value,
+    .ps_box-content,
+    .ps_box-container
+  ) {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+/* Remove PeopleSoft's empty spacer heights inside the marked cart groups. */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="group"]
+  :where(
+    .ps_box,
+    .ps_box-group,
+    .ps_box-row,
+    .ps_box-value,
+    .ps_box-content,
+    .ps_box-container,
+    .ps_box-group-header,
+    .ps_box-group-title
+  ) {
+  box-sizing: border-box;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="group"]
+  :where(.ps_box-row, .ps_box-value) {
+  margin-block: 0 !important;
+  padding-block: 2px !important;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-layout="class-search-legacy"]
+  [data-better-albert-region="group"]
+  :where(h2, h3, h4, [role="heading"]) {
+  margin-block: 0 6px !important;
+  line-height: 1.2 !important;
+}
+
+/*
+ * Class Search is often rendered in a fixed-height Albert iframe. Let the
+ * child document own vertical scrolling so filters and subject directories
+ * below the first viewport remain reachable instead of being clipped by the
+ * native modal's presentation shell.
+ */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"] {
+  block-size: auto !important;
+  height: auto !important;
+  min-block-size: 100% !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  body {
+  block-size: auto !important;
+  height: auto !important;
+  min-block-size: 100% !important;
+  min-height: 100% !important;
+  max-block-size: none !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+}
+
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  :where(
+    [data-better-albert-layout="class-search"],
+    [data-better-albert-layout="class-search-legacy"]
+  ) {
+  block-size: auto !important;
+  height: auto !important;
+  min-height: 100% !important;
+  max-block-size: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* PeopleSoft's classic iframe wraps the marked workspace in a fixed-height
+ * form. Release that verified wrapper as well; otherwise the child document
+ * receives wheel events but has no scrollable overflow of its own. */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  body
+  > form:has(
+    [data-better-albert-layout="class-search"],
+    [data-better-albert-layout="class-search-legacy"]
+  ) {
+  block-size: auto !important;
+  height: auto !important;
+  min-height: 100% !important;
+  max-block-size: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* A legacy directory sometimes adds an anonymous overflow wrapper around
+ * each subject table. Remove that nested scroll owner so one wheel gesture
+ * moves the Course Search page/modal instead of getting trapped in a grid. */
+html[data-better-albert-enabled][data-better-albert-adapter="class-search"]
+  [data-better-albert-region="directory-grid"]
+  :where(div, section, table, thead, tbody, tfoot, tr, ul, ol, [role="rowgroup"], [role="row"], [role="cell"], [role="column"]) {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/*
+ * Course Search is hosted in a cross-origin PeopleSoft iframe. Pointer and
+ * wheel events over that iframe otherwise stay inside a fixed native modal
+ * whose outer layer has no reliable viewport bound. Mark only the verified
+ * Course Search portal so the modal itself becomes the single bounded scroll
+ * owner; unrelated Albert dialogs retain their native behavior.
+ */
+html[data-better-albert-enabled][data-better-albert-native-modal-open]
+  body
+  #pt_modals[data-better-albert-course-search-modal] {
+  box-sizing: border-box !important;
+  block-size: auto !important;
+  height: auto !important;
+  min-block-size: 0 !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 24px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
 }

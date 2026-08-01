@@ -656,6 +656,36 @@ describe("structural adapter manager", () => {
     );
   });
 
+  it("marks a native error response inside the generic workspace", () => {
+    const document = new DOMParser().parseFromString(
+      `<!doctype html><title>Albert</title>
+      <main class="isSSS_Main selected">
+        <section class="native-error-response">
+          <h1>Unable to Create/Run Application Package</h1>
+          <p>An error occurred when attempting to create application package or run the defined method.</p>
+        </section>
+      </main>`,
+      "text/html",
+    );
+    const manager = new AdapterManager();
+    const before = document.documentElement.outerHTML;
+
+    expect(
+      manager.reconcile({
+        document,
+        location: PORTAL_LOCATION,
+        pageFamily: "home",
+        topLevel: true,
+      }),
+    ).toBe("albert-workspace");
+    expect(
+      document.querySelector('[data-better-albert-region="error-section"]'),
+    ).toBe(document.querySelector(".native-error-response"));
+
+    manager.rollback();
+    expect(document.documentElement.outerHTML).toBe(before);
+  });
+
   it("fails open to the conservative workspace when live family content is ambiguous", () => {
     const document = fixture("tests/fixtures/albert-shell.html");
     const response = document.querySelector("#IS_AC_RESPONSE");

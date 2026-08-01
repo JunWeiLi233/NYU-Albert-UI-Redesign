@@ -13,6 +13,7 @@ import {
   type HeaderMount,
 } from "../../src/content/lifecycle";
 import {
+  AUTHENTICATION_THEME_ATTRIBUTE,
   COMPACT_HEADER_ATTRIBUTE,
   THEME_ENABLED_ATTRIBUTE,
 } from "../../src/content/native-theme";
@@ -1366,7 +1367,7 @@ describe("content-script lifecycle", () => {
     lifecycle.stop();
   });
 
-  it("leaves launcher, authentication, and unknown portal documents untouched", async () => {
+  it("themes launcher and portal authentication documents without mounting the shell", async () => {
     const store = new FakePreferenceStore(true);
     const launcherLifecycle = await startContentScript({
       document,
@@ -1374,8 +1375,15 @@ describe("content-script lifecycle", () => {
       preferenceStore: store,
       topLevel: true,
     });
-    expect(store.listeners.size).toBe(0);
+    expect(store.listeners.size).toBe(1);
+    expect(
+      document.documentElement.hasAttribute(AUTHENTICATION_THEME_ATTRIBUTE),
+    ).toBe(true);
+    expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
     launcherLifecycle.stop();
+    expect(
+      document.documentElement.hasAttribute(AUTHENTICATION_THEME_ATTRIBUTE),
+    ).toBe(false);
 
     document.title = "Albert Login";
     const authenticationLifecycle = await startContentScript({
@@ -1384,7 +1392,11 @@ describe("content-script lifecycle", () => {
       preferenceStore: store,
       topLevel: true,
     });
-    expect(store.listeners.size).toBe(0);
+    expect(store.listeners.size).toBe(1);
+    expect(
+      document.documentElement.hasAttribute(AUTHENTICATION_THEME_ATTRIBUTE),
+    ).toBe(true);
+    expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
     authenticationLifecycle.stop();
 
     document.title = "Portal";
@@ -1624,8 +1636,11 @@ describe("content-script lifecycle", () => {
 
     expect(document.getElementById(HEADER_HOST_ID)).toBeNull();
     expect(document.documentElement.hasAttribute(THEME_ENABLED_ATTRIBUTE)).toBe(
-      false,
+      true,
     );
+    expect(
+      document.documentElement.hasAttribute(AUTHENTICATION_THEME_ATTRIBUTE),
+    ).toBe(true);
     expect(document.documentElement.hasAttribute("data-better-albert-adapter")).toBe(
       false,
     );

@@ -8,7 +8,7 @@ describe("native control activation", () => {
     document.body.innerHTML = "";
   });
 
-  it("marks only the verified course-search javascript action for page-world default activation", () => {
+  it("marks the verified course-search javascript action for page-world default activation", () => {
     const anchor = document.createElement("a");
     anchor.href = "javascript:submitAction_win0(document.win0,'SMALL_BUTTON')";
     document.body.append(anchor);
@@ -17,7 +17,10 @@ describe("native control activation", () => {
       .spyOn(window, "postMessage")
       .mockImplementation(() => undefined);
 
-    activateNativeControl(anchor, { allowJavascriptUrl: true });
+    activateNativeControl(anchor, {
+      allowJavascriptUrl: true,
+      preserveJavascriptUrlDefault: true,
+    });
 
     expect(
       anchor.getAttribute("data-better-albert-native-activation"),
@@ -26,6 +29,7 @@ describe("native control activation", () => {
       expect.objectContaining({
         type: "better-albert:activate-native-control",
         allowJavascriptUrl: true,
+        preserveJavascriptUrlDefault: true,
       }),
       window.location.origin,
     );
