@@ -3,6 +3,8 @@ import { activateNativeControl, type NativeControl } from "./native-control";
 const COURSE_SEARCH_INTENT_TTL_MS = 10_000;
 const ENROLLMENT_CART_PATH =
   /^\/psc\/csprod\/EMPLOYEE\/SA\/c\/NYU_SR_FL\.NYU_SSENRL_CART_FL\.GBL\/?$/i;
+const CLASS_SEARCH_PATH =
+  /^\/psc\/csprod\/EMPLOYEE\/SA\/c\/NYU_SR\.NYU_CLS_SRCH\.GBL\/?$/i;
 const PORTAL_PATH = /^\/(?:psp|psc)\//i;
 const SEARCH_MODE_HEADING =
   "find classes to add to your enrollment cart using the options below";
@@ -10,6 +12,7 @@ const COURSE_SEARCH_FRAME_READY_MESSAGE =
   "better-albert:course-search-frame-ready";
 const COURSE_SEARCH_FRAME_OPEN_MESSAGE =
   "better-albert:open-native-course-search";
+const COURSE_SEARCH_SCROLL_MESSAGE = "better-albert:course-search-scroll";
 const COMPONENT_ORIGIN = "https://sis.nyu.edu";
 const PORTAL_ORIGIN = "https://sis.portal.nyu.edu";
 const UNVERIFIED_FRAME_TARGET_ORIGIN = "*";
@@ -151,7 +154,10 @@ export function advanceToNativeClassSearch(document: Document): boolean {
     return false;
   }
 
-  activateNativeControl(control, { allowJavascriptUrl: true });
+  activateNativeControl(control, {
+    allowJavascriptUrl: true,
+    preserveJavascriptUrlDefault: true,
+  });
   return true;
 }
 
@@ -183,6 +189,26 @@ export function isEnrollmentCartUrl(url: string): boolean {
   );
 }
 
+/**
+ * The cart navigates the same cross-origin iframe to this classic Class
+ * Search route after the student chooses "Search". Keep it in the same
+ * allowlist so the parent modal remains a verified scroll owner after that
+ * navigation rather than rejecting wheel messages once the cart URL changes.
+ */
+export function isClassSearchUrl(url: string): boolean {
+  const location = parseLocation(url);
+  return Boolean(
+    location &&
+      location.protocol === "https:" &&
+      location.hostname === "sis.nyu.edu" &&
+      CLASS_SEARCH_PATH.test(location.pathname),
+  );
+}
+
+function isCourseSearchComponentUrl(url: string): boolean {
+  return isEnrollmentCartUrl(url) || isClassSearchUrl(url);
+}
+
 export function isCourseSearchRelayUrl(url: string): boolean {
   const location = parseLocation(url);
   return Boolean(
@@ -194,7 +220,8 @@ export function isCourseSearchRelayUrl(url: string): boolean {
 }
 
 function isVisibleFrame(frame: HTMLIFrameElement): boolean {
-  for (let current: HTMLElement | null = frame; current; current = current.parentElement) {
+  let current: HTMLElement | null = frame;
+  while (current) {
     if (
       current.hidden ||
       current.getAttribute("aria-hidden") === "true" ||
@@ -205,6 +232,12 @@ function isVisibleFrame(frame: HTMLIFrameElement): boolean {
     ) {
       return false;
     }
+
+    const root = current.getRootNode();
+    current =
+      root instanceof ShadowRoot && root.host instanceof HTMLElement
+        ? root.host
+        : current.parentElement;
   }
   return true;
 }
@@ -215,13 +248,14 @@ function isVisibleFrame(frame: HTMLIFrameElement): boolean {
  * parent, but its exact allowlisted frame routes are visible and reversible.
  */
 export function hasOpenCourseSearchFrame(document: Document): boolean {
-  return Array.from(
-    document.querySelectorAll<HTMLIFrameElement>("iframe"),
-  ).some((frame) => {
+  return getChildFrames(document).some((frame) => {
     if (!isVisibleFrame(frame)) {
       return false;
     }
-    if (isCourseSearchRelayUrl(frame.src) || isEnrollmentCartUrl(frame.src)) {
+    if (
+      isCourseSearchRelayUrl(frame.src) ||
+      isCourseSearchComponentUrl(frame.src)
+    ) {
       return true;
     }
 
@@ -248,7 +282,26 @@ function isMessageType(value: unknown, type: string): boolean {
 }
 
 function getChildFrames(document: Document): HTMLIFrameElement[] {
-  return Array.from(document.querySelectorAll<HTMLIFrameElement>("iframe"));
+  const frames: HTMLIFrameElement[] = [];
+  const visitedRoots = new Set<Document | ShadowRoot>();
+  const pendingRoots: Array<Document | ShadowRoot> = [document];
+
+  while (pendingRoots.length > 0) {
+    const root = pendingRoots.pop();
+    if (!root || visitedRoots.has(root)) {
+      continue;
+    }
+    visitedRoots.add(root);
+
+    frames.push(...root.querySelectorAll<HTMLIFrameElement>("iframe"));
+    for (const element of root.querySelectorAll<HTMLElement>("*")) {
+      if (element.shadowRoot && !visitedRoots.has(element.shadowRoot)) {
+        pendingRoots.push(element.shadowRoot);
+      }
+    }
+  }
+
+  return frames;
 }
 
 function isAllowlistedOrigin(origin: string | undefined): boolean {
@@ -310,6 +363,49 @@ function postOpenRequestToChildFrames(document: Document): void {
   }
 }
 
+function scrollCourseSearchModal(document: Document, deltaY: number): void {
+  if (!Number.isFinite(deltaY) || deltaY === 0) {
+    return;
+  }
+
+  const markedModal = document.querySelector<HTMLElement>(
+    "#pt_modals[data-better-albert-course-search-modal]",
+  );
+  const modal =
+    markedModal ??
+    (document.querySelectorAll<HTMLElement>("#pt_modals").length === 1
+      ? document.querySelector<HTMLElement>("#pt_modals")
+      : undefined);
+  if (!modal) {
+    return;
+  }
+
+  // Keep a wheel gesture over the cross-origin iframe in the same scroll
+  // context as the native modal. Browser scrolling clamps scrollTop to the
+  // modal's available range, so no synthetic geometry or layout state is kept.
+  modal.scrollTop += Math.max(-2_000, Math.min(2_000, deltaY));
+}
+
+function postCourseSearchScroll(window: Window, deltaY: number): void {
+  if (!Number.isFinite(deltaY) || deltaY === 0) {
+    return;
+  }
+
+  try {
+    const topWindow = window.top;
+    if (!topWindow) {
+      return;
+    }
+    topWindow.postMessage(
+      { type: COURSE_SEARCH_SCROLL_MESSAGE, deltaY },
+      PORTAL_ORIGIN,
+    );
+  } catch {
+    // A navigation can detach the top window while a wheel event is in
+    // flight; native scrolling remains the fallback in that transition.
+  }
+}
+
 export interface CourseSearchFrameHandoff {
   request(): void;
   stop(): void;
@@ -342,17 +438,19 @@ export function createCourseSearchFrameHandoff(
               isVisibleFrame(candidate),
           )
         : undefined;
+    const sourceWindow = event.source as Window | null;
+    const targetWindow = sourceWindow ?? (frame ?? fallbackFrame)?.contentWindow;
     if (
       Date.now() >= expiresAt ||
       event.origin !== COMPONENT_ORIGIN ||
       !isMessageType(event.data, COURSE_SEARCH_FRAME_READY_MESSAGE) ||
-      !(frame ?? fallbackFrame)?.contentWindow
+      !targetWindow
     ) {
       return;
     }
 
     try {
-      (frame ?? fallbackFrame)?.contentWindow?.postMessage(
+      targetWindow.postMessage(
         { type: COURSE_SEARCH_FRAME_OPEN_MESSAGE },
         COMPONENT_ORIGIN,
       );
@@ -362,7 +460,27 @@ export function createCourseSearchFrameHandoff(
     expiresAt = 0;
   };
 
+  const handleFrameScroll = (event: MessageEvent): void => {
+    if (
+      event.source === null ||
+      !isAllowlistedOrigin(event.origin) ||
+      !isMessageType(event.data, COURSE_SEARCH_SCROLL_MESSAGE) ||
+      !hasOpenCourseSearchFrame(document)
+    ) {
+      return;
+    }
+
+    const deltaY =
+      event.data && typeof event.data === "object" && "deltaY" in event.data
+        ? event.data.deltaY
+        : undefined;
+    if (typeof deltaY === "number") {
+      scrollCourseSearchModal(document, deltaY);
+    }
+  };
+
   window?.addEventListener("message", handleFrameReady);
+  window?.addEventListener("message", handleFrameScroll);
 
   return {
     request(): void {
@@ -387,6 +505,7 @@ export function createCourseSearchFrameHandoff(
       }
       timers.clear();
       window?.removeEventListener("message", handleFrameReady);
+      window?.removeEventListener("message", handleFrameScroll);
     },
   };
 }
@@ -403,6 +522,10 @@ export function startCourseSearchFrameRelay(
     return () => undefined;
   }
 
+  const handleWheel = (event: WheelEvent): void => {
+    postCourseSearchScroll(window, event.deltaY);
+  };
+
   const handleOpenRequest = (event: MessageEvent): void => {
     if (
       event.source !== window.parent ||
@@ -415,8 +538,17 @@ export function startCourseSearchFrameRelay(
     postOpenRequestToChildFrames(document);
   };
 
+  // Capture before PeopleSoft's legacy handlers can stop propagation. The
+  // listener only forwards a data-free delta; it never cancels native input.
+  window.addEventListener("wheel", handleWheel, {
+    capture: true,
+    passive: true,
+  });
   window.addEventListener("message", handleOpenRequest);
-  return () => window.removeEventListener("message", handleOpenRequest);
+  return () => {
+    window.removeEventListener("wheel", handleWheel, true);
+    window.removeEventListener("message", handleOpenRequest);
+  };
 }
 
 export function startCourseSearchFrameReceiver(
@@ -426,7 +558,7 @@ export function startCourseSearchFrameReceiver(
   if (
     !window ||
     window.top === window ||
-    !isEnrollmentCartUrl(window.location.href)
+    !isCourseSearchComponentUrl(window.location.href)
   ) {
     return () => undefined;
   }
@@ -434,6 +566,16 @@ export function startCourseSearchFrameReceiver(
   let handled = false;
   let retryObserver: MutationObserver | undefined;
   let retryTimer: number | undefined;
+
+  const handleWheel = (event: WheelEvent): void => {
+    postCourseSearchScroll(window, event.deltaY);
+  };
+  // Capture before PeopleSoft's legacy handlers can stop propagation. The
+  // listener only forwards a data-free delta; it never cancels native input.
+  window.addEventListener("wheel", handleWheel, {
+    capture: true,
+    passive: true,
+  });
 
   const stopRetry = (): void => {
     retryObserver?.disconnect();
@@ -487,8 +629,8 @@ export function startCourseSearchFrameReceiver(
       event.origin === PORTAL_ORIGIN && event.source !== null;
     if (
       handled ||
-      !isAllowlistedOrigin(event.origin) ||
       (!sourceIsParent && !allowlistedPortalSource) ||
+      !isAllowlistedOrigin(event.origin) ||
       !isMessageType(event.data, COURSE_SEARCH_FRAME_OPEN_MESSAGE)
     ) {
       return;
@@ -505,6 +647,7 @@ export function startCourseSearchFrameReceiver(
 
   return () => {
     stopRetry();
+    window.removeEventListener("wheel", handleWheel, true);
     window.removeEventListener("message", handleOpenRequest);
   };
 }

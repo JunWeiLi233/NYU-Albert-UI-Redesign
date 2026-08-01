@@ -273,7 +273,7 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
     page.locator(".ba-tool-description", {
       hasText: "Search by subject, course number, title, or instructor",
     }),
-  ).toBeVisible();
+  ).toBeHidden();
   await expect(page.locator(".is_bb_LinkContainer")).toHaveCSS(
     "display",
     "grid",
@@ -444,12 +444,12 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
         right: Math.round(bounds.right),
       };
     }),
-  ).toEqual({ height: 60, left: 264, right: 1280 });
+  ).toEqual({ height: 60, left: 92, right: 1280 });
   expect(
     await page.locator(HEADER_HOST_SELECTOR).evaluate((element) =>
       Math.round(element.getBoundingClientRect().width),
     ),
-  ).toBe(264);
+  ).toBe(92);
   await expect(page.locator("body")).toHaveCSS("padding-left", "0px");
   expect(
     await page.locator("body").evaluate((body) => getComputedStyle(body).backgroundColor),
@@ -473,10 +473,10 @@ test("mounts an accessible page-aware shell and computed native theme", async ()
   });
 
   for (const [width, expectedHostWidth, expectedWorkspaceLeft] of [
-    [1440, 264, 264],
-    [1200, 264, 264],
-    [1199, 264, 264],
-    [900, 264, 264],
+    [1440, 92, 92],
+    [1200, 92, 92],
+    [1199, 92, 92],
+    [900, 92, 92],
     [899, 899, 0],
     [768, 768, 0],
   ] as const) {
@@ -1108,7 +1108,7 @@ test("exposes task-first discovery at every supported width and delegates throug
         }),
       ).toEqual({
         bottom: 800,
-        left: 264,
+        left: 92,
         right: width,
         top: 0,
       });
@@ -3006,7 +3006,7 @@ test("isolates desktop workspace overflow without obscuring native overlays", as
       const bounds = workspace.getBoundingClientRect();
       return { left: Math.round(bounds.left), right: Math.round(bounds.right) };
     }),
-  ).toEqual({ left: 264, right: 1440 });
+  ).toEqual({ left: 92, right: 1440 });
 
   const overlayGeometry = await page.evaluate(() => {
     const ordinaryNativeLayer = document.createElement("div");
@@ -3026,7 +3026,7 @@ test("isolates desktop workspace overflow without obscuring native overlays", as
     const overflowProbe = document.createElement("div");
     overflowProbe.id = "synthetic-overflow-probe";
     overflowProbe.style.cssText =
-      "width:calc(100% + 264px);height:1px";
+      "width:calc(100% + 92px);height:1px";
     const workspace = document.querySelector<HTMLElement>(
       '[data-better-albert-layout="portal-workspace"]',
     );
@@ -4172,7 +4172,7 @@ test("applies a distinct full-page adapter to every selected Albert workspace", 
         }
       }
       expect(alignment.workspaceLeft).toBeGreaterThanOrEqual(
-        width >= 900 ? 264 : 0,
+        width >= 900 ? 92 : 0,
       );
       expect(alignment.workspaceRight).toBeLessThanOrEqual(width);
       expect(alignment.contentLeft).toBeGreaterThanOrEqual(
@@ -4402,7 +4402,7 @@ test("persists disablement and remounts when the local preference is enabled", a
       right: Math.round(bounds.right),
     };
   });
-  expect(disabledBodyGeometry.left).toBeLessThan(264);
+  expect(disabledBodyGeometry.left).toBeLessThan(92);
   expect(disabledBodyGeometry.right).toBeLessThanOrEqual(
     disabledBodyGeometry.clientWidth,
   );
@@ -4433,7 +4433,7 @@ test("persists disablement and remounts when the local preference is enabled", a
     await page
       .locator('[data-better-albert-layout="portal-workspace"]')
       .evaluate((workspace) => Math.round(workspace.getBoundingClientRect().left)),
-  ).toBe(264);
+  ).toBe(92);
 });
 
 test("remounts after PeopleSoft removes the extension host and keeps native controls usable", async () => {
@@ -4574,7 +4574,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
   await expect(otherResourcesToggle).toHaveAttribute("aria-expanded", "false");
   await expect(homeResourceDirectory).toBeVisible();
   await expect(pageTools).toBeVisible();
-  await expect(featuredResources).toBeVisible();
+  await expect(featuredResources).toBeHidden();
   await taskFinderToggle.click();
   await expect(taskFinder).toBeVisible();
 
@@ -4725,7 +4725,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
         top: Math.round(bounds.top),
       };
     }),
-  ).toEqual({ bottom: 800, left: 264, right: 1280, top: 60 });
+  ).toEqual({ bottom: 800, left: 92, right: 1280, top: 60 });
 
   await page
     .locator('a[href="/fixture-card-center"]')
@@ -5658,7 +5658,7 @@ test("delegates Other Resources to Albert's native overlay trigger", async () =>
     page.getByRole("button", { exact: true, name: "Find a task" }),
   ).toBeVisible();
   await expect(pageTools).toBeVisible();
-  await expect(featuredResources).toBeVisible();
+  await expect(featuredResources).toBeHidden();
 
   await page.setViewportSize({ height: 800, width: 400 });
   await otherResourcesToggle.click();
@@ -6216,7 +6216,7 @@ test("recognizes and redesigns an explicit student-self-service deep page", asyn
     };
   });
   expect(deepAlignment.documentOverflow).toBe(0);
-  expect(deepAlignment.layoutLeft).toBeGreaterThanOrEqual(264);
+  expect(deepAlignment.layoutLeft).toBeGreaterThanOrEqual(92);
   expect(deepAlignment.layoutRight).toBeLessThanOrEqual(
     deepAlignment.viewportWidth,
   );
@@ -6273,7 +6273,7 @@ test("recognizes and redesigns an explicit student-self-service deep page", asyn
       `deep native control target at ${width}px`,
     ).toBeGreaterThanOrEqual(44);
     expect(responsiveAlignment.layoutLeft).toBeGreaterThanOrEqual(
-      width >= 900 ? 264 : 0,
+      width >= 900 ? 92 : 0,
     );
     expect(responsiveAlignment.layoutRight).toBeLessThanOrEqual(width);
     expect(
@@ -7177,7 +7177,7 @@ test("keeps exact Class Search empty and validation states clear and recoverable
   }
 });
 
-test("does not run on public or portal-hosted authentication surfaces", async () => {
+test("themes public and portal-hosted authentication surfaces without mounting the shell", async () => {
   const authenticationFixture = fixtureHtml.replace(
     "<title>Albert</title>",
     "<title>Albert Login</title>",
@@ -7192,6 +7192,10 @@ test("does not run on public or portal-hosted authentication surfaces", async ()
 
   await page.goto(LOGIN_LAUNCHER_URL);
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-better-albert-authentication",
+    "",
+  );
   await expect(page.locator("#albert-native-content")).toBeVisible();
 
   await context.route(PORTAL_URL, async (route) => {
@@ -7203,5 +7207,9 @@ test("does not run on public or portal-hosted authentication surfaces", async ()
   });
   await page.goto(PORTAL_URL);
   await expect(page.locator(HEADER_HOST_SELECTOR)).toHaveCount(0);
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-better-albert-authentication",
+    "",
+  );
   await expect(page.locator("#albert-native-content")).toBeVisible();
 });

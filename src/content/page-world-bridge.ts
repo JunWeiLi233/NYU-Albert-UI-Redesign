@@ -3,7 +3,11 @@ const ACTIVATION_MESSAGE = "better-albert:activate-native-control";
 
 function isActivationMessage(
   value: unknown,
-): value is { token: string; allowJavascriptUrl?: boolean } {
+): value is {
+  token: string;
+  allowJavascriptUrl?: boolean;
+  preserveJavascriptUrlDefault?: boolean;
+} {
   return Boolean(
     value &&
       typeof value === "object" &&
@@ -13,13 +17,16 @@ function isActivationMessage(
       typeof value.token === "string" &&
       value.token.length > 0 &&
       (!("allowJavascriptUrl" in value) ||
-        typeof value.allowJavascriptUrl === "boolean"),
+        typeof value.allowJavascriptUrl === "boolean") &&
+      (!("preserveJavascriptUrlDefault" in value) ||
+        typeof value.preserveJavascriptUrlDefault === "boolean"),
   );
 }
 
 function activateNativeControlInPageWorld(
   token: string,
   allowJavascriptUrl: boolean,
+  preserveJavascriptUrlDefault: boolean,
 ): void {
   const control = Array.from(
     document.querySelectorAll<HTMLElement>(
@@ -35,16 +42,30 @@ function activateNativeControlInPageWorld(
   if (allowJavascriptUrl) {
     const href = control.getAttribute("href");
     if (href?.match(/^\s*javascript:/i)) {
-      // Keep the page-owned script and event path, but discard a string return
-      // value. Without this wrapper, a harmless assignment such as
-      // `document.body.dataset.nativeSearchActivated = 'true'` replaces the
-      // whole document with the returned string in Chromium.
-      const script = href
-        .slice(href.indexOf(":") + 1)
-        .replace(/;\s*$/, "");
-      control.setAttribute("href", `javascript:void (${script})`);
-      control.click();
-      control.setAttribute("href", href);
+      if (!preserveJavascriptUrlDefault) {
+        // Keep the page-owned script and event path, but discard a string
+        // return value so the javascript: URL cannot replace the document.
+        const script = href
+          .slice(href.indexOf(":") + 1)
+          .replace(/;\s*$/, "");
+        control.setAttribute("href", `javascript:void (${script})`);
+        control.click();
+        control.setAttribute("href", href);
+        return;
+      }
+
+      // Dispatch the native page-world click for the one verified
+      // javascript: action. The PeopleSoft Search anchor keeps its behavior
+      // in the href (rather than an onclick listener), so canceling the
+      // default action would silently swallow the course-search transition.
+      // The URL is never evaluated by the extension world; the page remains
+      // the authority for this existing, non-transactional control.
+      const click = new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+      });
+      control.dispatchEvent(click);
       return;
     }
     control.click();
@@ -55,7 +76,6 @@ function activateNativeControlInPageWorld(
     bubbles: true,
     cancelable: true,
     composed: true,
-    view: window,
   });
   click.preventDefault();
   control.dispatchEvent(click);
@@ -73,6 +93,7 @@ window.addEventListener("message", (event: MessageEvent): void => {
     activateNativeControlInPageWorld(
       event.data.token,
       event.data.allowJavascriptUrl === true,
+      event.data.preserveJavascriptUrlDefault === true,
     );
   }
 });
@@ -83,7 +104,9 @@ document.addEventListener(ACTIVATION_MESSAGE, (event: Event): void => {
     !detail ||
     typeof detail !== "object" ||
     typeof detail.token !== "string" ||
-    typeof detail.allowJavascriptUrl !== "boolean"
+    typeof detail.allowJavascriptUrl !== "boolean" ||
+    ("preserveJavascriptUrlDefault" in detail &&
+      typeof detail.preserveJavascriptUrlDefault !== "boolean")
   ) {
     return;
   }
@@ -91,5 +114,6 @@ document.addEventListener(ACTIVATION_MESSAGE, (event: Event): void => {
   activateNativeControlInPageWorld(
     detail.token,
     detail.allowJavascriptUrl,
+    detail.preserveJavascriptUrlDefault === true,
   );
 });

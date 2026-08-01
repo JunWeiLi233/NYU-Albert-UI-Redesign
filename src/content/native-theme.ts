@@ -12,8 +12,12 @@ import {
 export const THEME_ENABLED_ATTRIBUTE = "data-better-albert-enabled";
 export const THEME_PAGE_ATTRIBUTE = "data-better-albert-page";
 export const THEME_TOP_LEVEL_ATTRIBUTE = "data-better-albert-top-level";
+export const AUTHENTICATION_THEME_ATTRIBUTE =
+  "data-better-albert-authentication";
 export const COMPACT_HEADER_ATTRIBUTE = "data-better-albert-compact-header";
 export const NATIVE_MODAL_OPEN_ATTRIBUTE = "data-better-albert-native-modal-open";
+export const COURSE_SEARCH_MODAL_ATTRIBUTE =
+  "data-better-albert-course-search-modal";
 export const READ_ONLY_MODAL_OPEN_ATTRIBUTE =
   "data-better-albert-readonly-modal-open";
 const READ_ONLY_MODAL_ATTRIBUTE = "data-better-albert-readonly-modal";
@@ -33,6 +37,8 @@ const UTILITY_ARIA_LABEL_ADDED_ATTRIBUTE =
   "data-better-albert-utility-aria-label-added";
 const UTILITY_ROLE_ADDED_ATTRIBUTE =
   "data-better-albert-utility-role-added";
+const LOGIN_CONTENT_ATTRIBUTE = "data-better-albert-login-content";
+const LOGIN_HEADING_ATTRIBUTE = "data-better-albert-login-heading";
 const READ_ONLY_MODAL_TITLES = new Set([
   "degree progress report",
   "my degree progress report",
@@ -42,6 +48,52 @@ const NATIVE_DIALOG_SELECTOR = "#pt_modals, [role='dialog']";
 
 function normalizedText(value: string | null | undefined): string {
   return value?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
+}
+
+const LOGIN_ACTION_SELECTOR =
+  "a, button, input[type='submit'], input[type='button']";
+
+function updateAuthenticationMarkers(document: Document): void {
+  for (const element of document.querySelectorAll(
+    `[${LOGIN_CONTENT_ATTRIBUTE}], [${LOGIN_HEADING_ATTRIBUTE}]`,
+  )) {
+    element.removeAttribute(LOGIN_CONTENT_ATTRIBUTE);
+    element.removeAttribute(LOGIN_HEADING_ATTRIBUTE);
+  }
+
+  const heading = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      "h1, h2, h3, [role='heading'], .PAPAGETITLE, .ps_box-pagetitle",
+    ),
+  ).find((candidate) => normalizedText(candidate.textContent).includes("albert login"));
+  heading?.setAttribute(LOGIN_HEADING_ATTRIBUTE, "");
+
+  const actions = Array.from(
+    document.querySelectorAll<HTMLElement>(LOGIN_ACTION_SELECTOR),
+  ).filter(
+    (action) =>
+      !action.closest(
+        "#ptbr_header_container, #NYU_DEFAULT_HEADER, #Header_Container",
+      ),
+  );
+  if (actions.length === 0) {
+    return;
+  }
+
+  const firstAction = actions[0];
+  if (!firstAction) {
+    return;
+  }
+  let actionGroup: Element | null = firstAction.parentElement;
+  while (
+    actionGroup &&
+    actionGroup.parentElement &&
+    actionGroup.parentElement !== document.body &&
+    actionGroup.querySelectorAll(LOGIN_ACTION_SELECTOR).length <= 12
+  ) {
+    actionGroup = actionGroup.parentElement;
+  }
+  actionGroup?.setAttribute(LOGIN_CONTENT_ATTRIBUTE, "");
 }
 
 function updateNativeResourceMarkers(document: Document): void {
@@ -153,6 +205,26 @@ function isPotentiallyVisible(element: HTMLElement, document: Document): boolean
   return true;
 }
 
+function updateCourseSearchModalMarker(
+  document: Document,
+  hasOpenCourseSearch: boolean,
+): void {
+  for (const modal of document.querySelectorAll(
+    `[${COURSE_SEARCH_MODAL_ATTRIBUTE}]`,
+  )) {
+    modal.removeAttribute(COURSE_SEARCH_MODAL_ATTRIBUTE);
+  }
+
+  if (!hasOpenCourseSearch) {
+    return;
+  }
+
+  const modalContainers = document.querySelectorAll<HTMLElement>("#pt_modals");
+  if (modalContainers.length === 1) {
+    modalContainers[0]?.setAttribute(COURSE_SEARCH_MODAL_ATTRIBUTE, "");
+  }
+}
+
 function updateReadOnlyModalMarkers(document: Document): void {
   for (const selector of READ_ONLY_MODAL_SELECTORS) {
     const modalContainers = document.querySelectorAll<HTMLElement>(selector);
@@ -187,11 +259,13 @@ function updateReadOnlyModalMarkers(document: Document): void {
   // shell cannot cover native modal content at high zoom.
   const hasOpenLightbox =
     document.body?.classList.contains("iLightboxOpen") ?? false;
+  const hasOpenCourseSearch = hasOpenCourseSearchFrame(document);
+  updateCourseSearchModalMarker(document, hasOpenCourseSearch);
   document.documentElement.toggleAttribute(
     NATIVE_MODAL_OPEN_ATTRIBUTE,
     hasOpenNativeDialog ||
       hasOpenLightbox ||
-      hasOpenCourseSearchFrame(document),
+      hasOpenCourseSearch,
   );
   const hasOpenReadOnlyDialog = Array.from(
     document.querySelectorAll<HTMLElement>(
@@ -259,12 +333,29 @@ export function applyNativeTheme(
   updateReadOnlyModalMarkers(document);
 }
 
+/**
+ * Applies the presentation-only login treatment. The authentication page is
+ * native content: no shell, adapters, form handlers, or navigation controls
+ * are replaced. Markers only scope reversible CSS to the launcher/login view.
+ */
+export function applyAuthenticationTheme(document: Document): void {
+  document.documentElement.setAttribute(THEME_ENABLED_ATTRIBUTE, "");
+  document.documentElement.setAttribute(AUTHENTICATION_THEME_ATTRIBUTE, "");
+  updateAuthenticationMarkers(document);
+}
+
 export function removeNativeTheme(document: Document): void {
   document.documentElement.removeAttribute(THEME_ENABLED_ATTRIBUTE);
   document.documentElement.removeAttribute(THEME_PAGE_ATTRIBUTE);
   document.documentElement.removeAttribute(THEME_TOP_LEVEL_ATTRIBUTE);
+  document.documentElement.removeAttribute(AUTHENTICATION_THEME_ATTRIBUTE);
   document.documentElement.removeAttribute(COMPACT_HEADER_ATTRIBUTE);
   document.documentElement.removeAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE);
+  for (const modal of document.querySelectorAll(
+    `[${COURSE_SEARCH_MODAL_ATTRIBUTE}]`,
+  )) {
+    modal.removeAttribute(COURSE_SEARCH_MODAL_ATTRIBUTE);
+  }
   document.documentElement.removeAttribute(READ_ONLY_MODAL_OPEN_ATTRIBUTE);
   for (const modal of document.querySelectorAll(
     `[${READ_ONLY_MODAL_ATTRIBUTE}]`,
@@ -302,5 +393,11 @@ export function removeNativeTheme(document: Document): void {
       utility.removeAttribute("role");
       utility.removeAttribute(UTILITY_ROLE_ADDED_ATTRIBUTE);
     }
+  }
+  for (const element of document.querySelectorAll(
+    `[${LOGIN_CONTENT_ATTRIBUTE}], [${LOGIN_HEADING_ATTRIBUTE}]`,
+  )) {
+    element.removeAttribute(LOGIN_CONTENT_ATTRIBUTE);
+    element.removeAttribute(LOGIN_HEADING_ATTRIBUTE);
   }
 }

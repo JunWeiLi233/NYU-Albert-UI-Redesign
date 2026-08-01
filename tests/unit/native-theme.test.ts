@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import {
+  applyAuthenticationTheme,
   applyNativeTheme,
+  AUTHENTICATION_THEME_ATTRIBUTE,
+  COURSE_SEARCH_MODAL_ATTRIBUTE,
   NATIVE_MODAL_OPEN_ATTRIBUTE,
   READ_ONLY_MODAL_OPEN_ATTRIBUTE,
   removeNativeTheme,
@@ -96,6 +99,45 @@ describe("native modal markers", () => {
     ).toBe(true);
   });
 
+  it("marks the native Course Search modal as the bounded scroll owner", () => {
+    document.body.innerHTML = `
+      <section id="pt_modals">
+        <iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL"></iframe>
+      </section>
+    `;
+
+    applyNativeTheme(document, "home", false);
+
+    expect(
+      document
+        .querySelector("#pt_modals")
+        ?.hasAttribute(COURSE_SEARCH_MODAL_ATTRIBUTE),
+    ).toBe(true);
+
+    removeNativeTheme(document);
+    expect(
+      document
+        .querySelector("#pt_modals")
+        ?.hasAttribute(COURSE_SEARCH_MODAL_ATTRIBUTE),
+    ).toBe(false);
+  });
+
+  it("keeps the classic Class Search iframe marked after cart navigation", () => {
+    document.body.innerHTML = `
+      <section id="pt_modals">
+        <iframe src="https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL"></iframe>
+      </section>
+    `;
+
+    applyNativeTheme(document, "home", false);
+
+    expect(
+      document
+        .querySelector("#pt_modals")
+        ?.hasAttribute(COURSE_SEARCH_MODAL_ATTRIBUTE),
+    ).toBe(true);
+  });
+
   it("suppresses the rail for a PeopleSoft lightbox body marker", () => {
     document.body.classList.add("iLightboxOpen");
 
@@ -111,5 +153,43 @@ describe("native modal markers", () => {
     expect(
       document.documentElement.hasAttribute(NATIVE_MODAL_OPEN_ATTRIBUTE),
     ).toBe(false);
+  });
+});
+
+describe("authentication theme markers", () => {
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <header id="ptbr_header_container">NYU</header>
+      <main>
+        <h1>Albert Login</h1>
+        <section>
+          <p>Sign in below to access the Albert portal.</p>
+          <a href="/signin">Sign in to Albert</a>
+          <a href="/search">Public Course Search</a>
+        </section>
+      </main>
+    `;
+    removeNativeTheme(document);
+  });
+
+  it("scopes a reversible login presentation without adding a shell", () => {
+    applyAuthenticationTheme(document);
+
+    expect(
+      document.documentElement.hasAttribute(AUTHENTICATION_THEME_ATTRIBUTE),
+    ).toBe(true);
+    expect(
+      document.querySelector("[data-better-albert-login-heading]")?.textContent,
+    ).toContain("Albert Login");
+    expect(document.querySelector("[data-better-albert-login-content]")).not.toBeNull();
+    expect(document.querySelector("#ptbr_header_container")).not.toBeNull();
+    expect(document.querySelector("#better-albert-header-host")).toBeNull();
+
+    removeNativeTheme(document);
+    expect(
+      document.documentElement.hasAttribute(AUTHENTICATION_THEME_ATTRIBUTE),
+    ).toBe(false);
+    expect(document.querySelector("[data-better-albert-login-heading]")).toBeNull();
+    expect(document.querySelector("[data-better-albert-login-content]")).toBeNull();
   });
 });

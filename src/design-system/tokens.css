@@ -44,7 +44,8 @@
   --ba-space-10: 2.5rem;
   --ba-space-12: 3rem;
 
-  --ba-rail-width: 16.5rem;
+  /* Match NYU's compact desktop rail; task content stays in the page. */
+  --ba-rail-width: 5.75rem;
   --ba-workspace-max: 100rem;
   --ba-section-gap: 1.5rem;
 

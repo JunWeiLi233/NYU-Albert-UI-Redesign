@@ -17,7 +17,11 @@ import {
   createCourseSearchFrameHandoff,
   type CourseSearchFrameHandoff,
 } from "./course-search-handoff";
-import { applyNativeTheme, removeNativeTheme } from "./native-theme";
+import {
+  applyAuthenticationTheme,
+  applyNativeTheme,
+  removeNativeTheme,
+} from "./native-theme";
 import {
   getAvailablePageTools,
   getAvailableResourceTools,
@@ -390,8 +394,6 @@ export async function startContentScript({
       return;
     }
 
-    ensureObserver();
-
     const classification = classifyAlbertDocument({
       document,
       relatedAlbertContext:
@@ -403,8 +405,15 @@ export async function startContentScript({
     if (classification.kind === "authentication") {
       disconnectObserver();
       rollback();
+      try {
+        applyAuthenticationTheme(document);
+      } catch {
+        removeNativeTheme(document);
+      }
       return;
     }
+
+    ensureObserver();
 
     if (classification.kind !== "albert" || !document.body) {
       rollback();
@@ -627,10 +636,7 @@ export async function startContentScript({
     rollback();
   };
 
-  if (
-    !isPotentialAlbertLocation(location) ||
-    isAuthenticationDocument(document)
-  ) {
+  if (!isPotentialAlbertLocation(location)) {
     rollback();
     return { stop: rollback };
   }

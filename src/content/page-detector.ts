@@ -7,7 +7,9 @@ import {
 
 const ALBERT_PORTAL_HOST = "sis.portal.nyu.edu";
 const ALBERT_COMPONENT_HOST = "sis.nyu.edu";
+const ALBERT_LAUNCHER_HOST = "albert.nyu.edu";
 const SUPPORTED_PATH = /^\/(?:psp|psc)\//i;
+const ALBERT_LAUNCHER_PATH = /^\/albert_index\.html?$/i;
 const CLASS_SEARCH_COMPONENTS = [
   // Fluid enrollment cart (original matched route).
   /^\/psc\/csprod\/EMPLOYEE\/SA\/c\/NYU_SR_FL\.NYU_SSENRL_CART_FL\.GBL\/?$/i,
@@ -59,6 +61,14 @@ const SELECTED_CONTROL_SELECTOR = [
   '[class*="selected"]',
   '[class*="active"]',
 ].join(",");
+
+function isAlbertLauncherLocation(location: AlbertLocation): boolean {
+  return (
+    location.protocol === "https:" &&
+    location.hostname === ALBERT_LAUNCHER_HOST &&
+    ALBERT_LAUNCHER_PATH.test(location.pathname)
+  );
+}
 
 export interface AlbertLocation {
   hostname: string;
@@ -171,7 +181,11 @@ export function isPotentialAlbertLocation(location: AlbertLocation): boolean {
     location.hostname === ALBERT_PORTAL_HOST &&
     SUPPORTED_PATH.test(location.pathname);
 
-  return isPortalPath || isKnownAlbertComponentRoute(location);
+  return (
+    isPortalPath ||
+    isAlbertLauncherLocation(location) ||
+    isKnownAlbertComponentRoute(location)
+  );
 }
 
 export function isKnownAlbertComponentRoute(
@@ -228,7 +242,7 @@ export function classifyAlbertDocument({
     return { kind: "unsupported" };
   }
 
-  if (isAuthenticationDocument(document)) {
+  if (isAlbertLauncherLocation(location) || isAuthenticationDocument(document)) {
     return { kind: "authentication" };
   }
 

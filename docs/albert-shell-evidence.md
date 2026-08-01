@@ -10,7 +10,9 @@ or screenshots were retained.
 ## Observed host and lifecycle boundary
 
 - `https://albert.nyu.edu/albert_index.html` is a public launcher titled
-  “Albert Login.” It links to authentication and must not receive extension UI.
+  “Albert Login.” It links to authentication and receives only the reversible,
+  native-only login presentation; the Better Albert shell and adapters remain
+  excluded.
 - The authenticated application loads under
   `https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/`.
 - The authenticated top-level window title was “Albert.”
@@ -80,12 +82,16 @@ inactive or unrelated page content remain unavailable.
 The extension requires all of the following:
 
 1. HTTPS.
-2. Exact hostname `sis.portal.nyu.edu`, or exact hostname `sis.nyu.edu` with the
+2. Exact hostname `sis.portal.nyu.edu`, the exact public launcher
+   `albert.nyu.edu/albert_index.html`, or exact hostname `sis.nyu.edu` with the
    allowlisted Class Search/cart component path.
-3. A `/psp/` or `/psc/` path.
-4. No authentication evidence in the title, password controls, login-form
-   actions, or explicit sanitized-test marker.
-5. Positive Albert evidence: the exact application title, at least two known
+3. A `/psp/` or `/psc/` path for SIS pages; the launcher must use the exact
+   `/albert_index.html` path.
+4. For SIS pages, no authentication evidence in the title, password controls,
+   login-form actions, or explicit sanitized-test marker. The exact launcher
+   path is intentionally classified as native authentication content.
+5. Positive Albert evidence for authenticated pages: the exact application
+   title, at least two known
    primary-navigation labels, an allowlisted self-service route with related
    portal context, or the exact Class Search/cart component.
 

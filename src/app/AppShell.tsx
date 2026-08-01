@@ -118,6 +118,80 @@ const RESOURCE_SEARCH_SUGGESTIONS = [
   toolId: PageToolId;
 }[];
 
+// Keep the desktop rail labels short enough to scan at a glance. The full
+// area names remain in the button's accessible name and hint text.
+const DESKTOP_RAIL_LABELS: Record<PrimaryPageFamily, string> = {
+  home: "Home",
+  academics: "Academics",
+  grades: "Grades",
+  finances: "Money",
+  personal: "Profile",
+  resources: "More",
+};
+
+function PageFamilyIcon({
+  pageFamily,
+}: {
+  pageFamily: PrimaryPageFamily;
+}) {
+  const svgProps = {
+    fill: "none",
+    focusable: "false" as const,
+    height: "24",
+    stroke: "currentColor",
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    strokeWidth: "1.8",
+    viewBox: "0 0 24 24",
+    width: "24",
+  };
+
+  switch (pageFamily) {
+    case "home":
+      return (
+        <svg {...svgProps}>
+          <path d="m3.5 10.5 8.5-7 8.5 7" />
+          <path d="M5.5 9.5V20h13V9.5M9.5 20v-5h5v5" />
+        </svg>
+      );
+    case "academics":
+      return (
+        <svg {...svgProps}>
+          <path d="M4 5h16v14H4z" />
+          <path d="M8 8h8M8 12h8M8 16h5" />
+        </svg>
+      );
+    case "grades":
+      return (
+        <svg {...svgProps}>
+          <path d="M5 19V5M5 19h14" />
+          <path d="M8 16v-3M12 16V9M16 16v-6" />
+        </svg>
+      );
+    case "finances":
+      return (
+        <svg {...svgProps}>
+          <path d="M4 7h15v12H4zM4 7V5h13v2" />
+          <path d="M15 13h4" />
+          <circle cx="15" cy="13" r="1" />
+        </svg>
+      );
+    case "personal":
+      return (
+        <svg {...svgProps}>
+          <circle cx="12" cy="8.5" r="3.25" />
+          <path d="M5 20c.8-3.4 3.1-5.2 7-5.2s6.2 1.8 7 5.2" />
+        </svg>
+      );
+    case "resources":
+      return (
+        <svg {...svgProps}>
+          <path d="M5 5h5v5H5zM14 5h5v5h-5zM5 14h5v5H5zM14 14h5v5h-5z" />
+        </svg>
+      );
+  }
+}
+
 const NEW_STUDENT_GUIDE_SEARCHES = [
   { label: "Advice for Your First Semester", query: "first semester" },
   { label: "Advice for Transfer Students", query: "transfer student" },
@@ -949,6 +1023,9 @@ export function AppShell({
   const verifiedCourseSearch =
     availableTaskTools.find(({ id }) => id === "course-search") ??
     availablePageTools.find(({ id }) => id === "course-search");
+  const isCourseSearchActive =
+    currentPageFamily === "academics" &&
+    availablePageTools.some(({ id }) => id === "course-search");
   // Home is the first verified cross-area handoff for non-Home workspaces.
   // Only a Home view that lacks its own Course Search control should describe
   // the alternate Academics handoff; otherwise the visible cue must match the
@@ -2086,6 +2163,9 @@ export function AppShell({
                 aria-label="Find classes"
                 aria-describedby="ba-course-search-shortcut-description"
                 data-course-search-mode={courseSearchShortcut.mode}
+                data-course-search-active={
+                  isCourseSearchActive ? "true" : undefined
+                }
                 onClick={handleCourseSearchShortcut}
               >
                 <span className="ba-course-search-shortcut-copy">
@@ -2191,6 +2271,7 @@ export function AppShell({
                 }
                 aria-label={navigationLabel}
                 aria-current={isCurrent ? "page" : undefined}
+                data-page-family={pageFamily}
                 disabled={!isAvailable}
                 key={pageFamily}
                 title={
@@ -2211,19 +2292,21 @@ export function AppShell({
                   handlePrimaryNavigation(pageFamily);
                 }}
               >
+                <span className="ba-nav-icon" aria-hidden="true">
+                  <PageFamilyIcon pageFamily={pageFamily} />
+                </span>
                 <span className="ba-nav-copy">
                   <span className="ba-nav-label-text">
                     <span className="ba-nav-label-full">
                       {navigationLabel}
                     </span>
-                    {isResourcesToggle && (
-                      <span
-                        className="ba-nav-label-compact"
-                        aria-hidden="true"
-                      >
-                        {isClosingResources ? "Close" : "Resources"}
-                      </span>
-                    )}
+                    <span className="ba-nav-label-compact" aria-hidden="true">
+                      {isResourcesToggle
+                        ? isClosingResources
+                          ? "Close"
+                          : DESKTOP_RAIL_LABELS.resources
+                        : DESKTOP_RAIL_LABELS[pageFamily]}
+                    </span>
                   </span>
                   <span className="ba-nav-hint" id={descriptionId}>
                     {navigationHint}

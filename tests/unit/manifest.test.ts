@@ -15,6 +15,7 @@ describe("extension manifest", () => {
     expect(staticManifest.permissions).toEqual(["storage"]);
     expect(staticManifest.host_permissions).toEqual([
       "https://sis.portal.nyu.edu/*",
+      "https://albert.nyu.edu/albert_index.html",
       "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL*",
       "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL*",
     ]);
@@ -24,6 +25,7 @@ describe("extension manifest", () => {
         css: ["src/design-system/native-theme.css"],
         matches: [
           "https://sis.portal.nyu.edu/*",
+          "https://albert.nyu.edu/albert_index.html",
           "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR_FL.NYU_SSENRL_CART_FL.GBL*",
           "https://sis.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NYU_SR.NYU_CLS_SRCH.GBL*",
         ],

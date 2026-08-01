@@ -12,17 +12,20 @@ export type NativeControl =
 
 export interface NativeControlActivationOptions {
   /**
-   * Allow the original page-owned javascript: URL to run for a control whose
-   * exact native behavior is itself the requested, non-transactional action.
+   * Allow the page-world click path for a control whose exact native behavior
+   * is itself the requested, non-transactional action.
    */
   allowJavascriptUrl?: boolean;
+  /** Preserve the page-owned javascript: default for one verified control. */
+  preserveJavascriptUrlDefault?: boolean;
 }
 
 /**
  * Activates an existing Albert control without evaluating javascript: URLs in
  * the extension world. Those anchors are delegated through the page-world
- * bridge so Albert's own handler runs under the page CSP while the
- * javascript: URL default action stays suppressed.
+ * bridge so Albert's own handler runs under the page CSP. Most actions wrap
+ * javascript: URLs to prevent document replacement; one verified control can
+ * explicitly preserve its native default action.
  */
 export function activateNativeControl(
   control: NativeControl,
@@ -61,6 +64,9 @@ export function activateNativeControl(
       type: ACTIVATION_MESSAGE,
       token,
       ...(options.allowJavascriptUrl ? { allowJavascriptUrl: true } : {}),
+      ...(options.preserveJavascriptUrlDefault
+        ? { preserveJavascriptUrlDefault: true }
+        : {}),
     },
     ownerWindow.location.origin,
   );
@@ -69,6 +75,9 @@ export function activateNativeControl(
       detail: {
         token,
         ...(options.allowJavascriptUrl ? { allowJavascriptUrl: true } : {}),
+        ...(options.preserveJavascriptUrlDefault
+          ? { preserveJavascriptUrlDefault: true }
+          : {}),
       },
     }),
   );

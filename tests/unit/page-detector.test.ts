@@ -81,6 +81,18 @@ describe("Albert page detection", () => {
     ).toEqual({ kind: "authentication" });
   });
 
+  it("classifies the public Albert launcher as native authentication content", () => {
+    document.title = "Albert";
+
+    expect(
+      classifyAlbertDocument({
+        document,
+        location: new URL("https://albert.nyu.edu/albert_index.html"),
+        topLevel: true,
+      }),
+    ).toEqual({ kind: "authentication" });
+  });
+
   it("does not treat a bare SIS PeopleSoft path as positive Albert evidence", () => {
     document.title = "Loading";
     document.body.replaceChildren(document.createElement("main"));
